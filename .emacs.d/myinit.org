@@ -1,0 +1,861 @@
+* PC別設定
+  #+BEGIN_SRC emacs-lisp
+    (setq my-workspace "~/Dropbox")
+    (defun get-my-ws (path)
+      (concat (file-name-as-directory my-workspace) path) )
+  #+END_SRC
+* ガーベージコレクションのメモリを一時変更
+
+  起動の高速化のために設定。最後に戻すことを忘れない。
+
+  #+BEGIN_SRC emacs-lisp
+
+    (defvar best-gc-cons-threshold 4000000 
+    "Best default gc threshold value. Should't be too big.")
+
+    (setq gc-cons-threshold most-positive-fixnum)
+ 
+  #+END_SRC
+
+* Shell / 環境
+  #+BEGIN_SRC emacs-lisp
+    (use-package exec-path-from-shell
+      :ensure t
+      :config
+      (setq exec-path-from-shell-check-startup-files nil)
+      (exec-path-from-shell-initialize))
+  #+END_SRC
+
+* 見た目
+  メニューバー、ツールバー、スクロールバーは非表示。行の折り返しはしない。
+  
+  #+BEGIN_SRC emacs-lisp
+
+    (menu-bar-mode -1)
+    (scroll-bar-mode -1)
+    (tool-bar-mode -1)
+
+    (set-default 'truncate-lines 1)
+
+    ;; (set-face-attribute 'default nil :height 120)
+    ;; (set-frame-font "Source Han Code JP")
+
+    ;; https://stackoverflow.com/questions/3958343/how-can-i-set-a-default-font-inconsolata-in-my-emacs-el-in-ubuntu/3958530#3958530
+    (set-frame-font "Inconsolata-15")
+
+
+    (use-package solarized-theme
+      :ensure t
+      :config (load-theme 'solarized-dark t))
+  #+END_SRC
+
+
+* IME
+  #+BEGIN_SRC emacs-lisp
+    (use-package ddskk
+      :ensure t
+      :config
+      (global-set-key (kbd "C-x j") 'skk-auto-fill-mode)
+      (setq default-input-method "japanese-skk")
+      :no-require t)
+  #+END_SRC
+
+* キーバインディング
+
+  #+BEGIN_SRC emacs-lisp
+
+    (bind-key "C-x C-c" nil)
+    (fset 'yes-or-no-p 'y-or-n-p)
+    (global-set-key (kbd "C-t") 'other-window)
+
+    ;; http://akisute3.hatenablog.com/entry/20120318/1332059326
+    (keyboard-translate ?\C-h ?\C-?)
+
+    (use-package which-key
+      :ensure t
+      :config
+      (which-key-mode))
+
+    (use-package sequential-command
+      :ensure t
+      :init
+      (require 'sequential-command-config)
+      (sequential-command-setup-keys))
+
+    (use-package hydra
+      :ensure t
+      :config
+      (defhydra org-heading (org-mode-map "C-c")
+        "Heading handling in org-mode"
+        ("C-p" org-previous-visible-heading "PrevH")
+        ("C-n" org-next-visible-heading "NextH")))
+  #+END_SRC
+
+* コーディングシステム
+  #+BEGIN_SRC emacs-lisp
+    (prefer-coding-system 'utf-8-unix)
+    (setq default-file-name-coding-system 'utf-8) ;dired用
+  #+END_SRC
+
+* バックアップファイル
+  バックアップファイルは作らない。
+
+  #+BEGIN_SRC emacs-lisp
+    (setq vc-follow-symlinks t)
+    ;;; *.~ とかのバックアップファイルを作らない
+    (setq make-backup-files nil)
+    ;;; .#* とかのバックアップファイルを作らない
+    (setq auto-save-default nil)
+  #+END_SRC
+
+* サーバ起動
+  #+BEGIN_SRC emacs-lisp
+    (require 'server)
+    (unless (server-running-p)
+      (server-start))
+  #+END_SRC
+
+* 補完 / 絞り込み
+
+  #+BEGIN_SRC emacs-lisp
+    (use-package projectile
+      :ensure t)
+
+    (use-package helm
+      :ensure t
+      :diminish helm-migemo-mode
+
+      :config
+      (setq helm-truncate-lines t)
+      (setq helm-migemo-mode nil)
+      (global-set-key (kbd "M-x") 'helm-M-x)
+      (global-set-key (kbd "C-s") 'helm-swoop)
+      (global-set-key (kbd "C-x C-f") 'helm-find-files)
+      (global-set-key (kbd "C-x b") 'helm-buffers-list)
+      (global-set-key (kbd "<f4>") 'helm-for-files))
+
+    (use-package helm-swoop
+      :ensure t
+      :after helm
+      :init
+      (setq helm-swoop-pre-input-function (lambda () "")))
+
+  #+END_SRC
+
+* WEB
+
+  #+BEGIN_SRC emacs-lisp
+    (use-package eww
+      :init
+      (setq eww-search-prefix "http://www.google.co.jp/search?q=")
+      ;;(setq browse-url-browser-function 'eww-browse-url)
+      (setq browse-url-browser-function 'browse-url-generic
+            browse-url-generic-program "google-chrome-stable")
+      (defun shr-put-image-alt (spec alt &optional flags)
+        (insert alt))
+      (defun eww-mode-hook--disable-image ()
+        (setq-local shr-put-image-function 'shr-put-image-alt))
+      (add-hook 'eww-mode-hook 'eww-mode-hook--disable-image)
+      )
+
+  #+END_SRC
+
+* Org
+  #+BEGIN_SRC emacs-lisp
+    (use-package org
+      :ensure org-plus-contrib
+      :bind (("C-c c" . org-capture)
+	     ("C-c a" . org-agenda)
+	     ("<f11>" . org-clock-goto))
+
+      :init
+
+      :config
+      (add-hook 'org-mode-hook 'turn-on-auto-fill)
+      (setq org-src-fontify-natively t)
+      (setq org-confirm-babel-evaluate nil)
+      (setq org-src-window-setup 'other-window)
+
+      (require 'ob-emacs-lisp)
+      (require 'ob-haskell)
+      (require 'ob-rust)
+      (require 'ob-gnuplot)
+      (require 'org-habit)
+      (require 'org-protocol)
+
+      (setq org-log-done t)
+
+      (setf org-html-mathjax-options
+	    '((path "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML")
+	      (scale "100") 
+	      (align "center") 
+	      (indent "2em")
+	      (mathml nil)))
+
+      (setf org-html-mathjax-template
+	    "<script type=\"text/javascript\" src=\"%PATH\"></script>")
+
+      ;; active Babel languages
+      (org-babel-do-load-languages
+       'org-babel-load-languages
+       '((haskell . t)
+	 (emacs-lisp . t)
+	 (gnuplot . t)
+	 (latex . t)
+	 (rust . t)
+	 ))
+
+      (setq org-agenda-files `(,(get-my-ws "Org/inbox.org")
+			       ,(get-my-ws "Org/project.org")))
+      (setq org-capture-templates `(("t" "Todo [inbox]" entry
+				     (file+headline ,(get-my-ws "Org/inbox.org") "Tasks")
+				     "* TODO %i%?")
+				    ("p" "Protocol" entry
+				     (file+olp+datetree ,(get-my-ws "Org/journal.org") )
+				     "* %^{Title}\nSource: %u, %c\n  \n #+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n\n%?")
+				    ("L" "Protocol Link" entry
+				     (file+olp+datetree ,(get-my-ws "Org/journal.org"))
+				     "* %? [[%:link][%:description]] \nCaptured On: %U")
+				    ("j" "Journal" entry
+				     (file+olp+datetree ,(get-my-ws "Org/journal.org"))
+				     "* %?\nEntered on %U\n%a")))
+
+      (setq org-todo-keywords '((sequence
+				 "TODO(t)" "WAITING(w)" "SOMEDAY(s)"
+				 "|" "DONE(d)" "CANCELLED(c)")))
+
+      (setq org-agenda-custom-commands 
+	    '(("W" "Completed and/or deferred tasks from previous week"
+	       ((todo "" ((org-agenda-span 7)
+			  (org-agenda-start-day "-7d")
+			  (org-agenda-entry-types '(:timestamp))
+			  (org-agenda-show-log t)))))
+	      ("h" "Habits" tags-todo "STYLE=\"habit\""
+	       ((org-agenda-overriding-header "Habits")
+		(org-agenda-sorting-strategy
+		 '(todo-state-down effort-up category-keep))))))
+
+      (setq org-format-latex-options (plist-put org-format-latex-options :scale 2.0))
+
+      (setq org-habit-show-habits-only-for-today 1)
+      (setq org-agenda-repeating-timestamp-show-all nil))
+
+    (use-package interleave
+      :ensure t
+      :after org)
+
+    (use-package org-bullets
+      :ensure t
+      :after org
+      :config
+      (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
+
+    (use-package org-download
+      :ensure t
+      :after org)
+
+    (use-package org-ref
+      :ensure t
+      :after org
+      :init
+      (setq my-ref-bib (get-my-ws "Bibliography/references.bib"))
+      (setq my-ref-note (get-my-ws "Bibliography/notes.org"))
+      (setq my-ref-pdfs (get-my-ws "Bibliography/bibtex-pdfs/"))
+      (setq my-ref-helm-bibtex-notes (get-my-ws
+				      "Bibliography/helm-bibtex-notes/"))
+
+      (setq reftex-default-bibliography '(my-ref-bib))
+      ;; ノート、bib ファイル、PDF のディレクトリなどを設定
+      (setq org-ref-bibliography-notes my-ref-note
+	    org-ref-default-bibliography `(,my-ref-bib)
+	    org-ref-pdf-directory my-ref-pdfs)
+
+	  ;;; helm-bibtex を使う場合は以下の変数も設定しておく
+      (setq bibtex-completion-bibliography my-ref-bib
+	    bibtex-completion-library-path my-ref-pdfs
+	    bibtex-completion-notes-path my-ref-helm-bibtex-notes)
+
+      ;;; migemo を有効化
+      ;;(push '(migemo) helm-source-bibtex)
+      (setq bibtex-completion-display-formats
+	    '((article       . "${author:10} ${title:15} ${journal:40} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}")
+	      (inbook        . "${author:10} ${title:15} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}")
+	      (t             . "${author:10} ${title:15} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}"))))
+
+    (require 'ox-bibtex)
+    (use-package ox-latex
+      :config
+      (require 'ox-latex)
+
+      (setq org-latex-pdf-process
+	    '("xelatex -interaction nonstopmode -output-directory %o %f"
+	      "bibtex %b"
+	      "xelatex -interaction nontopmode -output-directory %o %f"
+	      "xelatex -interaction nonstopmode -output-directory %o %f"))
+
+      (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
+      (setq org-latex-default-class "koma-jarticle")
+
+      (add-to-list 'org-latex-classes
+		   '("koma-article"
+		     "\\documentclass{scrartcl}"
+		     ("\\section{%s}" . "\\section*{%s}")
+		     ("\\subsection{%s}" . "\\subsection*{%s}")
+		     ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+		     ("\\paragraph{%s}" . "\\paragraph*{%s}")
+		     ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+
+      (add-to-list 'org-latex-classes
+		   '("koma-jarticle"
+		     "\\documentclass{scrartcl}
+	 \\usepackage{amsmath}
+	 \\usepackage{amssymb}
+	 \\usepackage{xunicode}
+	 \\usepackage{fixltx2e}
+	 \\usepackage{zxjatype}
+	 \\usepackage[ipa]{zxjafont}
+	 \\usepackage{xltxtra}
+	 \\usepackage{graphicx}
+	 \\usepackage{longtable}
+	 \\usepackage{float}
+	 \\usepackage{wrapfig}
+	 \\usepackage{soul}
+	 \\usepackage[xetex]{hyperref}"
+		     ("\\section{%s}" . "\\section*{%s}")
+		     ("\\subsection{%s}" . "\\subsection*{%s}")
+		     ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+		     ("\\paragraph{%s}" . "\\paragraph*{%s}")
+		     ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+
+      ;; tufte-handout class for writing classy handouts and papers
+      (add-to-list 'org-latex-classes
+		   '("tufte-handout"
+		     "\\documentclass[twoside,nobib]{tufte-handout}
+      [NO-DEFAULT-PACKAGES]
+	  \\usepackage{zxjatype}
+	  \\usepackage[hiragino-dx]{zxjafont}"
+		     ("\\section{%s}" . "\\section*{%s}")
+		     ("\\subsection{%s}" . "\\subsection*{%s}")))
+      ;; tufte-book class
+      (add-to-list 'org-latex-classes
+		   '("tufte-book"
+		     "\\documentclass[twoside,nobib]{tufte-book}
+     [NO-DEFAULT-PACKAGES]
+	   \\usepackage{zxjatype}
+	   \\usepackage[hiragino-dx]{zxjafont}"
+		     ("\\part{%s}" . "\\part*{%s}")
+		     ("\\chapter{%s}" . "\\chapter*{%s}")
+		     ("\\section{%s}" . "\\section*{%s}")
+		     ("\\subsection{%s}" . "\\subsection*{%s}")
+		     ("\\paragraph{%s}" . "\\paragraph*{%s}"))))
+  #+END_SRC
+
+  #+RESULTS:
+  : t
+
+*  Utility
+  #+BEGIN_SRC emacs-lisp
+    (use-package expand-region
+      :ensure t
+      :bind (("C--" . er/expand-region)))
+
+    (use-package iedit
+      :ensure t)
+  #+END_SRC
+* プログラミング
+
+** 一般
+   #+BEGIN_SRC emacs-lisp
+
+     ;; タブ
+     (setq-default indent-tabs-mode nil)
+     (setq-default tab-width 4 indent-tabs-mode nil)
+
+     (use-package flycheck
+       :ensure t
+       :init
+       (add-hook 'after-init-hook #'global-flycheck-mode)
+       (setq-default flycheck-disabled-checkers '(emacs-lisp-checkdoc)))
+
+     ;; 選択中の括弧の対を強調する
+     (show-paren-mode)
+
+     (use-package smartparens 
+       :ensure t
+       :config
+       (require 'smartparens-config)
+       (smartparens-global-mode 1))
+
+     (use-package aggressive-indent :ensure t)
+
+     (use-package company
+       :ensure t
+       :diminish company-mode
+       :init
+       (global-company-mode 1)
+       (setq company-dabbrev-downcase nil)
+       (define-key company-active-map (kbd "M-n") nil)
+       (define-key company-active-map (kbd "M-p") nil)
+       (define-key company-active-map (kbd "C-n") 'company-select-next)
+       (define-key company-active-map (kbd "C-p") 'company-select-previous)
+       (define-key company-active-map (kbd "C-h") nil))
+
+     (setq gdb-many-windows t)
+
+     (add-hook 'c-mode-common-hook
+               '(lambda ()
+                  ;; 色々な設定
+                  (define-key c-mode-base-map "\C-c\C-c" 'comment-region)
+                  (define-key c-mode-base-map "\C-c\M-c" 'uncomment-region)
+                  (define-key c-mode-base-map "\C-cg"       'gdb)
+                  (define-key c-mode-base-map "\C-cc"       'make)
+                  (define-key c-mode-base-map "\C-ce"       'c-macro-expand)
+                  (define-key c-mode-base-map "\C-ct"        'toggle-source)))
+
+     (use-package helm-dash 
+       :ensure t
+       :after helm)
+
+     (use-package cmake-mode :ensure t)
+
+     (use-package editorconfig
+       :ensure t
+       :diminish editorconfig-mode
+       :config
+       (editorconfig-mode 1))
+   #+END_SRC
+   
+
+**  C/C++
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package irony
+       :ensure t
+       :init
+       ;; "M-x irony-install-server" 
+       (custom-set-variables '(irony-additional-clang-options '("-std=c++11")))
+       (add-to-list 'company-backends 'company-irony)
+       ;;(add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options)
+       ;;(add-hook 'c-mode-hook 'irony-mode)
+       )
+
+     (use-package rtags
+       :ensure t
+       :init
+       (add-hook 'c-mode-common-hook
+                 (lambda ()
+                   (when (rtags-is-indexed)
+                     (local-set-key (kbd "M-.") 'rtags-find-symbol-at-point)
+                     (local-set-key (kbd "M-;") 'rtags-find-symbol)
+                     (local-set-key (kbd "M-@") 'rtags-find-references)
+                     (local-set-key (kbd "M-,") 'rtags-location-stack-back)))))
+
+   #+END_SRC
+
+** Haskell
+   #+BEGIN_SRC emacs-lisp
+     (use-package haskell-mode
+       :ensure t
+       :init
+       (autoload 'haskell-mode "haskell-mode" nil t)
+       (autoload 'haskell-cabal "haskell-cabal" nil t)
+
+       (add-to-list 'auto-mode-alist '("\\.hs$" . haskell-mode))
+       (add-to-list 'auto-mode-alist '("\\.lhs$" . literate-haskell-mode))
+       (add-to-list 'auto-mode-alist '("\\.cabal$" . haskell-cabal-mode))
+
+       (use-package company-ghc
+         :ensure t
+         :init
+         (add-to-list 'company-backends 'company-ghc)))
+   #+END_SRC
+
+** C# 
+   #+BEGIN_SRC emacs-lisp
+    (use-package csharp-mode
+      :ensure t)
+   #+END_SRC
+
+** Python
+   #+BEGIN_SRC emacs-lisp
+     (use-package python
+       :mode ("\\.py" . python-mode)
+       :config
+       (setq python-indent-offset 4))
+
+     (use-package pyenv-mode
+       :after python
+       :init
+       (setenv "WORKON_HOME" "~/.pyenv/versions/")
+       :config
+       (pyenv-mode))
+
+     (use-package elpy :ensure t
+       :config
+       (elpy-enable))
+
+   #+END_SRC
+
+** Lisp
+   #+BEGIN_SRC emacs-lisp
+     (use-package slime
+       :ensure t
+       :config
+       (load (expand-file-name "~/.roswell/helper.el"))
+       ;; (setq inferior-lisp-program "/usr/local/bin/sbcl")
+       (slime-setup '(slime-repl)))
+   #+END_SRC
+
+** Rust
+   #+BEGIN_SRC emacs-lisp
+     (use-package cargo
+       :ensure t)
+     (use-package rust-mode
+       :ensure t)
+     (use-package flycheck-rust :ensure t
+       :config (add-hook 'flycheck-mode-hook #'flycheck-rust-setup))
+
+     (use-package racer
+       :ensure t
+       :config
+       (add-hook 'rust-mode-hook #'racer-mode)
+       (add-hook 'racer-mode-hook #'eldoc-mode)
+       (add-hook 'racer-mode-hook #'company-mode)
+       (define-key rust-mode-map (kbd "TAB") #'company-indent-or-complete-common)
+       (setq company-tooltip-align-annotations t))
+   #+END_SRC
+
+
+* Mail
+  #+BEGIN_SRC emacs-lisp
+    (use-package wanderlust
+      :ensure t
+      :defer t
+      :init
+      ;;(load "~/Dropbox/dotfiles-secret/wanderlust.el")
+      (load (get-my-ws "dotfiles-secret/wanderlust.el")))
+  #+END_SRC
+
+* Etc 
+  #+BEGIN_SRC emacs-lisp
+
+    ;;https://superuser.com/questions/308045/disallow-closing-last-emacs-window-via-window-manager-close-button
+    (defadvice handle-delete-frame (around my-handle-delete-frame-advice activate)
+      "Ask for confirmation before deleting the last frame"
+      (let ((frame   (posn-window (event-start event)))
+            (numfrs  (length (visible-frame-list))))
+        (when (> numfrs 1)
+          ad-do-it)))
+
+    ;;===============================================================
+    ;; Packages
+    ;;===============================================================
+    (use-package ediff
+      :ensure t
+      :config
+      ;; コントロール用のバッファを同一フレーム内に表示
+      (setq ediff-window-setup-function 'ediff-setup-windows-plain)
+      ;; diffのバッファを上下ではなく左右に並べる
+      (setq ediff-split-window-function 'split-window-horizontally))
+
+    ;; org-modeのExportでコードを色付きで出力するため
+    (use-package htmlize :ensure t)
+
+    (use-package migemo
+      :ensure t
+      :config
+      (setq migemo-command "cmigemo")
+      (setq migemo-options '("-q" "--emacs"))
+
+      ;; Set your installed path
+      (setq migemo-dictionary "/usr/share/migemo/utf-8/migemo-dict")
+
+      (setq migemo-user-dictionary nil)
+      (setq migemo-regex-dictionary nil)
+      (setq migemo-coding-system 'utf-8-unix)
+      (migemo-init))
+
+    (use-package pdf-tools
+      :ensure t
+      :config
+      (pdf-tools-install)
+      (setq-default pdf-view-display-size 'fit-page))
+
+    (use-package magit
+      :ensure t
+      :bind (("<f3>" . magit-status)))
+
+    (use-package google-this
+      :ensure t)
+
+    (use-package shackle
+      :ensure t
+      :config
+      (shackle-mode t)
+
+      (setq helm-display-function 'pop-to-buffer)
+      (setq helm-swoop-split-window-function 'display-buffer)
+
+      ;;(setq  special-display-regexps '("\\*Org Se.*" "CAPTURE-.*?" "\\*Capture\\*"))
+      (setq  special-display-regexps '())
+
+      (setq shackle-rules
+            '(("*helm-ag*"              :select t   :align right :size 0.5)
+              ("*helm semantic/imenu*"  :select t   :align right :size 0.4)
+              ("*helm org inbuffer*"    :select t   :align right :size 0.4)
+              (flycheck-error-list-mode :select nil :align below :size 0.25)
+              (compilation-mode         :select nil :align below :size 0.25)
+              (messages-buffer-mode     :select t   :align below :size 0.25)
+              (inferior-emacs-lisp-mode :select t   :align below :size 0.25)
+              (ert-results-mode         :select t   :align below :size 0.5)
+              (calendar-mode            :select t   :align below :size 0.25)
+              (racer-help-mode          :select t   :same t)
+              ("*Google Translate*"     :select t   :align below :size 0.3)   
+              (help-mode                :select t   :align right :size 0.5)
+              (helpful-mode             :select t   :align right :size 0.5)
+              (" *Deletions*"           :select t   :align below :size 0.25)
+              (" *Marked Files*"        :select t   :align below :size 0.25)
+              ("*Helm Swoop*"           :select t   :align below :size 0.33)
+              ("*Org Note*"             :select t   :align below :size 0.33)
+              ("*Org Links*"            :select t   :align below :size 0.2)
+              (" *Org todo*"            :select t   :align below :size 0.2)
+              ("*Man.*"                 :select t   :align below :size 0.5  :regexp t)
+              ("*helm.*"                :select t   :align below :size 0.33 :regexp t)
+              ("*Org Src.*"             :select t   :same t                  :regexp t))))
+
+    (use-package wrap-region
+      :ensure   t
+      :diminish wrap-region-mode
+      :config
+      (wrap-region-global-mode t)
+      (wrap-region-add-wrappers
+       '(("(" ")")
+         ("[" "]")
+         ("{" "}")
+         ("<" ">")
+         ("'" "'")
+         ("\"" "\"")
+         ("‘" "’"   "q")
+         ("“" "”"   "Q")
+         ("*" "*"   "b"   org-mode)                 ; bolden
+         ("*" "*"   "*"   org-mode)                 ; bolden
+         ("/" "/"   "i"   org-mode)                 ; italics
+         ("/" "/"   "/"   org-mode)                 ; italics
+         ("~" "~"   "c"   org-mode)                 ; code
+         ("~" "~"   "~"   org-mode)                 ; code
+         ("=" "="   "v"   org-mode)                 ; verbatim
+         ("=" "="   "="   org-mode)                 ; verbatim
+         ("_" "_"   "u" '(org-mode markdown-mode))  ; underline
+         ("**" "**" "b"   markdown-mode)            ; bolden
+         ("*" "*"   "i"   markdown-mode)            ; italics
+         ("`" "`"   "c" '(markdown-mode ruby-mode)) ; code
+         ("`" "'"   "c"   lisp-mode)                ; code
+         )))
+
+    (use-package multiple-cursors
+      :ensure t
+      :config
+      (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
+      (global-set-key (kbd "C->") 'mc/mark-next-like-this)
+      (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+      (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this))
+
+    (use-package open-junk-file
+      :ensure t)
+
+    (use-package avy
+      :ensure t
+      :bind* ("C-." . avy-goto-char-timer)
+      :config
+      (avy-setup-default))
+
+    (use-package winner
+      :init
+      (winner-mode 1)
+      (global-set-key (kbd "C-z") 'winner-undo))
+
+    (use-package elfeed
+      :ensure t
+      :init
+      ;;(load "~/Dropbox/dotfiles-secret/elfeed.el")
+      (load (get-my-ws "dotfiles-secret/elfeed.el")))
+
+    (use-package yasnippet
+      :ensure t
+      :init
+      :config
+      (define-key yas-keymap (kbd "<tab>") nil)
+      (yas-reload-all)
+      (yas-global-mode 1))
+
+    (use-package yasnippet-snippets
+      :ensure t)
+
+    (use-package restart-emacs
+      :ensure t)
+
+    (use-package persp-mode
+      :ensure t)
+
+    (use-package auto-save-buffers-enhanced
+      :ensure t)
+
+    (use-package lispxmp
+      :ensure t)
+
+    (use-package super-save
+      :ensure t
+      :diminish super-save-mode
+      :init
+      (super-save-mode +1)
+      (setq super-save-auto-save-when-idle t))
+
+
+    (use-package powerline
+      :ensure t
+      :init
+      (powerline-default-theme))
+
+    (use-package auctex
+      :defer t
+      :ensure t)
+
+    (defun ssbb-pyenv-hook ()
+      "Automatically activates pyenv version if .python-version file exists."
+      (f-traverse-upwards
+       (lambda (path)
+         (let ((pyenv-version-path (f-expand ".python-version" path)))
+           (if (f-exists? pyenv-version-path)
+               (pyenv-mode-set (s-trim (f-read-text pyenv-version-path 'utf-8))))))))
+
+    (add-hook 'find-file-hook 'ssbb-pyenv-hook)
+
+
+    (use-package gnuplot-mode
+      :ensure t)
+    (use-package gnuplot
+      :ensure t)
+
+    (use-package markdown-mode
+      :ensure t
+      :commands (markdown-mode gfm-mode)
+      :mode (("README\\.md\\'" . gfm-mode)
+             ("\\.md\\'" . markdown-mode)
+             ("\\.markdown\\'" . markdown-mode))
+      :init (setq markdown-command "multimarkdown"))
+
+
+    ;; (use-package zenburn-theme
+    ;;   :ensure t
+    ;;   :config (load-theme 'zenburn t))
+
+    (use-package org2blog
+      :ensure t
+      :config
+      (load (get-my-ws "dotfiles-secret/org2blog.el")))
+
+
+    ;; shellの文字化けを回避
+    (add-hook 'shell-mode-hook
+              (lambda ()
+                (set-buffer-process-coding-system 'utf-8-unix 'utf-8-unix)
+                ))
+    (setq default-process-coding-system '(utf-8 . utf-8))
+
+    (use-package atomic-chrome
+      :ensure t
+      :init
+      (atomic-chrome-start-server))
+
+    (use-package realgud
+      :ensure t)
+
+    (use-package undo-tree
+      :ensure t)
+
+    ;; My elisp
+    ;;===============================================================
+
+    (defun my-toggle-bar ()
+      "メニューバーとツールバーの表示を切り替える関数"
+      (lexical-let ((vis 1))
+        #'(lambda  ()
+            (interactive)
+            (progn
+              (setq vis (- vis))
+              (tool-bar-mode vis)
+              (menu-bar-mode vis)))))
+              (global-set-key (kbd "<f6>") (my-toggle-bar))
+
+    (setq default-file-name-coding-system 'utf-8)
+                                            ;(setq default-process-coding-system 'utf-8)
+
+    (add-to-list 'process-coding-system-alist '("git" utf-8 . utf-8))
+    (add-hook 'git-commit-mode-hook
+              '(lambda ()
+                 (set-buffer-file-coding-system 'utf-8)))
+
+    (defun isbn-to-bibtex-lead-jp (isbn)
+      "Search lead.to for ISBN bibtex entry.
+           You have to copy the entry if it is on the page to your bibtex
+           file."
+      (interactive "sISBN: ")
+      (browse-url
+       (format
+        "http://lead.to/amazon/jp/?key=%s+&si=all&op=bt&bn=&so=sa&ht=jp"
+        isbn)))
+
+    (setq org-icalendar-combined-agenda-file "~/Dropbox/Org/mycal.ics")
+
+    ;; iCal の説明文
+    (setq org-icalendar-combined-description "OrgModeのスケジュール出力")
+    ;; カレンダーに適切なタイムゾーンを設定する（google 用には nil が必要）
+    (setq org-icalendar-timezone "UTC")
+    ;; DONE になった TODO は出力対象から除外する
+    (setq org-icalendar-include-todo t)  
+    ;; （通常は，<>--<> で区間付き予定をつくる．非改行入力で日付がNoteに入らない）
+    (setq org-icalendar-use-scheduled '(event-if-todo))
+    ;; DL 付きで終日予定にする：締め切り日（スタンプで時間を指定しないこと）
+    (setq org-icalendar-use-deadline '(event-if-todo))
+
+    (setq org-export-exclude-category '())
+
+           ;;; define filter. The filter is called on each entry in the agenda.
+           ;;; It defines a regexp to search for two timestamps, gets the start
+           ;;; and end point of the entry and does a regexp search. It also
+           ;;; checks if the category of the entry is in an exclude list and
+           ;;; returns either t or nil to skip or include the entry.
+
+    (defun org-mycal-export-limit ()
+      "Limit the export to items that have a date, time and a range. Also exclude certain categories."
+      (setq org-tst-regexp "<\\([0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\} ... [0-9]\\{2\\}:[0-9]\\{2\\}[^\r\n>]*?\
+           \)>")
+      (setq org-tstr-regexp (concat org-tst-regexp "--?-?" org-tst-regexp))
+      (save-excursion
+                                            ; get categories
+        (setq mycategory (org-get-category))
+                                            ; get start and end of tree
+        (org-back-to-heading t)
+        (setq mystart    (point))
+        (org-end-of-subtree)
+        (setq myend      (point))
+        (goto-char mystart)
+                                            ; search for timerange
+        (setq myresult (re-search-forward org-tstr-regexp myend t))
+                                            ; search for categories to exclude
+        (setq mycatp (member mycategory org-export-exclude-category))
+                                            ; return t if ok, nil when not ok
+        (if (and myresult (not mycatp)) t nil)))
+
+           ;;; activate filter and call export function
+    (defun org-mycal-export ()
+      (interactive)
+      (let ((org-icalendar-verify-function 'org-mycal-export-limit))
+        (org-icalendar-combine-agenda-files)))
+
+  #+END_SRC
+
+* ガーベージコレクションのメモリを戻す
+  #+BEGIN_SRC emacs-lisp
+(setq gc-cons-threshold best-gc-cons-threshold)
+  #+END_SRC
