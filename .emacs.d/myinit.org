@@ -41,12 +41,15 @@
     ;; (set-frame-font "Source Han Code JP")
 
     ;; https://stackoverflow.com/questions/3958343/how-can-i-set-a-default-font-inconsolata-in-my-emacs-el-in-ubuntu/3958530#3958530
-    (set-frame-font "Inconsolata-15")
+
+    (set-frame-font "Inconsolata-12")
 
 
-    (use-package solarized-theme
-      :ensure t
-      :config (load-theme 'solarized-dark t))
+    ;; (use-package solarized-theme
+    ;;   :ensure t
+    ;;   :config (load-theme 'solarized-dark t))
+
+    (use-package poet-theme :ensure t)
   #+END_SRC
 
 
