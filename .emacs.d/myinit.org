@@ -10,11 +10,11 @@
 
   #+BEGIN_SRC emacs-lisp
 
-    (defvar best-gc-cons-threshold 4000000 
+    (defvar best-gc-cons-threshold 4000000
     "Best default gc threshold value. Should't be too big.")
 
     (setq gc-cons-threshold most-positive-fixnum)
- 
+
   #+END_SRC
 
 * Shell / 環境
@@ -28,7 +28,7 @@
 
 * 見た目
   メニューバー、ツールバー、スクロールバーは非表示。行の折り返しはしない。
-  
+
   #+BEGIN_SRC emacs-lisp
 
     (menu-bar-mode -1)
@@ -190,8 +190,8 @@
 
       (setf org-html-mathjax-options
         '((path "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML")
-          (scale "100") 
-          (align "center") 
+          (scale "100")
+          (align "center")
           (indent "2em")
           (mathml nil)))
 
@@ -227,7 +227,7 @@
                  "NEXT(n)" "TODO(t)" "WAITING(w)" "SOMEDAY(s)"
                  "|" "DONE(d)" "CANCELLED(c)")))
 
-      (setq org-agenda-custom-commands 
+      (setq org-agenda-custom-commands
         '(("W" "Completed and/or deferred tasks from previous week"
            ((todo "" ((org-agenda-span 7)
               (org-agenda-start-day "-7d")
@@ -385,7 +385,7 @@
      ;; 選択中の括弧の対を強調する
      (show-paren-mode)
 
-     (use-package smartparens 
+     (use-package smartparens
        :ensure t
        :config
        (require 'smartparens-config)
@@ -417,7 +417,7 @@
                   (define-key c-mode-base-map "\C-ce"       'c-macro-expand)
                   (define-key c-mode-base-map "\C-ct"        'toggle-source)))
 
-     (use-package helm-dash 
+     (use-package helm-dash
        :ensure t
        :after helm)
 
@@ -429,7 +429,6 @@
        :config
        (editorconfig-mode 1))
    #+END_SRC
-   
 
 **  C/C++
 
@@ -437,7 +436,7 @@
      (use-package irony
        :ensure t
        :init
-       ;; "M-x irony-install-server" 
+       ;; "M-x irony-install-server"
        (custom-set-variables '(irony-additional-clang-options '("-std=c++11")))
        (add-to-list 'company-backends 'company-irony)
        ;;(add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options)
@@ -475,7 +474,7 @@
          (add-to-list 'company-backends 'company-ghc)))
    #+END_SRC
 
-** C# 
+** C#
    #+BEGIN_SRC emacs-lisp
     (use-package csharp-mode
       :ensure t)
@@ -542,7 +541,7 @@
       (load (get-my-ws "dotfiles-secret/wanderlust.el")))
   #+END_SRC
 
-* Etc 
+* Etc
   #+BEGIN_SRC emacs-lisp
 
     ;;https://superuser.com/questions/308045/disallow-closing-last-emacs-window-via-window-manager-close-button
@@ -616,7 +615,7 @@
               (ert-results-mode         :select t   :align below :size 0.5)
               (calendar-mode            :select t   :align below :size 0.25)
               (racer-help-mode          :select t   :same t)
-              ("*Google Translate*"     :select t   :align below :size 0.3)   
+              ("*Google Translate*"     :select t   :align below :size 0.3)
               (help-mode                :select t   :align right :size 0.5)
               (helpful-mode             :select t   :align right :size 0.5)
               (" *Deletions*"           :select t   :align below :size 0.25)
@@ -820,7 +819,7 @@
     ;; カレンダーに適切なタイムゾーンを設定する（google 用には nil が必要）
     (setq org-icalendar-timezone "UTC")
     ;; DONE になった TODO は出力対象から除外する
-    (setq org-icalendar-include-todo t)  
+    (setq org-icalendar-include-todo t)
     ;; （通常は，<>--<> で区間付き予定をつくる．非改行入力で日付がNoteに入らない）
     (setq org-icalendar-use-scheduled '(event-if-todo))
     ;; DL 付きで終日予定にする：締め切り日（スタンプで時間を指定しないこと）
