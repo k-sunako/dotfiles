@@ -168,8 +168,8 @@
     (use-package org
       :ensure org-plus-contrib
       :bind (("C-c c" . org-capture)
-	     ("C-c a" . org-agenda)
-	     ("<f11>" . org-clock-goto))
+         ("C-c a" . org-agenda)
+         ("<f11>" . org-clock-goto))
 
       :init
 
@@ -189,54 +189,56 @@
       (setq org-log-done t)
 
       (setf org-html-mathjax-options
-	    '((path "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML")
-	      (scale "100") 
-	      (align "center") 
-	      (indent "2em")
-	      (mathml nil)))
+        '((path "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML")
+          (scale "100") 
+          (align "center") 
+          (indent "2em")
+          (mathml nil)))
 
       (setf org-html-mathjax-template
-	    "<script type=\"text/javascript\" src=\"%PATH\"></script>")
+        "<script type=\"text/javascript\" src=\"%PATH\"></script>")
 
       ;; active Babel languages
       (org-babel-do-load-languages
        'org-babel-load-languages
        '((haskell . t)
-	 (emacs-lisp . t)
-	 (gnuplot . t)
-	 (latex . t)
-	 (rust . t)
-	 ))
+     (emacs-lisp . t)
+     (gnuplot . t)
+     (latex . t)
+     (rust . t)
+     ))
 
       (setq org-agenda-files `(,(get-my-ws "Org/inbox.org")
-			       ,(get-my-ws "Org/project.org")))
+                   ,(get-my-ws "Org/project.org")))
       (setq org-capture-templates `(("t" "Todo [inbox]" entry
-				     (file+headline ,(get-my-ws "Org/inbox.org") "Tasks")
-				     "* TODO %i%?")
-				    ("p" "Protocol" entry
-				     (file+olp+datetree ,(get-my-ws "Org/journal.org") )
-				     "* %^{Title}\nSource: %u, %c\n  \n #+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n\n%?")
-				    ("L" "Protocol Link" entry
-				     (file+olp+datetree ,(get-my-ws "Org/journal.org"))
-				     "* %? [[%:link][%:description]] \nCaptured On: %U")
-				    ("j" "Journal" entry
-				     (file+olp+datetree ,(get-my-ws "Org/journal.org"))
-				     "* %?\nEntered on %U\n%a")))
+                     (file+headline ,(get-my-ws "Org/inbox.org") "Tasks")
+                     "* TODO %i%?")
+                    ("p" "Protocol" entry
+                     (file+olp+datetree ,(get-my-ws "Org/journal.org") )
+                     "* %^{Title}\nSource: %u, %c\n  \n #+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n\n%?")
+                    ("L" "Protocol Link" entry
+                     (file+olp+datetree ,(get-my-ws "Org/journal.org"))
+                     "* %? [[%:link][%:description]] \nCaptured On: %U")
+                    ("j" "Journal" entry
+                     (file+olp+datetree ,(get-my-ws "Org/journal.org"))
+                     "* %?\nEntered on %U\n%a")))
 
       (setq org-todo-keywords '((sequence
-				 "TODO(t)" "WAITING(w)" "SOMEDAY(s)"
-				 "|" "DONE(d)" "CANCELLED(c)")))
+                 "NEXT(n)" "TODO(t)" "WAITING(w)" "SOMEDAY(s)"
+                 "|" "DONE(d)" "CANCELLED(c)")))
 
       (setq org-agenda-custom-commands 
-	    '(("W" "Completed and/or deferred tasks from previous week"
-	       ((todo "" ((org-agenda-span 7)
-			  (org-agenda-start-day "-7d")
-			  (org-agenda-entry-types '(:timestamp))
-			  (org-agenda-show-log t)))))
-	      ("h" "Habits" tags-todo "STYLE=\"habit\""
-	       ((org-agenda-overriding-header "Habits")
-		(org-agenda-sorting-strategy
-		 '(todo-state-down effort-up category-keep))))))
+        '(("W" "Completed and/or deferred tasks from previous week"
+           ((todo "" ((org-agenda-span 7)
+              (org-agenda-start-day "-7d")
+              (org-agenda-entry-types '(:timestamp))
+              (org-agenda-show-log t)))))
+          ("h" "Habits" tags-todo "STYLE=\"habit\""
+           ((org-agenda-overriding-header "Habits")
+            (org-agenda-sorting-strategy
+             '(todo-state-down effort-up category-keep))))
+          ("N" "Todo: Next" tags-todo "TODO=\"NEXT\"")
+          ))
 
       (setq org-format-latex-options (plist-put org-format-latex-options :scale 2.0))
 
@@ -265,25 +267,25 @@
       (setq my-ref-note (get-my-ws "Bibliography/notes.org"))
       (setq my-ref-pdfs (get-my-ws "Bibliography/bibtex-pdfs/"))
       (setq my-ref-helm-bibtex-notes (get-my-ws
-				      "Bibliography/helm-bibtex-notes/"))
+                      "Bibliography/helm-bibtex-notes/"))
 
       (setq reftex-default-bibliography '(my-ref-bib))
       ;; ノート、bib ファイル、PDF のディレクトリなどを設定
       (setq org-ref-bibliography-notes my-ref-note
-	    org-ref-default-bibliography `(,my-ref-bib)
-	    org-ref-pdf-directory my-ref-pdfs)
+        org-ref-default-bibliography `(,my-ref-bib)
+        org-ref-pdf-directory my-ref-pdfs)
 
-	  ;;; helm-bibtex を使う場合は以下の変数も設定しておく
+      ;;; helm-bibtex を使う場合は以下の変数も設定しておく
       (setq bibtex-completion-bibliography my-ref-bib
-	    bibtex-completion-library-path my-ref-pdfs
-	    bibtex-completion-notes-path my-ref-helm-bibtex-notes)
+        bibtex-completion-library-path my-ref-pdfs
+        bibtex-completion-notes-path my-ref-helm-bibtex-notes)
 
       ;;; migemo を有効化
       ;;(push '(migemo) helm-source-bibtex)
       (setq bibtex-completion-display-formats
-	    '((article       . "${author:10} ${title:15} ${journal:40} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}")
-	      (inbook        . "${author:10} ${title:15} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}")
-	      (t             . "${author:10} ${title:15} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}"))))
+        '((article       . "${author:10} ${title:15} ${journal:40} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}")
+          (inbook        . "${author:10} ${title:15} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}")
+          (t             . "${author:10} ${title:15} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}"))))
 
     (require 'ox-bibtex)
     (use-package ox-latex
@@ -291,66 +293,66 @@
       (require 'ox-latex)
 
       (setq org-latex-pdf-process
-	    '("xelatex -interaction nonstopmode -output-directory %o %f"
-	      "bibtex %b"
-	      "xelatex -interaction nontopmode -output-directory %o %f"
-	      "xelatex -interaction nonstopmode -output-directory %o %f"))
+        '("xelatex -interaction nonstopmode -output-directory %o %f"
+          "bibtex %b"
+          "xelatex -interaction nontopmode -output-directory %o %f"
+          "xelatex -interaction nonstopmode -output-directory %o %f"))
 
       (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
       (setq org-latex-default-class "koma-jarticle")
 
       (add-to-list 'org-latex-classes
-		   '("koma-article"
-		     "\\documentclass{scrartcl}"
-		     ("\\section{%s}" . "\\section*{%s}")
-		     ("\\subsection{%s}" . "\\subsection*{%s}")
-		     ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-		     ("\\paragraph{%s}" . "\\paragraph*{%s}")
-		     ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+           '("koma-article"
+             "\\documentclass{scrartcl}"
+             ("\\section{%s}" . "\\section*{%s}")
+             ("\\subsection{%s}" . "\\subsection*{%s}")
+             ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+             ("\\paragraph{%s}" . "\\paragraph*{%s}")
+             ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
 
       (add-to-list 'org-latex-classes
-		   '("koma-jarticle"
-		     "\\documentclass{scrartcl}
-	 \\usepackage{amsmath}
-	 \\usepackage{amssymb}
-	 \\usepackage{xunicode}
-	 \\usepackage{fixltx2e}
-	 \\usepackage{zxjatype}
-	 \\usepackage[ipa]{zxjafont}
-	 \\usepackage{xltxtra}
-	 \\usepackage{graphicx}
-	 \\usepackage{longtable}
-	 \\usepackage{float}
-	 \\usepackage{wrapfig}
-	 \\usepackage{soul}
-	 \\usepackage[xetex]{hyperref}"
-		     ("\\section{%s}" . "\\section*{%s}")
-		     ("\\subsection{%s}" . "\\subsection*{%s}")
-		     ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-		     ("\\paragraph{%s}" . "\\paragraph*{%s}")
-		     ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+           '("koma-jarticle"
+             "\\documentclass{scrartcl}
+     \\usepackage{amsmath}
+     \\usepackage{amssymb}
+     \\usepackage{xunicode}
+     \\usepackage{fixltx2e}
+     \\usepackage{zxjatype}
+     \\usepackage[ipa]{zxjafont}
+     \\usepackage{xltxtra}
+     \\usepackage{graphicx}
+     \\usepackage{longtable}
+     \\usepackage{float}
+     \\usepackage{wrapfig}
+     \\usepackage{soul}
+     \\usepackage[xetex]{hyperref}"
+             ("\\section{%s}" . "\\section*{%s}")
+             ("\\subsection{%s}" . "\\subsection*{%s}")
+             ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+             ("\\paragraph{%s}" . "\\paragraph*{%s}")
+             ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
 
       ;; tufte-handout class for writing classy handouts and papers
       (add-to-list 'org-latex-classes
-		   '("tufte-handout"
-		     "\\documentclass[twoside,nobib]{tufte-handout}
+           '("tufte-handout"
+             "\\documentclass[twoside,nobib]{tufte-handout}
       [NO-DEFAULT-PACKAGES]
-	  \\usepackage{zxjatype}
-	  \\usepackage[hiragino-dx]{zxjafont}"
-		     ("\\section{%s}" . "\\section*{%s}")
-		     ("\\subsection{%s}" . "\\subsection*{%s}")))
+      \\usepackage{zxjatype}
+      \\usepackage[hiragino-dx]{zxjafont}"
+             ("\\section{%s}" . "\\section*{%s}")
+             ("\\subsection{%s}" . "\\subsection*{%s}")))
       ;; tufte-book class
       (add-to-list 'org-latex-classes
-		   '("tufte-book"
-		     "\\documentclass[twoside,nobib]{tufte-book}
+           '("tufte-book"
+             "\\documentclass[twoside,nobib]{tufte-book}
      [NO-DEFAULT-PACKAGES]
-	   \\usepackage{zxjatype}
-	   \\usepackage[hiragino-dx]{zxjafont}"
-		     ("\\part{%s}" . "\\part*{%s}")
-		     ("\\chapter{%s}" . "\\chapter*{%s}")
-		     ("\\section{%s}" . "\\section*{%s}")
-		     ("\\subsection{%s}" . "\\subsection*{%s}")
-		     ("\\paragraph{%s}" . "\\paragraph*{%s}"))))
+       \\usepackage{zxjatype}
+       \\usepackage[hiragino-dx]{zxjafont}"
+             ("\\part{%s}" . "\\part*{%s}")
+             ("\\chapter{%s}" . "\\chapter*{%s}")
+             ("\\section{%s}" . "\\section*{%s}")
+             ("\\subsection{%s}" . "\\subsection*{%s}")
+             ("\\paragraph{%s}" . "\\paragraph*{%s}"))))
   #+END_SRC
 
   #+RESULTS:
@@ -497,6 +499,7 @@
        :config
        (elpy-enable))
 
+     (use-package ein :ensure t)
    #+END_SRC
 
 ** Lisp
@@ -681,7 +684,9 @@
       :ensure t
       :init
       ;;(load "~/Dropbox/dotfiles-secret/elfeed.el")
-      (load (get-my-ws "dotfiles-secret/elfeed.el")))
+      (load (get-my-ws "dotfiles-secret/elfeed.el"))
+      :config
+      (setq shr-inhibit-images t))
 
     (use-package yasnippet
       :ensure t
