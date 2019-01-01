@@ -188,7 +188,7 @@
 
       (require 'ob-emacs-lisp)
       (require 'ob-haskell)
-      (require 'ob-rust)
+      ;;(require 'ob-rust)
       (require 'ob-gnuplot)
       (require 'org-habit)
       (require 'org-protocol)
@@ -255,6 +255,9 @@
     (use-package interleave
       :ensure t
       :after org)
+
+    (use-package ob-rust
+      :ensure t)
 
     (use-package org-bullets
       :ensure t
