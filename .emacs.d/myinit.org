@@ -31,32 +31,32 @@
 
   #+BEGIN_SRC emacs-lisp
 
-        (menu-bar-mode -1)
-        (scroll-bar-mode -1)
-        (tool-bar-mode -1)
+    (menu-bar-mode -1)
+    (scroll-bar-mode -1)
+    (tool-bar-mode -1)
 
-        (set-default 'truncate-lines 1)
+    (set-default 'truncate-lines 1)
 
-        ;; (set-face-attribute 'default nil :height 120)
-        ;; (set-frame-font "Source Han Code JP")
+    ;; (set-face-attribute 'default nil :height 120)
+    ;; (set-frame-font "Source Han Code JP")
 
-        ;; https://stackoverflow.com/questions/3958343/how-can-i-set-a-default-font-inconsolata-in-my-emacs-el-in-ubuntu/3958530#3958530
+    ;; https://stackoverflow.com/questions/3958343/how-can-i-set-a-default-font-inconsolata-in-my-emacs-el-in-ubuntu/3958530#3958530
 
     ;; (condition-case err-var
     ;;     (progn
     ;;       (error "Failed"))
     ;;   (error "Error: %s" err-var))
 
-        (condition-case err-var
-            (set-frame-font "Inconsolata-12")
-          (error "no font!!"))
+    (condition-case err-var
+        (set-frame-font "Inconsolata-12")
+      (error "no font!!"))
 
 
-        ;; (use-package solarized-theme
-        ;;   :ensure t
-        ;;   :config (load-theme 'solarized-dark t))
+    ;; (use-package solarized-theme
+    ;;   :ensure t
+    ;;   :config (load-theme 'solarized-dark t))
 
-        (use-package poet-theme :ensure t)
+    (use-package poet-theme :ensure t)
   #+END_SRC
 
 
