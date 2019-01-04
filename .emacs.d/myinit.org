@@ -178,10 +178,11 @@
          ("C-c a" . org-agenda)
          ("<f11>" . org-clock-goto))
 
+      :hook (org-mode . turn-on-auto-fill)
       :init
 
       :config
-      (add-hook 'org-mode-hook 'turn-on-auto-fill)
+
       (setq org-src-fontify-natively t)
       (setq org-confirm-babel-evaluate nil)
       (setq org-src-window-setup 'other-window)
@@ -262,8 +263,7 @@
     (use-package org-bullets
       :ensure t
       :after org
-      :config
-      (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
+      :hook (org-mode . org-bullets-mode))
 
     (use-package org-download
       :ensure t
