@@ -5,4 +5,4 @@ manage my dotfiles.
 Emacsの設定
 
 ## .tmux.conf
-comming soon.
+ひとまずコミット
