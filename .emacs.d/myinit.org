@@ -42,7 +42,14 @@
 
     ;; https://stackoverflow.com/questions/3958343/how-can-i-set-a-default-font-inconsolata-in-my-emacs-el-in-ubuntu/3958530#3958530
 
-    (set-frame-font "Inconsolata-12")
+    ;; (condition-case err-var
+    ;;     (progn
+    ;;       (error "Failed"))
+    ;;   (error "Error: %s" err-var))
+
+    (condition-case err-var
+        (set-frame-font "Inconsolata-12")
+      (error "no font!!"))
 
 
     ;; (use-package solarized-theme
@@ -171,17 +178,18 @@
          ("C-c a" . org-agenda)
          ("<f11>" . org-clock-goto))
 
+      :hook (org-mode . turn-on-auto-fill)
       :init
 
       :config
-      (add-hook 'org-mode-hook 'turn-on-auto-fill)
+
       (setq org-src-fontify-natively t)
       (setq org-confirm-babel-evaluate nil)
       (setq org-src-window-setup 'other-window)
 
       (require 'ob-emacs-lisp)
       (require 'ob-haskell)
-      (require 'ob-rust)
+      ;;(require 'ob-rust)
       (require 'ob-gnuplot)
       (require 'org-habit)
       (require 'org-protocol)
@@ -249,11 +257,13 @@
       :ensure t
       :after org)
 
+    (use-package ob-rust
+      :ensure t)
+
     (use-package org-bullets
       :ensure t
       :after org
-      :config
-      (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
+      :hook (org-mode . org-bullets-mode))
 
     (use-package org-download
       :ensure t
@@ -488,6 +498,7 @@
        (setq python-indent-offset 4))
 
      (use-package pyenv-mode
+       :ensure t
        :after python
        :init
        (setenv "WORKON_HOME" "~/.pyenv/versions/")
@@ -758,6 +769,7 @@
 
     (use-package org2blog
       :ensure t
+      :after org
       :config
       (load (get-my-ws "dotfiles-secret/org2blog.el")))
 
