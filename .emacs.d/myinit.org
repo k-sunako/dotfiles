@@ -368,7 +368,7 @@
   #+RESULTS:
   : t
 
-*  Utility
+* Utility
   #+BEGIN_SRC emacs-lisp
     (use-package expand-region
       :ensure t
