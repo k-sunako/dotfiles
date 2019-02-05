@@ -370,6 +370,10 @@
       :custom
       (org-journal-dir (get-my-ws "Org/journal"))
       (org-journal-date-format "%A, %d %B %Y"))
+
+    (use-package org-drill
+    :init
+    (require 'org-drill))
   #+END_SRC
 
   #+RESULTS:
