@@ -557,6 +557,7 @@
   #+BEGIN_SRC emacs-lisp
     (use-package wanderlust
       :ensure t
+      :if (file-exists-p (get-my-ws "dotfiles-secret/wanderlust.el"))
       :defer t
       :init
       ;;(load "~/Dropbox/dotfiles-secret/wanderlust.el")
@@ -706,6 +707,7 @@
 
     (use-package elfeed
       :ensure t
+      :if (file-exists-p (get-my-ws "dotfiles-secret/elfeed.el"))
       :init
       ;;(load "~/Dropbox/dotfiles-secret/elfeed.el")
       (load (get-my-ws "dotfiles-secret/elfeed.el"))
@@ -783,6 +785,7 @@
 
     (use-package org2blog
       :ensure t
+      :if (file-exists-p (get-my-ws "dotfiles-secret/org2blog.el"))
       :after org
       :config
       (load (get-my-ws "dotfiles-secret/org2blog.el")))
