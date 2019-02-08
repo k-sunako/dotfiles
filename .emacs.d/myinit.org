@@ -474,7 +474,8 @@
                      (local-set-key (kbd "M-;") 'rtags-find-symbol)
                      (local-set-key (kbd "M-@") 'rtags-find-references)
                      (local-set-key (kbd "M-,") 'rtags-location-stack-back)))))
-
+     (use-package cuda-mode
+       :ensure t)
    #+END_SRC
 
 ** Haskell
