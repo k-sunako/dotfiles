@@ -580,6 +580,15 @@
 
 * Etc
   #+BEGIN_SRC emacs-lisp
+    (defun ks/capture-journal ()
+      (interactive)
+      (let ((org-journal-find-file #'find-file)
+            (frm (make-frame)))
+        (progn
+          (select-frame-set-input-focus frm)
+          (set-frame-position frm (/ (x-display-pixel-width) 3) 0) 
+          (org-journal-new-entry nil)
+          (local-set-key (kbd "C-c C-c") 'delete-frame))))
 
     (use-package habitica
       :ensure t)
@@ -732,7 +741,7 @@
       :ensure t
       :config
       (yas-global-mode 1))
-      
+
     (use-package restart-emacs
       :ensure t)
 
@@ -741,7 +750,7 @@
 
     (use-package auto-save-buffers-enhanced
       :ensure t)
-      
+
     (use-package lispxmp
       :ensure t)
 
