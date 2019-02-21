@@ -71,6 +71,9 @@
     (use-package wdired
       :bind (:map dired-mode-map
                   ("e" . wdired-change-to-wdired-mode)))
+
+    (use-package ztree
+      :ensure t)
   #+END_SRC
 * IME
   #+BEGIN_SRC emacs-lisp
