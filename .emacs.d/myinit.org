@@ -583,6 +583,10 @@
 
 * Etc
   #+BEGIN_SRC emacs-lisp
+    (use-package calendar
+      :ensure t
+      :bind (("<f9>" . calendar)))
+
     (defun ks/capture-journal ()
       (interactive)
       (let ((org-journal-find-file #'find-file)
