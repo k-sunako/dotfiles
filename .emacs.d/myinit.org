@@ -614,6 +614,7 @@
         (use-package ediff
           :ensure t
           :config
+          (setq ediff-diff-program "~/bin/my-diff.sh")
           ;; コントロール用のバッファを同一フレーム内に表示
           (setq ediff-window-setup-function 'ediff-setup-windows-plain)
           ;; diffのバッファを上下ではなく左右に並べる
