@@ -409,6 +409,17 @@
 
 ** 一般
    #+BEGIN_SRC emacs-lisp
+     (use-package lsp-mode
+       :custom ((lsp-inhibit-message t)
+              (lsp-message-project-root-warning t)
+              (create-lockfiles nil))
+       :hook   (prog-major-mode . lsp-prog-major-mode-enable))
+
+     (use-package lsp-ui
+       :ensure t
+       :after lsp-mode
+       :custom (scroll-margin 0)
+       :hook   (lsp-mode . lsp-ui-mode))
 
      ;; タブ
      (setq-default indent-tabs-mode nil)
@@ -553,21 +564,46 @@
 
 ** Rust
    #+BEGIN_SRC emacs-lisp
-     (use-package cargo
-       :ensure t)
-     (use-package rust-mode
-       :ensure t)
-     (use-package flycheck-rust :ensure t
-       :config (add-hook 'flycheck-mode-hook #'flycheck-rust-setup))
+          (use-package cargo
+            :ensure t)
 
-     (use-package racer
-       :ensure t
-       :config
-       (add-hook 'rust-mode-hook #'racer-mode)
-       (add-hook 'racer-mode-hook #'eldoc-mode)
-       (add-hook 'racer-mode-hook #'company-mode)
-       (define-key rust-mode-map (kbd "TAB") #'company-indent-or-complete-common)
-       (setq company-tooltip-align-annotations t))
+          (use-package racer
+            :ensure t
+            :config
+            (add-hook 'racer-mode-hook #'eldoc-mode)
+            (add-hook 'racer-mode-hook #'company-mode)
+            (define-key rust-mode-map (kbd "TAB") #'company-indent-or-complete-common)
+            (setq company-tooltip-align-annotations t))
+
+          (use-package company-racer
+            :ensure t
+            :defer
+            :init
+            :after company
+            (with-eval-after-load 'company
+              (add-to-list 'company-backends 'company-racer)))
+
+          (use-package rustic
+            :ensure t
+            :commands (cargo-minor-mode)
+            ;; why? :mode "\\.rs" 
+            :config
+            (setq rustic-rls-pkg 'eglot)
+            (bind-keys :map rustic-mode-map
+                       ("C-c TAB" . rustic-format-buffer)
+                       ("TAB" . company-indent-or-complete-common))
+            :init
+            (setq company-tooltip-align-annotations t)
+            (add-hook 'rustic-mode-hook #'cargo-minor-mode)
+            (add-hook 'rustic-mode-hook #'racer-mode)
+            (add-hook 'rustic-mode-hook #'flycheck-mode)
+            (add-hook 'rustic-mode-hook #'electric-pair-mode)
+            (cl-delete-if (lambda (element) (equal (cdr element) 'rust-mode)) auto-mode-alist)
+            (cl-delete-if (lambda (element) (equal (cdr element) 'rustic-mode)) auto-mode-alist)
+            (add-to-list 'auto-mode-alist '("\\.rs$" . rustic-mode))
+     )
+
+
    #+END_SRC
 
 
