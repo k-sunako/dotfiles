@@ -145,7 +145,12 @@
 
   #+BEGIN_SRC emacs-lisp
     (use-package projectile
-      :ensure t)
+      :ensure t
+      :config
+      (setq projectile-project-search-path '("~/study" ))
+      (projectile-discover-projects-in-search-path))
+
+
 
     (use-package helm
       :ensure t
@@ -159,6 +164,11 @@
       (global-set-key (kbd "C-x C-f") 'helm-find-files)
       (global-set-key (kbd "C-x b") 'helm-buffers-list)
       (global-set-key (kbd "<f4>") 'helm-for-files))
+
+    (use-package helm-projectile
+      :ensure t
+      :config
+      (helm-projectile-on))
 
     (use-package helm-swoop
       :ensure t
