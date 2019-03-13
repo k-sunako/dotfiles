@@ -52,12 +52,17 @@
         (set-frame-font "Inconsolata-12")
       (error "no font!!"))
 
-
-    ;; (use-package solarized-theme
-    ;;   :ensure t
-    ;;   :config (load-theme 'solarized-dark t))
-
-    (use-package poet-theme :ensure t)
+    (use-package doom-themes
+      :ensure t
+      :custom
+      (doom-themes-enable-italic t)
+      (doom-themes-enable-bold t)
+      :custom-face
+      (doom-modeline-bar ((t (:background "#6272a4"))))
+      :config
+      (load-theme 'doom-dracula t)
+      (doom-themes-neotree-config)
+      (doom-themes-org-config))
   #+END_SRC
 
 * Dired
@@ -147,7 +152,7 @@
     (use-package projectile
       :ensure t
       :config
-      (setq projectile-project-search-path '("~/study" ))
+      (setq projectile-project-search-path '("~/study" "~/src"))
       (projectile-discover-projects-in-search-path))
 
 
