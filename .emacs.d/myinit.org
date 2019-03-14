@@ -63,6 +63,22 @@
       (load-theme 'doom-dracula t)
       (doom-themes-neotree-config)
       (doom-themes-org-config))
+
+    (use-package doom-modeline
+      :custom
+      (doom-modeline-buffer-file-name-style 'truncate-with-project)
+      (doom-modeline-icon t)
+      (doom-modeline-major-mode-icon nil)
+      (doom-modeline-minor-modes nil)
+      :hook
+      (after-init . doom-modeline-mode)
+      :config
+      (line-number-mode 0)
+      (column-number-mode 0)
+      (doom-modeline-def-modeline 'main
+                                  '(bar workspace-number window-number evil-state god-state ryo-modal xah-fly-keys matches buffer-info remote-host buffer-position parrot selection-info)
+                                  '(misc-info persp-name lsp github debug minor-modes input-method major-mode process vcs checker)))
+
   #+END_SRC
 
 * Dired
@@ -635,348 +651,342 @@
 
 * Etc
   #+BEGIN_SRC emacs-lisp
-        (use-package recentf
-          :ensure t
-          :config
-          (setq recentf-max-saved-items 4000) ;; 2000ファイルまで履歴保存する
-          (setq recentf-auto-cleanup 'never)  ;; 存在しないファイルは消さない
-          (setq recentf-exclude '("/recentf" "COMMIT_EDITMSG" "/.?TAGS" "^/sudo:" "/\\.emacs\\.d/games/*-scores" "/\\.emacs\\.d/\\.cask/"))
-          (setq recentf-auto-save-timer (run-with-idle-timer 30 t 'recentf-save-list)))
+    (use-package recentf
+      :ensure t
+      :config
+      (setq recentf-max-saved-items 4000) ;; 2000ファイルまで履歴保存する
+      (setq recentf-auto-cleanup 'never)  ;; 存在しないファイルは消さない
+      (setq recentf-exclude '("/recentf" "COMMIT_EDITMSG" "/.?TAGS" "^/sudo:" "/\\.emacs\\.d/games/*-scores" "/\\.emacs\\.d/\\.cask/"))
+      (setq recentf-auto-save-timer (run-with-idle-timer 30 t 'recentf-save-list)))
 
-        (use-package calendar
-          :ensure t
-          :bind (("<f9>" . calendar)))
+    (use-package calendar
+      :ensure t
+      :bind (("<f9>" . calendar)))
 
-        (defun ks/capture-journal ()
-          (interactive)
-          (let ((org-journal-find-file #'find-file)
-                (frm (make-frame)))
+    (defun ks/capture-journal ()
+      (interactive)
+      (let ((org-journal-find-file #'find-file)
+            (frm (make-frame)))
+        (progn
+          (select-frame-set-input-focus frm)
+          (set-frame-position frm (/ (x-display-pixel-width) 3) 0) 
+          (org-journal-new-entry nil)
+          (local-set-key (kbd "C-c C-c") 'delete-frame))))
+
+    (use-package habitica
+      :ensure t)
+
+    ;;https://superuser.com/questions/308045/disallow-closing-last-emacs-window-via-window-manager-close-button
+    (defadvice handle-delete-frame (around my-handle-delete-frame-advice activate)
+      "Ask for confirmation before deleting the last frame"
+      (let ((frame   (posn-window (event-start event)))
+            (numfrs  (length (visible-frame-list))))
+        (when (> numfrs 1)
+          ad-do-it)))
+
+    ;;===============================================================
+    ;; Packages
+    ;;===============================================================
+    (use-package ediff
+      :ensure t
+      :config
+      (setq ediff-diff-program "~/bin/my-diff.sh")
+      ;; コントロール用のバッファを同一フレーム内に表示
+      (setq ediff-window-setup-function 'ediff-setup-windows-plain)
+      ;; diffのバッファを上下ではなく左右に並べる
+      (setq ediff-split-window-function 'split-window-horizontally))
+
+    ;; org-modeのExportでコードを色付きで出力するため
+    (use-package htmlize :ensure t)
+
+    (use-package migemo
+      :ensure t
+      :config
+      (setq migemo-command "cmigemo")
+      (setq migemo-options '("-q" "--emacs"))
+
+      ;; Set your installed path
+      (setq migemo-dictionary "/usr/share/migemo/utf-8/migemo-dict")
+
+      (setq migemo-user-dictionary nil)
+      (setq migemo-regex-dictionary nil)
+      (setq migemo-coding-system 'utf-8-unix)
+      (migemo-init))
+
+    (use-package pdf-tools
+      :ensure t
+      :config
+      (pdf-tools-install)
+      (setq-default pdf-view-display-size 'fit-page))
+
+    (use-package magit
+      :ensure t
+      :bind (("<f3>" . magit-status))
+      :config
+      (global-auto-revert-mode 1)
+      (setq magit-auto-revert-mode t))
+
+    (use-package google-this
+      :ensure t)
+
+    (use-package shackle
+      :ensure t
+      :config
+      (shackle-mode t)
+
+      (setq helm-display-function 'pop-to-buffer)
+      (setq helm-swoop-split-window-function 'display-buffer)
+
+      ;;(setq  special-display-regexps '("\\*Org Se.*" "CAPTURE-.*?" "\\*Capture\\*"))
+      (setq  special-display-regexps '())
+
+      (setq shackle-rules
+            '(("*helm-ag*"              :select t   :align right :size 0.5)
+              ("*helm semantic/imenu*"  :select t   :align right :size 0.4)
+              ("*helm org inbuffer*"    :select t   :align right :size 0.4)
+              (flycheck-error-list-mode :select nil :align below :size 0.25)
+              (compilation-mode         :select nil :align below :size 0.25)
+              (messages-buffer-mode     :select t   :align below :size 0.25)
+              (inferior-emacs-lisp-mode :select t   :align below :size 0.25)
+              (ert-results-mode         :select t   :align below :size 0.5)
+              (calendar-mode            :select t   :align below :size 0.25)
+              (racer-help-mode          :select t   :same t)
+              ("*Google Translate*"     :select t   :align below :size 0.3)
+              (help-mode                :select t   :align right :size 0.5)
+              (helpful-mode             :select t   :align right :size 0.5)
+              (" *Deletions*"           :select t   :align below :size 0.25)
+              (" *Marked Files*"        :select t   :align below :size 0.25)
+              ("*Helm Swoop*"           :select t   :align below :size 0.33)
+              ("*Org Note*"             :select t   :align below :size 0.33)
+              ("*Org Links*"            :select t   :align below :size 0.2)
+              (" *Org todo*"            :select t   :align below :size 0.2)
+              ("*Man.*"                 :select t   :align below :size 0.5  :regexp t)
+              ("*helm.*"                :select t   :align below :size 0.33 :regexp t)
+              ("*Org Src.*"             :select t   :same t                  :regexp t))))
+
+    (use-package wrap-region
+      :ensure   t
+      :diminish wrap-region-mode
+      :config
+      (wrap-region-global-mode t)
+      (wrap-region-add-wrappers
+       '(("(" ")")
+         ("[" "]")
+         ("{" "}")
+         ("<" ">")
+         ("'" "'")
+         ("\"" "\"")
+         ("‘" "’"   "q")
+         ("“" "”"   "Q")
+         ("*" "*"   "b"   org-mode)                 ; bolden
+         ("*" "*"   "*"   org-mode)                 ; bolden
+         ("/" "/"   "i"   org-mode)                 ; italics
+         ("/" "/"   "/"   org-mode)                 ; italics
+         ("~" "~"   "c"   org-mode)                 ; code
+         ("~" "~"   "~"   org-mode)                 ; code
+         ("=" "="   "v"   org-mode)                 ; verbatim
+         ("=" "="   "="   org-mode)                 ; verbatim
+         ("_" "_"   "u" '(org-mode markdown-mode))  ; underline
+         ("**" "**" "b"   markdown-mode)            ; bolden
+         ("*" "*"   "i"   markdown-mode)            ; italics
+         ("`" "`"   "c" '(markdown-mode ruby-mode)) ; code
+         ("`" "'"   "c"   lisp-mode)                ; code
+         )))
+
+    (use-package multiple-cursors
+      :ensure t
+      :config
+      (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
+      (global-set-key (kbd "C->") 'mc/mark-next-like-this)
+      (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+      (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this))
+
+    (use-package open-junk-file
+      :ensure t)
+
+    (use-package avy
+      :ensure t
+      :bind* ("C-." . avy-goto-char-timer)
+      :config
+      (avy-setup-default))
+
+    (use-package winner
+      :init
+      (winner-mode 1)
+      (global-set-key (kbd "C-z") 'winner-undo))
+
+    (use-package elfeed
+      :ensure t
+      :if (file-exists-p (get-my-ws "dotfiles-secret/elfeed.el"))
+      :init
+      ;;(load "~/Dropbox/dotfiles-secret/elfeed.el")
+      (load (get-my-ws "dotfiles-secret/elfeed.el"))
+      :config
+      (setq shr-inhibit-images t))
+
+    (use-package yasnippet
+      :ensure t
+      :config
+      (yas-global-mode 1))
+
+    (use-package restart-emacs
+      :ensure t)
+
+    (use-package persp-mode
+      :ensure t)
+
+    (use-package auto-save-buffers-enhanced
+      :ensure t)
+
+    (use-package lispxmp
+      :ensure t)
+
+    (use-package super-save
+      :ensure t
+      :diminish super-save-mode
+      :init
+      (super-save-mode +1)
+      (setq super-save-auto-save-when-idle t))
+
+    (use-package auctex
+      :defer t
+      :ensure t)
+
+    (defun ssbb-pyenv-hook ()
+      "Automatically activates pyenv version if .python-version file exists."
+      (f-traverse-upwards
+       (lambda (path)
+         (let ((pyenv-version-path (f-expand ".python-version" path)))
+           (if (f-exists? pyenv-version-path)
+               (pyenv-mode-set (s-trim (f-read-text pyenv-version-path 'utf-8))))))))
+
+    (add-hook 'find-file-hook 'ssbb-pyenv-hook)
+
+
+    (use-package gnuplot-mode
+      :ensure t)
+    (use-package gnuplot
+      :ensure t)
+
+    (use-package markdown-mode
+      :ensure t
+      :commands (markdown-mode gfm-mode)
+      :mode (("README\\.md\\'" . gfm-mode)
+             ("\\.md\\'" . markdown-mode)
+             ("\\.markdown\\'" . markdown-mode))
+      :init (setq markdown-command "multimarkdown"))
+
+
+    ;; (use-package zenburn-theme
+    ;;   :ensure t
+    ;;   :config (load-theme 'zenburn t))
+
+    (use-package org2blog
+      :ensure t
+      :defer t
+      :if (file-exists-p (get-my-ws "dotfiles-secret/org2blog.el"))
+      :after org
+      :config
+      (load (get-my-ws "dotfiles-secret/org2blog.el")))
+
+
+    ;; shellの文字化けを回避
+    (add-hook 'shell-mode-hook
+              (lambda ()
+                (set-buffer-process-coding-system 'utf-8-unix 'utf-8-unix)
+                ))
+    (setq default-process-coding-system '(utf-8 . utf-8))
+
+    (use-package atomic-chrome
+      :ensure t
+      :init
+      (atomic-chrome-start-server))
+
+    (use-package realgud
+      :ensure t)
+
+    (use-package undo-tree
+      :ensure t)
+
+    ;; My elisp
+    ;;===============================================================
+
+    (defun my-toggle-bar ()
+      "メニューバーとツールバーの表示を切り替える関数"
+      (lexical-let ((vis 1))
+        #'(lambda  ()
+            (interactive)
             (progn
-              (select-frame-set-input-focus frm)
-              (set-frame-position frm (/ (x-display-pixel-width) 3) 0) 
-              (org-journal-new-entry nil)
-              (local-set-key (kbd "C-c C-c") 'delete-frame))))
+              (setq vis (- vis))
+              (tool-bar-mode vis)
+              (menu-bar-mode vis)))))
+              (global-set-key (kbd "<f6>") (my-toggle-bar))
 
-        (use-package habitica
-          :ensure t)
+    (setq default-file-name-coding-system 'utf-8)
+                                            ;(setq default-process-coding-system 'utf-8)
 
-        ;;https://superuser.com/questions/308045/disallow-closing-last-emacs-window-via-window-manager-close-button
-        (defadvice handle-delete-frame (around my-handle-delete-frame-advice activate)
-          "Ask for confirmation before deleting the last frame"
-          (let ((frame   (posn-window (event-start event)))
-                (numfrs  (length (visible-frame-list))))
-            (when (> numfrs 1)
-              ad-do-it)))
+    (add-to-list 'process-coding-system-alist '("git" utf-8 . utf-8))
+    (add-hook 'git-commit-mode-hook
+              '(lambda ()
+                 (set-buffer-file-coding-system 'utf-8)))
 
-        ;;===============================================================
-        ;; Packages
-        ;;===============================================================
-        (use-package ediff
-          :ensure t
-          :config
-          (setq ediff-diff-program "~/bin/my-diff.sh")
-          ;; コントロール用のバッファを同一フレーム内に表示
-          (setq ediff-window-setup-function 'ediff-setup-windows-plain)
-          ;; diffのバッファを上下ではなく左右に並べる
-          (setq ediff-split-window-function 'split-window-horizontally))
+    (defun isbn-to-bibtex-lead-jp (isbn)
+      "Search lead.to for ISBN bibtex entry.
+           You have to copy the entry if it is on the page to your bibtex
+           file."
+      (interactive "sISBN: ")
+      (browse-url
+       (format
+        "http://lead.to/amazon/jp/?key=%s+&si=all&op=bt&bn=&so=sa&ht=jp"
+        isbn)))
 
-        ;; org-modeのExportでコードを色付きで出力するため
-        (use-package htmlize :ensure t)
+    (setq org-icalendar-combined-agenda-file "~/Dropbox/Org/mycal.ics")
 
-        (use-package migemo
-          :ensure t
-          :config
-          (setq migemo-command "cmigemo")
-          (setq migemo-options '("-q" "--emacs"))
+    ;; iCal の説明文
+    (setq org-icalendar-combined-description "OrgModeのスケジュール出力")
+    ;; カレンダーに適切なタイムゾーンを設定する（google 用には nil が必要）
+    (setq org-icalendar-timezone "UTC")
+    ;; DONE になった TODO は出力対象から除外する
+    (setq org-icalendar-include-todo t)
+    ;; （通常は，<>--<> で区間付き予定をつくる．非改行入力で日付がNoteに入らない）
+    (setq org-icalendar-use-scheduled '(event-if-todo))
+    ;; DL 付きで終日予定にする：締め切り日（スタンプで時間を指定しないこと）
+    (setq org-icalendar-use-deadline '(event-if-todo))
 
-          ;; Set your installed path
-          (setq migemo-dictionary "/usr/share/migemo/utf-8/migemo-dict")
+    (setq org-export-exclude-category '())
 
-          (setq migemo-user-dictionary nil)
-          (setq migemo-regex-dictionary nil)
-          (setq migemo-coding-system 'utf-8-unix)
-          (migemo-init))
+           ;;; define filter. The filter is called on each entry in the agenda.
+           ;;; It defines a regexp to search for two timestamps, gets the start
+           ;;; and end point of the entry and does a regexp search. It also
+           ;;; checks if the category of the entry is in an exclude list and
+           ;;; returns either t or nil to skip or include the entry.
 
-        (use-package pdf-tools
-          :ensure t
-          :config
-          (pdf-tools-install)
-          (setq-default pdf-view-display-size 'fit-page))
+    (defun org-mycal-export-limit ()
+      "Limit the export to items that have a date, time and a range. Also exclude certain categories."
+      (setq org-tst-regexp "<\\([0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\} ... [0-9]\\{2\\}:[0-9]\\{2\\}[^\r\n>]*?\
+           \)>")
+      (setq org-tstr-regexp (concat org-tst-regexp "--?-?" org-tst-regexp))
+      (save-excursion
+                                            ; get categories
+        (setq mycategory (org-get-category))
+                                            ; get start and end of tree
+        (org-back-to-heading t)
+        (setq mystart    (point))
+        (org-end-of-subtree)
+        (setq myend      (point))
+        (goto-char mystart)
+                                            ; search for timerange
+        (setq myresult (re-search-forward org-tstr-regexp myend t))
+                                            ; search for categories to exclude
+        (setq mycatp (member mycategory org-export-exclude-category))
+                                            ; return t if ok, nil when not ok
+        (if (and myresult (not mycatp)) t nil)))
 
-        (use-package magit
-          :ensure t
-          :bind (("<f3>" . magit-status))
-          :config
-          (global-auto-revert-mode 1)
-          (setq magit-auto-revert-mode t))
-
-        (use-package google-this
-          :ensure t)
-
-        (use-package shackle
-          :ensure t
-          :config
-          (shackle-mode t)
-
-          (setq helm-display-function 'pop-to-buffer)
-          (setq helm-swoop-split-window-function 'display-buffer)
-
-          ;;(setq  special-display-regexps '("\\*Org Se.*" "CAPTURE-.*?" "\\*Capture\\*"))
-          (setq  special-display-regexps '())
-
-          (setq shackle-rules
-                '(("*helm-ag*"              :select t   :align right :size 0.5)
-                  ("*helm semantic/imenu*"  :select t   :align right :size 0.4)
-                  ("*helm org inbuffer*"    :select t   :align right :size 0.4)
-                  (flycheck-error-list-mode :select nil :align below :size 0.25)
-                  (compilation-mode         :select nil :align below :size 0.25)
-                  (messages-buffer-mode     :select t   :align below :size 0.25)
-                  (inferior-emacs-lisp-mode :select t   :align below :size 0.25)
-                  (ert-results-mode         :select t   :align below :size 0.5)
-                  (calendar-mode            :select t   :align below :size 0.25)
-                  (racer-help-mode          :select t   :same t)
-                  ("*Google Translate*"     :select t   :align below :size 0.3)
-                  (help-mode                :select t   :align right :size 0.5)
-                  (helpful-mode             :select t   :align right :size 0.5)
-                  (" *Deletions*"           :select t   :align below :size 0.25)
-                  (" *Marked Files*"        :select t   :align below :size 0.25)
-                  ("*Helm Swoop*"           :select t   :align below :size 0.33)
-                  ("*Org Note*"             :select t   :align below :size 0.33)
-                  ("*Org Links*"            :select t   :align below :size 0.2)
-                  (" *Org todo*"            :select t   :align below :size 0.2)
-                  ("*Man.*"                 :select t   :align below :size 0.5  :regexp t)
-                  ("*helm.*"                :select t   :align below :size 0.33 :regexp t)
-                  ("*Org Src.*"             :select t   :same t                  :regexp t))))
-
-        (use-package wrap-region
-          :ensure   t
-          :diminish wrap-region-mode
-          :config
-          (wrap-region-global-mode t)
-          (wrap-region-add-wrappers
-           '(("(" ")")
-             ("[" "]")
-             ("{" "}")
-             ("<" ">")
-             ("'" "'")
-             ("\"" "\"")
-             ("‘" "’"   "q")
-             ("“" "”"   "Q")
-             ("*" "*"   "b"   org-mode)                 ; bolden
-             ("*" "*"   "*"   org-mode)                 ; bolden
-             ("/" "/"   "i"   org-mode)                 ; italics
-             ("/" "/"   "/"   org-mode)                 ; italics
-             ("~" "~"   "c"   org-mode)                 ; code
-             ("~" "~"   "~"   org-mode)                 ; code
-             ("=" "="   "v"   org-mode)                 ; verbatim
-             ("=" "="   "="   org-mode)                 ; verbatim
-             ("_" "_"   "u" '(org-mode markdown-mode))  ; underline
-             ("**" "**" "b"   markdown-mode)            ; bolden
-             ("*" "*"   "i"   markdown-mode)            ; italics
-             ("`" "`"   "c" '(markdown-mode ruby-mode)) ; code
-             ("`" "'"   "c"   lisp-mode)                ; code
-             )))
-
-        (use-package multiple-cursors
-          :ensure t
-          :config
-          (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
-          (global-set-key (kbd "C->") 'mc/mark-next-like-this)
-          (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
-          (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this))
-
-        (use-package open-junk-file
-          :ensure t)
-
-        (use-package avy
-          :ensure t
-          :bind* ("C-." . avy-goto-char-timer)
-          :config
-          (avy-setup-default))
-
-        (use-package winner
-          :init
-          (winner-mode 1)
-          (global-set-key (kbd "C-z") 'winner-undo))
-
-        (use-package elfeed
-          :ensure t
-          :if (file-exists-p (get-my-ws "dotfiles-secret/elfeed.el"))
-          :init
-          ;;(load "~/Dropbox/dotfiles-secret/elfeed.el")
-          (load (get-my-ws "dotfiles-secret/elfeed.el"))
-          :config
-          (setq shr-inhibit-images t))
-
-        (use-package yasnippet
-          :ensure t
-          :config
-          (yas-global-mode 1))
-
-        (use-package restart-emacs
-          :ensure t)
-
-        (use-package persp-mode
-          :ensure t)
-
-        (use-package auto-save-buffers-enhanced
-          :ensure t)
-
-        (use-package lispxmp
-          :ensure t)
-
-        (use-package super-save
-          :ensure t
-          :diminish super-save-mode
-          :init
-          (super-save-mode +1)
-          (setq super-save-auto-save-when-idle t))
-
-
-        (use-package powerline
-          :ensure t
-          :init
-          (powerline-default-theme))
-
-        (use-package auctex
-          :defer t
-          :ensure t)
-
-        (defun ssbb-pyenv-hook ()
-          "Automatically activates pyenv version if .python-version file exists."
-          (f-traverse-upwards
-           (lambda (path)
-             (let ((pyenv-version-path (f-expand ".python-version" path)))
-               (if (f-exists? pyenv-version-path)
-                   (pyenv-mode-set (s-trim (f-read-text pyenv-version-path 'utf-8))))))))
-
-        (add-hook 'find-file-hook 'ssbb-pyenv-hook)
-
-
-        (use-package gnuplot-mode
-          :ensure t)
-        (use-package gnuplot
-          :ensure t)
-
-        (use-package markdown-mode
-          :ensure t
-          :commands (markdown-mode gfm-mode)
-          :mode (("README\\.md\\'" . gfm-mode)
-                 ("\\.md\\'" . markdown-mode)
-                 ("\\.markdown\\'" . markdown-mode))
-          :init (setq markdown-command "multimarkdown"))
-
-
-        ;; (use-package zenburn-theme
-        ;;   :ensure t
-        ;;   :config (load-theme 'zenburn t))
-
-        (use-package org2blog
-          :ensure t
-          :defer t
-          :if (file-exists-p (get-my-ws "dotfiles-secret/org2blog.el"))
-          :after org
-          :config
-          (load (get-my-ws "dotfiles-secret/org2blog.el")))
-
-
-        ;; shellの文字化けを回避
-        (add-hook 'shell-mode-hook
-                  (lambda ()
-                    (set-buffer-process-coding-system 'utf-8-unix 'utf-8-unix)
-                    ))
-        (setq default-process-coding-system '(utf-8 . utf-8))
-
-        (use-package atomic-chrome
-          :ensure t
-          :init
-          (atomic-chrome-start-server))
-
-        (use-package realgud
-          :ensure t)
-
-        (use-package undo-tree
-          :ensure t)
-
-        ;; My elisp
-        ;;===============================================================
-
-        (defun my-toggle-bar ()
-          "メニューバーとツールバーの表示を切り替える関数"
-          (lexical-let ((vis 1))
-            #'(lambda  ()
-                (interactive)
-                (progn
-                  (setq vis (- vis))
-                  (tool-bar-mode vis)
-                  (menu-bar-mode vis)))))
-                  (global-set-key (kbd "<f6>") (my-toggle-bar))
-
-        (setq default-file-name-coding-system 'utf-8)
-                                                ;(setq default-process-coding-system 'utf-8)
-
-        (add-to-list 'process-coding-system-alist '("git" utf-8 . utf-8))
-        (add-hook 'git-commit-mode-hook
-                  '(lambda ()
-                     (set-buffer-file-coding-system 'utf-8)))
-
-        (defun isbn-to-bibtex-lead-jp (isbn)
-          "Search lead.to for ISBN bibtex entry.
-               You have to copy the entry if it is on the page to your bibtex
-               file."
-          (interactive "sISBN: ")
-          (browse-url
-           (format
-            "http://lead.to/amazon/jp/?key=%s+&si=all&op=bt&bn=&so=sa&ht=jp"
-            isbn)))
-
-        (setq org-icalendar-combined-agenda-file "~/Dropbox/Org/mycal.ics")
-
-        ;; iCal の説明文
-        (setq org-icalendar-combined-description "OrgModeのスケジュール出力")
-        ;; カレンダーに適切なタイムゾーンを設定する（google 用には nil が必要）
-        (setq org-icalendar-timezone "UTC")
-        ;; DONE になった TODO は出力対象から除外する
-        (setq org-icalendar-include-todo t)
-        ;; （通常は，<>--<> で区間付き予定をつくる．非改行入力で日付がNoteに入らない）
-        (setq org-icalendar-use-scheduled '(event-if-todo))
-        ;; DL 付きで終日予定にする：締め切り日（スタンプで時間を指定しないこと）
-        (setq org-icalendar-use-deadline '(event-if-todo))
-
-        (setq org-export-exclude-category '())
-
-               ;;; define filter. The filter is called on each entry in the agenda.
-               ;;; It defines a regexp to search for two timestamps, gets the start
-               ;;; and end point of the entry and does a regexp search. It also
-               ;;; checks if the category of the entry is in an exclude list and
-               ;;; returns either t or nil to skip or include the entry.
-
-        (defun org-mycal-export-limit ()
-          "Limit the export to items that have a date, time and a range. Also exclude certain categories."
-          (setq org-tst-regexp "<\\([0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\} ... [0-9]\\{2\\}:[0-9]\\{2\\}[^\r\n>]*?\
-               \)>")
-          (setq org-tstr-regexp (concat org-tst-regexp "--?-?" org-tst-regexp))
-          (save-excursion
-                                                ; get categories
-            (setq mycategory (org-get-category))
-                                                ; get start and end of tree
-            (org-back-to-heading t)
-            (setq mystart    (point))
-            (org-end-of-subtree)
-            (setq myend      (point))
-            (goto-char mystart)
-                                                ; search for timerange
-            (setq myresult (re-search-forward org-tstr-regexp myend t))
-                                                ; search for categories to exclude
-            (setq mycatp (member mycategory org-export-exclude-category))
-                                                ; return t if ok, nil when not ok
-            (if (and myresult (not mycatp)) t nil)))
-
-               ;;; activate filter and call export function
-        (defun org-mycal-export ()
-          (interactive)
-          (let ((org-icalendar-verify-function 'org-mycal-export-limit))
-            (org-icalendar-combine-agenda-files)))
+           ;;; activate filter and call export function
+    (defun org-mycal-export ()
+      (interactive)
+      (let ((org-icalendar-verify-function 'org-mycal-export-limit))
+        (org-icalendar-combine-agenda-files)))
 
   #+END_SRC
 
