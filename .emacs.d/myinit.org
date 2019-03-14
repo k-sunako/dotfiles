@@ -310,7 +310,7 @@
 
     (use-package org-bullets
       :ensure t
-      :after org
+      :custom (org-bullets-bullet-list '("" "" "" "" "" "" "" "" "" ""))
       :hook (org-mode . org-bullets-mode))
 
     (use-package org-download
