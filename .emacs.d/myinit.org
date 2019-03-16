@@ -79,6 +79,20 @@
                                   '(bar workspace-number window-number evil-state god-state ryo-modal xah-fly-keys matches buffer-info remote-host buffer-position parrot selection-info)
                                   '(misc-info persp-name lsp github debug minor-modes input-method major-mode process vcs checker)))
 
+    (use-package dashboard
+      :ensure t
+      :diminish
+      (dashboard-mode page-break-lines-mode)
+      :custom
+      (dashboard-startup-banner 2)
+      (dashboard-items '((recents . 15)
+                         (projects . 5)
+                         (bookmarks . 5)
+                         (agenda . 5)))
+      :hook
+      (after-init . dashboard-setup-startup-hook)
+      :config
+      (add-to-list 'dashboard-items '(agenda) t))
   #+END_SRC
 
 * Dired
@@ -188,6 +202,7 @@
 
     (use-package helm-projectile
       :ensure t
+      :bind (("<f5>" . helm-projectile-find-file))
       :config
       (helm-projectile-on))
 
