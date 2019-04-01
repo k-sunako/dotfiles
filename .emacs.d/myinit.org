@@ -49,7 +49,7 @@
     ;;   (error "Error: %s" err-var))
 
     (condition-case err-var
-        (set-frame-font "Inconsolata-12")
+        (set-frame-font "Inconsolata-15")
       (error "no font!!"))
 
     (use-package doom-themes
@@ -73,8 +73,8 @@
       :hook
       (after-init . doom-modeline-mode)
       :config
-      (line-number-mode 0)
-      (column-number-mode 0)
+      (line-number-mode 1)
+      (column-number-mode 1)
       (doom-modeline-def-modeline 'main
                                   '(bar workspace-number window-number evil-state god-state ryo-modal xah-fly-keys matches buffer-info remote-host buffer-position parrot selection-info)
                                   '(misc-info persp-name lsp github debug minor-modes input-method major-mode process vcs checker)))
@@ -467,6 +467,8 @@
        :custom (scroll-margin 0)
        :hook   (lsp-mode . lsp-ui-mode))
 
+
+
      ;; タブ
      (setq-default indent-tabs-mode nil)
      (setq-default tab-width 4 indent-tabs-mode nil)
@@ -634,7 +636,7 @@
             :commands (cargo-minor-mode)
             ;; why? :mode "\\.rs" 
             :config
-            (setq rustic-rls-pkg 'eglot)
+            (setq rustic-rls-pkg 'lsp)
             (bind-keys :map rustic-mode-map
                        ("C-c TAB" . rustic-format-buffer)
                        ("TAB" . company-indent-or-complete-common))
