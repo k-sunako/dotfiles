@@ -51,7 +51,6 @@
     (condition-case err-var
         (set-frame-font "Inconsolata-15")
       (error "no font!!"))
-
     (use-package doom-themes
       :ensure t
       :custom
@@ -61,10 +60,12 @@
       (doom-modeline-bar ((t (:background "#6272a4"))))
       :config
       (load-theme 'doom-dracula t)
+      ;;(load-theme 'doom-vibrant t)
       (doom-themes-neotree-config)
       (doom-themes-org-config))
 
     (use-package doom-modeline
+      :ensure t
       :custom
       (doom-modeline-buffer-file-name-style 'truncate-with-project)
       (doom-modeline-icon t)
@@ -75,9 +76,9 @@
       :config
       (line-number-mode 1)
       (column-number-mode 1)
-      (doom-modeline-def-modeline 'main
-                                  '(bar workspace-number window-number evil-state god-state ryo-modal xah-fly-keys matches buffer-info remote-host buffer-position parrot selection-info)
-                                  '(misc-info persp-name lsp github debug minor-modes input-method major-mode process vcs checker)))
+      (doom-modeline-def-modeline 'my-simple-line
+        '(bar matches buffer-info remote-host buffer-position parrot selection-info)
+        '(misc-info minor-modes input-method buffer-encoding major-mode process vcs checker)))
 
     (use-package dashboard
       :ensure t
