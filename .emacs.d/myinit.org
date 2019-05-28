@@ -189,7 +189,7 @@
     (use-package projectile
       :ensure t
       :config
-      (setq projectile-project-search-path '("~/study" "~/src"))
+      ;;(setq projectile-project-search-path '("~/study" "~/src"))
       (projectile-discover-projects-in-search-path))
 
 
