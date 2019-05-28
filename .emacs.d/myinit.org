@@ -1,7 +1,7 @@
 * PC別設定
   #+BEGIN_SRC emacs-lisp
     (cond ((file-directory-p "~/Dropbox")   (setq my-workspace "~/Dropbox"))
-          ((file-directory-p "~/smb") (setq my-workspace "~/smb")))
+          ((file-directory-p "~/Work") (setq my-workspace "~/Work")))
     (defun get-my-ws (path)
       (concat (file-name-as-directory my-workspace) path) )
   #+END_SRC
