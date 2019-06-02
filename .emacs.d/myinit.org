@@ -688,9 +688,6 @@
             (org-journal-new-entry nil)
             (local-set-key (kbd "C-c C-c") 'delete-frame))))
 
-      (use-package habitica
-        :ensure t)
-
       ;;https://superuser.com/questions/308045/disallow-closing-last-emacs-window-via-window-manager-close-button
       (defadvice handle-delete-frame (around my-handle-delete-frame-advice activate)
         "Ask for confirmation before deleting the last frame"
