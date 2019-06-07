@@ -464,8 +464,6 @@
        :custom (scroll-margin 0)
        :hook   (lsp-mode . lsp-ui-mode))
 
-
-
      ;; タブ
      (setq-default indent-tabs-mode nil)
      (setq-default tab-width 4 indent-tabs-mode nil)
@@ -647,10 +645,7 @@
             (cl-delete-if (lambda (element) (equal (cdr element) 'rustic-mode)) auto-mode-alist)
             (add-to-list 'auto-mode-alist '("\\.rs$" . rustic-mode))
      )
-
-
    #+END_SRC
-
 
 * Mail
   #+BEGIN_SRC emacs-lisp
