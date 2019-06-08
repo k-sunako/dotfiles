@@ -436,8 +436,6 @@
       (require 'org-drill))
   #+END_SRC
 
-  #+RESULTS:
-  : t
 
 * Utility
   #+BEGIN_SRC emacs-lisp
