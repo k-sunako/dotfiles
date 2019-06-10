@@ -825,7 +825,6 @@
         :ensure t
         :if (file-exists-p (get-my-ws "dotfiles-secret/elfeed.el"))
         :init
-        ;;(load "~/Dropbox/dotfiles-secret/elfeed.el")
         (load (get-my-ws "dotfiles-secret/elfeed.el"))
         :config
         (setq shr-inhibit-images t))
@@ -868,7 +867,6 @@
 
       (add-hook 'find-file-hook 'ssbb-pyenv-hook)
 
-
       (use-package gnuplot-mode
         :ensure t)
       (use-package gnuplot
@@ -882,11 +880,6 @@
                ("\\.markdown\\'" . markdown-mode))
         :init (setq markdown-command "multimarkdown"))
 
-
-      ;; (use-package zenburn-theme
-      ;;   :ensure t
-      ;;   :config (load-theme 'zenburn t))
-
       (use-package org2blog
         :ensure t
         :defer t
@@ -894,7 +887,6 @@
         :after org
         :config
         (load (get-my-ws "dotfiles-secret/org2blog.el")))
-
 
       ;; shellの文字化けを回避
       (add-hook 'shell-mode-hook
@@ -929,7 +921,6 @@
                 (global-set-key (kbd "<f6>") (my-toggle-bar))
 
       (setq default-file-name-coding-system 'utf-8)
-                                              ;(setq default-process-coding-system 'utf-8)
 
       (add-to-list 'process-coding-system-alist '("git" utf-8 . utf-8))
       (add-hook 'git-commit-mode-hook
