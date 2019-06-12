@@ -436,7 +436,6 @@
       (require 'org-drill))
   #+END_SRC
 
-
 * Utility
   #+BEGIN_SRC emacs-lisp
     (use-package expand-region
