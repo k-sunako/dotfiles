@@ -32,58 +32,23 @@
 
   #+BEGIN_SRC emacs-lisp
 
-    (menu-bar-mode -1)
-    (scroll-bar-mode -1)
-    (tool-bar-mode -1)
-    (linum-mode 1)
+        (menu-bar-mode -1)
+        (scroll-bar-mode -1)
+        (tool-bar-mode -1)
+        (linum-mode 1)
 
-    (set-default 'truncate-lines 1)
+        (set-default 'truncate-lines 1)
 
-    (condition-case err-var
-        (set-frame-font "Inconsolata-15")
-      (error "no font!!"))
-    (use-package doom-themes
-      :ensure t
-      :custom
-      (doom-themes-enable-italic t)
-      (doom-themes-enable-bold t)
-      :custom-face
-      (doom-modeline-bar ((t (:background "#6272a4"))))
-      :config
-      (load-theme 'doom-dracula t)
-      (doom-themes-neotree-config)
-      (doom-themes-org-config))
+        (condition-case err-var
+            (set-frame-font "Inconsolata-15")
+          (error "no font!!"))
 
-    (use-package doom-modeline
-      :ensure t
-      :custom
-      (doom-modeline-buffer-file-name-style 'truncate-with-project)
-      (doom-modeline-icon t)
-      (doom-modeline-major-mode-icon nil)
-      (doom-modeline-minor-modes nil)
-      :hook
-      (after-init . doom-modeline-mode)
-      :config
-      (line-number-mode 1)
-      (column-number-mode 1)
-      (doom-modeline-def-modeline 'my-simple-line
-        '(bar matches buffer-info remote-host buffer-position parrot selection-info)
-        '(misc-info minor-modes input-method buffer-encoding major-mode process vcs checker)))
-
-    (use-package dashboard
-      :ensure t
-      :diminish
-      (dashboard-mode page-break-lines-mode)
-      :custom
-      (dashboard-startup-banner 2)
-      (dashboard-items '((recents . 15)
-                         (projects . 5)
-                         (bookmarks . 5)
-                         (agenda . 5)))
-      :hook
-      (after-init . dashboard-setup-startup-hook)
-      :config
-      (add-to-list 'dashboard-items '(agenda) t))
+        ;; (load-theme 'monokai t)
+        (use-package atom-one-dark-theme
+          :ensure t
+          :config 
+          (load-theme 'atom-one-dark t))
+        
   #+END_SRC
 
 * Dired
@@ -146,6 +111,12 @@
         "Heading handling in org-mode"
         ("C-p" org-previous-visible-heading "PrevH")
         ("C-n" org-next-visible-heading "NextH")))
+    (use-package iy-go-to-char
+      :ensure t
+      :after multiple-cursors
+      :bind (("C-c f" . iy-go-to-char) ("C-c F" . iy-go-to-char-backward))
+      :config
+      (add-to-list 'mc/cursor-specific-vars 'iy-go-to-char-start-pos))
   #+END_SRC
 
 * コーディングシステム
@@ -272,6 +243,7 @@
          (latex . t)
          (rust . t)
          (shell . t)
+         ;;(jupyter .t)
          ))
 
       (setq org-agenda-files `(,(get-my-ws "Org/inbox.org")
@@ -280,14 +252,17 @@
                                      (file+headline ,(get-my-ws "Org/inbox.org") "Tasks")
                                      "* TODO %i%?")
                                     ("p" "Protocol" entry
-                                     (file+olp+datetree ,(get-my-ws "Org/journal.org") )
+                                     (file+olp+datetree ,(get-my-ws "Note/main.org") )
+                                     ;;(file+headline ,(get-my-ws "Note/main.org") )
                                      "* %^{Title}\nSource: %u, %c\n  \n #+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n\n%?")
                                     ("L" "Protocol Link" entry
-                                     (file+olp+datetree ,(get-my-ws "Org/journal.org"))
+                                     (file+olp+datetree ,(get-my-ws "Note/main.org"))
+                                     ;;(file+headline ,(get-my-ws "Note/main.org"))
                                      "* %? [[%:link][%:description]] \nCaptured On: %U")
                                     ("j" "Journal" entry
                                      (file+olp+datetree ,(get-my-ws "Org/journal.org"))
                                      "* %?\nEntered on %U\n%a")))
+
 
       (setq org-todo-keywords '((sequence
                                  "NEXT(n)" "TODO(t)" "WAITING(w)" "SOMEDAY(s)"
@@ -325,7 +300,10 @@
 
     (use-package org-download
       :ensure t
-      :after org)
+      :after org
+      :config
+      (setq-default org-download-image-dir "/home/snowfox/画像")
+      )
 
     (use-package org-ref
       :ensure t
@@ -363,7 +341,7 @@
       (setq org-latex-pdf-process
             '("xelatex -interaction nonstopmode -output-directory %o %f"
               "bibtex %b"
-              "xelatex -interaction nontopmode -output-directory %o %f"
+              "xelatex -interaction nonstopmode -output-directory %o %f"
               "xelatex -interaction nonstopmode -output-directory %o %f"))
 
       (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
@@ -431,8 +409,8 @@
       (org-journal-date-format "%A, %d %B %Y"))
 
     (use-package org-drill
-      :init
-      (require 'org-drill))
+      :init (require 'org-drill))
+
   #+END_SRC
 
 * Utility
