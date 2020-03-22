@@ -500,27 +500,27 @@
 **  C/C++
 
    #+BEGIN_SRC emacs-lisp
-     (use-package irony
-       :ensure t
-       :init
-       ;; "M-x irony-install-server"
-       (custom-set-variables '(irony-additional-clang-options '("-std=c++11")))
-       (add-to-list 'company-backends 'company-irony)
-       (add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options)
-       (add-hook 'c-mode-hook 'irony-mode))
+     ;; (use-package irony
+     ;;   :ensure t
+     ;;   :init
+     ;;   ;; "M-x irony-install-server"
+     ;;   (custom-set-variables '(irony-additional-clang-options '("-std=c++11")))
+     ;;   (add-to-list 'company-backends 'company-irony)
+     ;;   (add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options)
+     ;;   (add-hook 'c-mode-hook 'irony-mode))
 
-     (use-package rtags
-       :ensure t
-       :init
-       (add-hook 'c-mode-common-hook
-                 (lambda ()
-                   (when (rtags-is-indexed)
-                     (local-set-key (kbd "M-.") 'rtags-find-symbol-at-point)
-                     (local-set-key (kbd "M-;") 'rtags-find-symbol)
-                     (local-set-key (kbd "M-@") 'rtags-find-references)
-                     (local-set-key (kbd "M-,") 'rtags-location-stack-back)))))
-     (use-package cuda-mode
-       :ensure t)
+     ;; (use-package rtags
+     ;;   :ensure t
+     ;;   :init
+     ;;   (add-hook 'c-mode-common-hook
+     ;;             (lambda ()
+     ;;               (when (rtags-is-indexed)
+     ;;                 (local-set-key (kbd "M-.") 'rtags-find-symbol-at-point)
+     ;;                 (local-set-key (kbd "M-;") 'rtags-find-symbol)
+     ;;                 (local-set-key (kbd "M-@") 'rtags-find-references)
+     ;;                 (local-set-key (kbd "M-,") 'rtags-location-stack-back)))))
+     ;; (use-package cuda-mode
+     ;;   :ensure t)
    #+END_SRC
 
 ** Haskell
@@ -554,19 +554,12 @@
        :config
        (setq python-indent-offset 4))
 
-     (use-package pyenv-mode
-       :ensure t
-       :after python
-       :init
-       (setenv "WORKON_HOME" "~/.pyenv/versions/")
-       :config
-       (pyenv-mode))
-
      (use-package elpy :ensure t
        :config
        (elpy-enable))
 
-     (use-package ein :ensure t)
+       ;(use-package ein :ensure t)
+       ;https://qiita.com/fury00812/items/08036e78a449d1cbeb48
    #+END_SRC
 
 ** Lisp
