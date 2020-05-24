@@ -12,13 +12,13 @@
 #+LATEX_HEADER: \usepackage[natbib=true]{biblatex} \DeclareFieldFormat{apacase}{#1} \addbibresource{~/Dropbox/Bibliography/references.bib}
 #+STARTUP:  overview
 #+STARTUP:  hidestars
-#+OPTIONS:  H:4 num:nil toc:nil \n:nil @:t ::t |:t ^:t -:t f:t *:t TeX:t LaTeX:t skip:nil d:nil todo:t pri:nil tags:not-in-toc
+#+OPTIONS:  H:4 num:nil toc:nil \n:nil @:t ::t |:t ^:nil -:t f:t *:t TeX:t LaTeX:t skip:nil d:nil todo:t pri:nil tags:not-in-toc
 #+LINK_UP:
 #+LINK_HOME:
 
-#+TITLE: gitの学習
+#+TITLE: ${1: title}
 #+AUTHOR: k-sunako
-#+DATE: 
+#+DATE: `(let ((x (org-time-stamp '(16) t ))))`
 \vspace*{-1.5cm}
 
 * 概要
