@@ -1,0 +1,7 @@
+# key: pcb
+# name: python code block
+# expand-env: ((yas-indent-line (quote fixed)) )
+# --
+#+BEGIN_SRC python
+  `(yank-with-indent-2)`
+#+END_SRC

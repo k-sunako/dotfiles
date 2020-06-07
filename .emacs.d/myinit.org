@@ -242,7 +242,8 @@
 
       (setq org-src-fontify-natively t)
       (setq org-confirm-babel-evaluate nil)
-      (setq org-src-window-setup 'other-window)
+      ;(setq org-src-window-setup 'other-window)
+      (setq org-src-window-setup 'current-window)
 
       (require 'ob-emacs-lisp)
       (require 'ob-haskell)
@@ -719,6 +720,18 @@
 
 * Etc
   #+BEGIN_SRC emacs-lisp
+    ;; https://emacs.stackexchange.com/questions/31646/how-to-paste-with-indentより転載
+    (defun yank-with-indent-2 ()
+      (let ((indent
+             (buffer-substring-no-properties (line-beginning-position) (line-end-position))))
+        (message indent)
+        (yank)
+        (narrow-to-region (mark t) (point))
+        (pop-to-mark-command)
+        (replace-string "\n" (concat "\n" indent))
+        (widen)))
+
+
     (setq large-file-warning-threshold nil)
 
     (use-package recentf
