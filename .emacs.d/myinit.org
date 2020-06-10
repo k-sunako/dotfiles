@@ -720,6 +720,17 @@
 
 * Etc
   #+BEGIN_SRC emacs-lisp
+     (defun ks-region-to-link ()
+      (interactive)
+      (progn
+        (goto-char (region-end))
+        (insert "][")
+        (yank)
+        (insert "]]")
+        (goto-char (region-beginning))
+        (insert "[[")))
+
+
     ;; https://emacs.stackexchange.com/questions/31646/how-to-paste-with-indentより転載
     (defun yank-with-indent-2 ()
       (let ((indent
