@@ -502,6 +502,18 @@
     (use-package org-drill
       :init (require 'org-drill))
 
+    (use-package org-roam
+      :init (require 'org-roam-protocol)
+      :hook
+      (after-init . org-roam-mode)
+      :custom
+      (org-roam-directory (get-my-ws "org-roam"))
+      :bind (:map org-roam-mode-map
+              (("C-c n l" . org-roam)
+               ("C-c n f" . org-roam-find-file)
+               ("C-c n g" . org-roam-show-graph))
+              :map org-mode-map
+              (("C-c n i" . org-roam-insert))))
 
 
   #+END_SRC
