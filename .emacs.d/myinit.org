@@ -88,6 +88,22 @@
 
     (use-package ztree
       :ensure t)
+
+    (use-package dired-launch
+      :ensure t
+      :bind (:map dired-mode-map
+                  ("J" . dired-launch-command))
+      :config
+      (setq dired-launch-default-launcher '("xdg-open"))
+
+      (setf dired-launch-extensions-map
+            '(;; specify LibreOffice as the preferred application for
+              ;; a Microsoft Excel file with the xslx extension
+              ("xlsx" ("libreofficedev5.3"))
+              ;; specify LibreOffice and Abiword as preferred applications for
+              ;; an OpenDocument text file with the odt extension
+              ("odt" ("libreofficedev5.3" "abiword")))))
+
   #+END_SRC
 * IME
   #+BEGIN_SRC emacs-lisp
@@ -253,6 +269,8 @@
       (require 'org-protocol)
 
       (setq org-log-done t)
+
+      (setf (alist-get 'file org-link-frame-setup) 'find-file)
 
       (setf org-html-mathjax-options
             '((path "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML")
@@ -669,6 +687,7 @@
 
 ** Lisp
    #+BEGIN_SRC emacs-lisp
+     (setq inferior-lisp-program "ros -Q run")
      (use-package slime
        :ensure t
        :config
