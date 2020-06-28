@@ -61,7 +61,7 @@
     (set-default 'truncate-lines 1)
 
     (cond ((member "source han code jp n" (font-family-list))
-           (set-default-font "source han code jp n 11"))
+           (set-default-font "source han code jp n 12"))
           ((member "Ricty Diminished" (font-family-list))
            (set-default-font "Ricty Diminished 11"))
           )
