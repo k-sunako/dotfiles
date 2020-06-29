@@ -60,11 +60,15 @@
 
     (set-default 'truncate-lines 1)
 
-    (cond ((member "source han code jp n" (font-family-list))
-           (set-default-font "source han code jp n 12"))
-          ((member "Ricty Diminished" (font-family-list))
-           (set-default-font "Ricty Diminished 11"))
-          )
+    (let* ((ffl (font-family-list))
+          (ffl-utf8 (mapcar (lambda (x) (decode-coding-string x 'utf-8)) ffl)))
+      (cond ((member "source han code jp n" ffl)
+             (set-frame-font "source han code jp n 12"))
+            ((member "源ノ角ゴシック Code JP" ffl-utf8)
+             (set-frame-font "源ノ角ゴシック Code JP n 12"))
+            ((member "Ricty Diminished" ffl)
+             (set-frame-font "Ricty Diminished 12"))
+            ))
 
     ;; (load-theme 'monokai t)
     (use-package atom-one-dark-theme
@@ -382,11 +386,6 @@
 
     (use-package ob-rust
       :ensure t)
-
-    (use-package org-bullets
-      :ensure t
-      :custom (org-bullets-bullet-list '("" "" "" "" "" "" "" "" "" ""))
-      :hook (org-mode . org-bullets-mode))
 
     (use-package org-download
       :ensure t
