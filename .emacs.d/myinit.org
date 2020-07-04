@@ -306,6 +306,7 @@
       (require 'ob-emacs-lisp)
       (require 'ob-haskell)
       ;;(require 'ob-rust)
+      (require 'ox-bibtex)
       (require 'ob-gnuplot)
       (require 'org-habit)
       (require 'org-protocol)
@@ -554,9 +555,6 @@
       :custom
       (org-journal-dir (get-my-ws "Org/journal"))
       (org-journal-date-format "%A, %d %B %Y"))
-
-    (use-package org-drill
-      :init (require 'org-drill))
 
     (use-package org-roam
       :init (require 'org-roam-protocol)
@@ -812,7 +810,7 @@
 
 * Etc
   #+BEGIN_SRC emacs-lisp
-     (defun ks-region-to-link ()
+    (defun ks-region-to-link ()
       (interactive)
       (progn
         (goto-char (region-end))
@@ -1022,13 +1020,13 @@
     (use-package lispxmp
       :ensure t)
 
-;    (use-package super-save
-;      :ensure t
-;      :diminish super-save-mode
-;      :init
-;      (super-save-mode 1)
-;      (setq super-save-exclude '("org-roam/.*\.org$"))
-;      (setq super-save-auto-save-when-idle t))
+                                            ;    (use-package super-save
+                                            ;      :ensure t
+                                            ;      :diminish super-save-mode
+                                            ;      :init
+                                            ;      (super-save-mode 1)
+                                            ;      (setq super-save-exclude '("org-roam/.*\.org$"))
+                                            ;      (setq super-save-auto-save-when-idle t))
 
     (use-package auctex
       :defer t
@@ -1088,6 +1086,41 @@
     ;; My elisp
     ;;===============================================================
 
+    (defun ks-make-bibtex-symbolic-link (bibkey path)
+      (let* ((default-directory my-ref-pdfs)
+             (target (f-relative path)))
+        (shell-command-to-string
+         (s-lex-format "ln -s \"${target}\" ${bibkey}.pdf"))))
+
+    (defun ks-get-books (title)
+      (let ((len (/ (length title) 2)))
+        (s-lines (shell-command-to-string
+                  (s-lex-format "find ~/Dropbox/Book | agrep -E ${len} \"${title}\"")))))
+
+    (defun ks-get-bibtex-title (bibkey)
+      (let* ((key bibkey)
+             (hs (gethash key (parsebib-collect-entries)))
+             (value (cdr (assoc "title" hs)))
+             (title (s-chop-prefix "{" (s-chop-suffix "}" value)))
+             )
+        title))
+
+    (defun ks-get-path-of-book (title)
+      (let ((books (ks-get-books title)))
+        (helm :sources (helm-build-sync-source "books"
+                         :candidates books
+                         :fuzzy-match t)
+              :buffer "*helm books*")))
+
+    (defun ks-init-bib-pdf (start end)
+      (interactive "r")
+      (let* ((bibkey (buffer-substring-no-properties start end))
+             (title (ks-get-bibtex-title bibkey))
+             (path (ks-get-path-of-book title))
+             )
+        (ks-make-bibtex-symbolic-link bibkey path)))
+
+
     (defun join-lines () (interactive)
            (setq fill-column 100000)
            (fill-paragraph nil)
@@ -1103,7 +1136,7 @@
               (setq vis (- vis))
               (tool-bar-mode vis)
               (menu-bar-mode vis)))))
-              (global-set-key (kbd "<f6>") (my-toggle-bar))
+    (global-set-key (kbd "<f6>") (my-toggle-bar))
 
     (setq default-file-name-coding-system 'utf-8)
 
@@ -1114,8 +1147,8 @@
 
     (defun isbn-to-bibtex-lead-jp (isbn)
       "Search lead.to for ISBN bibtex entry.
-           You have to copy the entry if it is on the page to your bibtex
-           file."
+               You have to copy the entry if it is on the page to your bibtex
+               file."
       (interactive "sISBN: ")
       (browse-url
        (format
@@ -1137,16 +1170,16 @@
 
     (setq org-export-exclude-category '())
 
-           ;;; define filter. The filter is called on each entry in the agenda.
-           ;;; It defines a regexp to search for two timestamps, gets the start
-           ;;; and end point of the entry and does a regexp search. It also
-           ;;; checks if the category of the entry is in an exclude list and
-           ;;; returns either t or nil to skip or include the entry.
+               ;;; define filter. The filter is called on each entry in the agenda.
+               ;;; It defines a regexp to search for two timestamps, gets the start
+               ;;; and end point of the entry and does a regexp search. It also
+               ;;; checks if the category of the entry is in an exclude list and
+               ;;; returns either t or nil to skip or include the entry.
 
     (defun org-mycal-export-limit ()
       "Limit the export to items that have a date, time and a range. Also exclude certain categories."
       (setq org-tst-regexp "<\\([0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\} ... [0-9]\\{2\\}:[0-9]\\{2\\}[^\r\n>]*?\
-           \)>")
+               \)>")
       (setq org-tstr-regexp (concat org-tst-regexp "--?-?" org-tst-regexp))
       (save-excursion
                                             ; get categories
@@ -1164,7 +1197,7 @@
                                             ; return t if ok, nil when not ok
         (if (and myresult (not mycatp)) t nil)))
 
-           ;;; activate filter and call export function
+               ;;; activate filter and call export function
     (defun org-mycal-export ()
       (interactive)
       (let ((org-icalendar-verify-function 'org-mycal-export-limit))
