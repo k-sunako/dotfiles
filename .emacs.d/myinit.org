@@ -88,6 +88,10 @@
       (setq dired-recursive-copies 'always)
       (setq dired-dwim-target t))
 
+    (use-package find-dired
+      :custom ((find-ls-option '("-exec ls -ldh {} +" . "-ldh")))
+      )
+
     (use-package wdired
       :bind (:map dired-mode-map
                   ("e" . wdired-change-to-wdired-mode)))
