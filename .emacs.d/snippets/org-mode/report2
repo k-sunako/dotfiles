@@ -1,0 +1,16 @@
+# key: rep2
+# name: report2
+# --
+#+SETUPFILE: ./report-header.org
+
+#+TITLE: ${1: title}
+#+AUTHOR: k-sunako
+#+DATE: `(let ((x (org-time-stamp '(16) t ))))`
+\vspace*{-1.5cm}
+
+* 概要
+  blabla
+
+* 参考文献
+
+  #+LaTeX: \printbibliography[heading=none]
