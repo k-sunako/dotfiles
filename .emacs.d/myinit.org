@@ -339,6 +339,7 @@
          (rust . t)
          (shell . t)
          (python . t)
+         (ipython . t)
          ;;(jupyter .t)
          ))
 
@@ -390,6 +391,9 @@
       )
 
     (use-package ob-rust
+      :ensure t)
+
+    (use-package ob-ipython
       :ensure t)
 
     (use-package org-download
