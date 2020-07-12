@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# name: org math equation
+# expand-env: ((yas-indent-line (quote fixed)) )
+# key: mmm
+# --
+\[
+    ${0}
+\]
