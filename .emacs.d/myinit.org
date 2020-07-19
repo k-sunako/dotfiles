@@ -435,10 +435,10 @@
             ;;; migemo を有効化
       ;;(push '(migemo) helm-source-bibtex)
       (setq bibtex-completion-display-formats
-            '((article       . "${author:6} ${title:30} ${journal:40} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}")
-              (inbook        . "${author:6} ${title:30} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}")
-              (book          . "${author:6} ${title:30} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}")
-              (t             . "${author:6} ${title:30} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}"))))
+            '((article       . "${author:5} ${title:40} ${journal:10} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}")
+              (inbook        . "${author:5} ${title:40} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}")
+              (book          . "${author:5} ${title:40} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}")
+              (t             . "${author:5} ${title:40} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}"))))
 
     (require 'ox-bibtex)
     (use-package ox-latex
@@ -583,9 +583,10 @@
       :bind (:map org-roam-mode-map
                   (("C-c n l" . org-roam)
                    ("C-c n f" . org-roam-find-file)
-                   ("C-c n g" . org-roam-graph))
+                   ("C-c n g" . org-roam-graph-show))
                   :map org-mode-map
-                  (("C-c n i" . org-roam-insert)))
+                  (("C-c n i" . org-roam-insert)
+                   ("C-c n I" . org-roam-insert-immediate)))
       )
     (use-package deft
       :after org
@@ -625,6 +626,8 @@
 
 ** 一般
    #+BEGIN_SRC emacs-lisp
+     ;"))
+
      (use-package lsp-mode
        :custom ((lsp-inhibit-message t)
                 (lsp-message-project-root-warning t)
@@ -685,10 +688,10 @@
        :ensure t
        :after (company)
        :config
-       ;(setq company-math-disallow-latex-symbols-in-faces nil)
+                                             ;(setq company-math-disallow-latex-symbols-in-faces nil)
        (setq company-math-allow-latex-symbols-in-faces t)
        (push '(company-latex-commands company-math-symbols-latex) company-backends)
-       ;(push 'company-latex-commands company-backends)
+                                             ;(push 'company-latex-commands company-backends)
        )
 
 
@@ -815,6 +818,7 @@
             (with-eval-after-load 'company
               (add-to-list 'company-backends 'company-racer)))
 
+
           (use-package rustic
             :ensure t
             :commands (cargo-minor-mode)
@@ -824,6 +828,10 @@
             (bind-keys :map rustic-mode-map
                        ("C-c TAB" . rustic-format-buffer)
                        ("TAB" . company-indent-or-complete-common))
+            (add-to-list 'exec-path (expand-file-name "~/.local/bin/"))
+            (setq-default rustic-format-trigger 'on-save)
+            (setq rustic-lsp-server 'rust-analyzer)
+
             :init
             (setq company-tooltip-align-annotations t)
             (add-hook 'rustic-mode-hook #'cargo-minor-mode)
