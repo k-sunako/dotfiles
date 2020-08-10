@@ -71,10 +71,14 @@
             ))
 
     ;; (load-theme 'monokai t)
-    (use-package atom-one-dark-theme
+    ;; (use-package atom-one-dark-theme
+    ;;   :ensure t
+    ;;   :config 
+    ;;   (load-theme 'atom-one-dark t))
+    (use-package flatland-theme
       :ensure t
-      :config 
-      (load-theme 'atom-one-dark t))
+      :config
+      (load-theme 'flatland t))
 
   #+END_SRC
 
@@ -254,7 +258,7 @@
 
       :config
       (setq helm-truncate-lines t)
-      (setq helm-migemo-mode nil)
+      (setq helm-migemo-mode 1)
       (global-set-key (kbd "M-x") 'helm-M-x)
       (global-set-key (kbd "C-s") 'helm-swoop)
       (global-set-key (kbd "C-x C-f") 'helm-find-files)
@@ -351,6 +355,9 @@
          ;;(jupyter .t)
          ))
 
+      ;;; Agenda を現在のウィンドウと入れ替えで表示
+      (setq org-agenda-window-setup 'current-window)
+
       (setq org-agenda-files `(,(get-my-ws "Org/inbox.org")
                                ,(get-my-ws "Org/project.org")))
       (setq org-capture-templates `(("t" "Todo [inbox]" entry
@@ -414,7 +421,7 @@
     (use-package org-ref
       :ensure t
       :after org
-      :init
+      :config
       (setq my-ref-bib (get-my-ws "Bibliography/references.bib"))
       (setq my-ref-note (get-my-ws "Bibliography/notes.org"))
       (setq my-ref-pdfs (get-my-ws "Bibliography/bibtex-pdfs/"))
@@ -427,13 +434,11 @@
             org-ref-default-bibliography `(,my-ref-bib)
             org-ref-pdf-directory my-ref-pdfs)
 
-            ;;; helm-bibtex を使う場合は以下の変数も設定しておく
+      ;; helm-bibtex を使う場合は以下の変数も設定しておく
       (setq bibtex-completion-bibliography my-ref-bib
             bibtex-completion-library-path my-ref-pdfs
             bibtex-completion-notes-path my-ref-helm-bibtex-notes)
 
-            ;;; migemo を有効化
-      ;;(push '(migemo) helm-source-bibtex)
       (setq bibtex-completion-display-formats
             '((article       . "${author:5} ${title:40} ${journal:10} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}")
               (inbook        . "${author:5} ${title:40} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}")
@@ -1061,19 +1066,19 @@
     (use-package persp-mode
       :ensure t)
 
-    ;; (use-package auto-save-buffers-enhanced
-    ;;   :ensure t)
+    (use-package auto-save-buffers-enhanced
+      :ensure t)
 
     (use-package lispxmp
       :ensure t)
 
-                                            ;    (use-package super-save
-                                            ;      :ensure t
-                                            ;      :diminish super-save-mode
-                                            ;      :init
-                                            ;      (super-save-mode 1)
-                                            ;      (setq super-save-exclude '("org-roam/.*\.org$"))
-                                            ;      (setq super-save-auto-save-when-idle t))
+    (use-package super-save
+      :ensure t
+      :diminish super-save-mode
+      :init
+      (super-save-mode 1)
+      (setq super-save-exclude nil)
+      (setq super-save-auto-save-when-idle t))
 
     (use-package auctex
       :defer t
