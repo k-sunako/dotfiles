@@ -877,6 +877,9 @@
 
 * Etc
   #+BEGIN_SRC emacs-lisp
+    (defun ks-venv38 ()
+      (pyvenv-activate "~/src/pipenv_3.8/.venv"))
+
     (defun ks-region-to-link ()
       (interactive)
       (progn
