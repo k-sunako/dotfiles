@@ -189,6 +189,7 @@
 
     (use-package which-key
       :ensure t
+      :diminish which-key-mode
       :config
       (which-key-mode))
 
@@ -288,11 +289,21 @@
       ;;(setq browse-url-browser-function 'eww-browse-url)
       (setq browse-url-browser-function 'browse-url-generic
             browse-url-generic-program "firefox")
+      (setq
+       browse-url-browser-function
+       '(
+         ("file:///home/snowfox/Dropbox/Programming/HyperSpec-7-0/HyperSpec/" . eww-browse-url)
+         ("." . browse-url-default-browser)
+         ))
+  
       (defun shr-put-image-alt (spec alt &optional flags)
         (insert alt))
       (defun eww-mode-hook--disable-image ()
         (setq-local shr-put-image-function 'shr-put-image-alt))
+
       (add-hook 'eww-mode-hook 'eww-mode-hook--disable-image)
+
+  
       )
 
   #+END_SRC
@@ -306,6 +317,7 @@
     (use-package org
                                             ;:ensure org-plus-contrib
       :ensure t
+      :diminish org-mode
       :bind (("C-c c" . org-capture)
              ("C-c a" . org-agenda)
              ("<f11>" . org-clock-goto))
@@ -581,6 +593,7 @@
 
     (use-package org-roam
       :init (require 'org-roam-protocol)
+      :diminish org-roam-mode
       :hook
       (after-init . org-roam-mode)
       :custom
@@ -623,6 +636,7 @@
     (use-package org-roam-bibtex
       :after org-roam
       :hook (org-roam-mode . org-roam-bibtex-mode)
+      :diminish org-roam-bibtex-mode
       :bind (:map org-mode-map
                   (("C-c n a" . orb-note-actions))))
 
@@ -675,6 +689,7 @@
 
      (use-package smartparens
        :ensure t
+       :diminish smartparens-mode
        :config
        (require 'smartparens-config)
        (smartparens-global-mode 1))
@@ -808,13 +823,17 @@
 
 ** Lisp
    #+BEGIN_SRC emacs-lisp
-     (setq inferior-lisp-program "ros -Q run")
-     (use-package slime
-       :ensure t
-       :config
-       (load (expand-file-name "~/.roswell/helper.el"))
-       ;; (setq inferior-lisp-program "/usr/local/bin/sbcl")
-       (slime-setup '(slime-repl)))
+          (setq inferior-lisp-program "ros -Q run")
+          (use-package slime
+            :ensure t
+            :config
+            (load (expand-file-name "~/.roswell/helper.el"))
+            ;; (setq inferior-lisp-program "/usr/local/bin/sbcl")
+            (setq common-lisp-hyperspec-root
+                  (concat "file://" (expand-file-name 
+                                     "~/Dropbox/Programming/HyperSpec-7-0/HyperSpec/")))
+
+            (slime-setup '(slime-repl)))
    #+END_SRC
 
 ** Rust
@@ -974,6 +993,7 @@
     (use-package magit
       :ensure t
       :bind (("<f3>" . magit-status))
+      :diminish auto-revert-mode
       :config (add-hook 'ediff-prepare-buffer-hook #'show-all))
 
     (use-package google-this
@@ -1150,6 +1170,7 @@
 
     (use-package undo-tree
       :ensure t
+      :diminish undo-tree-mode
       :config
       (global-undo-tree-mode 1))
 
