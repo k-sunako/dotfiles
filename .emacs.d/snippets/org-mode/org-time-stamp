@@ -1,0 +1,5 @@
+# key: ots
+# name: org-time-stamp# key: ots
+# name: org-time-stamp
+# --
+`(let ((x (org-time-stamp '(16) t ))))`

@@ -1,0 +1,10 @@
+# key: test
+# name: test
+# --
+eee
+
+${N: `(let ((x (org-time-stamp '(16) t ))))`}
+
+ee
+
+`(let ((x (org-time-stamp '(16) t ))))`

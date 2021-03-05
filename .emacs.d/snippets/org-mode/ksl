@@ -1,0 +1,23 @@
+# key: ksl
+# name: ks-logger
+# --
+#+SETUPFILE: ./report-header.org
+
+#+TITLE: Logger: `(ts-format "%Y%m%d" (ts-adjust 'day (ts-dow now) now))` -- `(ts-format "%Y%m%d" (ts-adjust 'day (- 6 (ts-dow now)) now))`
+#+AUTHOR: k-sunako
+#+DATE: `(let ((x (org-time-stamp '(16) t ))))`
+\vspace*{-1.5cm}
+
+* Sunday
+
+* Monday
+
+* Tuesday
+
+* Wendesday
+
+* Thursday
+
+* Friday
+
+* Saturday

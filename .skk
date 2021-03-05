@@ -1,0 +1,9 @@
+(defun skk-num-maru-suji (num)
+  (let ((s "①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳")
+        (n (string-to-number num)))
+    (when (and (>= n 1)
+               (<= n 20))
+      (let ((m (1- n)))
+        (substring s m (1+ m))))))
+
+(add-to-list 'skk-num-type-alist '(6 . skk-num-maru-suji))
