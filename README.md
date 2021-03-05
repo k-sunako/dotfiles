@@ -6,3 +6,4 @@ Emacsの設定
 
 ## .tmux.conf
 ひとまずコミット
+x
