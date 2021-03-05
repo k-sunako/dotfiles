@@ -5,19 +5,6 @@
     (use-package dash :ensure t)
   #+end_src
 
-
-* advise
-  #+begin_src emacs-lisp
-    ;    (defun ad-activate-migemo (old-func &rest args)
-    ;      (apply old-func (plist-put args :migemo t)))
-;    (defun ad-activate-migemo (old-func &rest args)
-;      (apply old-func (nconc args '(:migemo t))))
-;    (advice-add #'helm-build-sync-source
-;                :around #'ad-activate-migemo)
-;    (advice-add #'helm-make-source
-;                :around #'ad-activate-migemo)
-  #+end_src
-
 * PC別設定
   #+BEGIN_SRC emacs-lisp
     (cond ((file-directory-p "~/Dropbox")   (setq my-workspace "~/Dropbox"))
@@ -47,13 +34,13 @@
 
   #+END_SRC
 
-* デバッグをON
+* デバッグをON/OFF
 
   #+begin_src elisp
     (setq debug-on-error nil)
   #+end_src
 
-* memoeri
+* ガーベージコレクタ
 
   #+begin_src elisp
     (use-package gcmh
@@ -119,11 +106,6 @@
         (set-frame-font "Ricty Diminished 12"))
        ))
 
-    ;; (load-theme 'monokai t)
-    ;; (use-package atom-one-dark-theme
-    ;;   :ensure t
-    ;;   :config 
-    ;;   (load-theme 'atom-one-dark t))
     (use-package flatland-theme
       :ensure t
       :config
@@ -208,7 +190,6 @@
       :ensure t
       :config
       (openwith-mode t)
-      ;;(setq openwith-associations '(("\\.pdf\\'" "atril" (file)))))
       (setq openwith-associations nil))
   #+END_SRC
 * IME
@@ -222,9 +203,6 @@
 
       ;;https://uwabami.github.io/cc-env/Emacs.html
       (setq skk-sticky-key ";")
-      ;;(setq skk-show-candidates-always-pop-to-buffer t)
-      ;;(setq skk-henkan-show-candidates-rows 2)
-      ;;(setq skk-show-inline 'vertical)
       (setq skk-large-jisyo (get-my-ws "skkdic/SKK-JISYO.my")))
   #+END_SRC
 
@@ -301,7 +279,6 @@
     (use-package projectile
       :ensure t
       :config
-      ;;(setq projectile-project-search-path '("~/study" "~/src"))
       (projectile-discover-projects-in-search-path))
 
     (use-package migemo
@@ -324,7 +301,6 @@
 
       :config
       (setq helm-truncate-lines t)
-      ;(setq helm-migemo-mode 1)
       (global-set-key (kbd "M-x") 'helm-M-x)
       (global-set-key (kbd "C-s") 'helm-swoop)
       (global-set-key (kbd "C-x C-f") 'helm-find-files)
@@ -352,7 +328,6 @@
     (use-package eww
       :init
       (setq eww-search-prefix "http://www.google.co.jp/search?q=")
-      ;;(setq browse-url-browser-function 'eww-browse-url)
       (setq browse-url-browser-function 'browse-url-generic
             browse-url-generic-program "firefox")
       (setq
@@ -484,8 +459,6 @@
 
       (require 'ob-emacs-lisp)
       (require 'ob-haskell)
-      ;;(require 'ob-rust)
-      ;;(require 'ox-bibtex)
       (require 'ob-gnuplot)
       (require 'org-habit)
       (require 'org-protocol)
@@ -514,8 +487,6 @@
          (rust . t)
          (shell . t)
          (python . t)
-         ;;(ipython . t)
-         ;;(jupyter .t)
          ))
 
       ;;; Agenda を現在のウィンドウと入れ替えで表示
@@ -537,11 +508,9 @@
                                      "* TODO %i%?")
                                     ("p" "Protocol" entry
                                      (file+olp+datetree ,(get-my-ws "Org/inbox.org") )
-                                     ;;(file+headline ,(get-my-ws "Note/main.org") )
                                      "* %^{Title}\nSource: %u, %c\n  \n #+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n\n%?")
                                     ("L" "Protocol Link" entry
                                      (file+olp+datetree ,(get-my-ws "Org/inbox.org"))
-                                     ;;(file+headline ,(get-my-ws "Note/main.org"))
                                      "* %? [[%:link][%:description]] \nCaptured On: %U")
                                     ("j" "Journal" entry
                                      (file+olp+datetree ,(get-my-ws "Org/journal.org"))
@@ -579,9 +548,6 @@
 
     (use-package ob-rust
       :ensure t)
-
-;;    (use-package ob-ipython
-;;      :ensure t)
 
     (use-package org-download
       :ensure t
@@ -821,9 +787,6 @@
 
 ** 一般
    #+BEGIN_SRC emacs-lisp
-     ;"))
-
-
      (use-package lsp-mode
        :config
        (setq lsp-prefer-capf t)
@@ -887,18 +850,6 @@
        (python-mode . lsp/python-mode-hook) ; python-mode 用のフック関数を仕掛ける
        )
 
-     ;;(use-package lsp-pyright
-     ;;  :init
-     ;;  (defun lsp-pyright/python-mode-hook ()
-     ;;    ;; lsp-pyright を有効化する
-     ;;    (require 'lsp-pyright)
-     ;;    (when (fboundp 'flycheck-mode)
-     ;;        ;; pyright で lint するので、python-mypy は使わない。
-     ;;        (setq flycheck-disabled-checkers '(python-mypy))))
-     ;;
-     ;;  :hook
-     ;;  (python-mode . lsp-pyright/python-mode-hook))
-
      (use-package lsp-ui
        :after lsp-mode
        :config
@@ -960,7 +911,6 @@
        (dap-ui-controls-mode 1)
 
 
-
        (dap-register-debug-template "My App"
                                     (list :type "python"
                                           :cwd "~/src/dap-mode/"
@@ -991,9 +941,6 @@
 
      (use-package aggressive-indent :ensure t)
 
-
-
-
      (use-package company
        :ensure t
        :hook (after-init . global-company-mode)
@@ -1007,23 +954,12 @@
        (define-key company-active-map (kbd "C-p") 'company-select-previous)
        (define-key company-active-map (kbd "C-h") nil))
 
-     ;; (use-package company-math
-     ;;   :ensure t
-     ;;   :config 
-     ;;   (add-to-list 'company-backends 'company-math-symbols-latex)
-     ;;   ;;(add-to-list 'company-backends 'company-math-symbols-unicode)
-     ;;   (add-to-list 'company-backends 'company-latex-commands))
-
      (use-package company-math
        :ensure t
        :after (company)
        :config
-                                             ;(setq company-math-disallow-latex-symbols-in-faces nil)
        (setq company-math-allow-latex-symbols-in-faces t)
-       (push '(company-latex-commands company-math-symbols-latex) company-backends)
-                                             ;(push 'company-latex-commands company-backends)
-       )
-
+       (push '(company-latex-commands company-math-symbols-latex) company-backends))
 
      (setq gdb-many-windows t)
 
@@ -1052,29 +988,6 @@
 
 **  C/C++
 
-   #+BEGIN_SRC emacs-lisp
-     ;; (use-package irony
-     ;;   :ensure t
-     ;;   :init
-     ;;   ;; "M-x irony-install-server"
-     ;;   (custom-set-variables '(irony-additional-clang-options '("-std=c++11")))
-     ;;   (add-to-list 'company-backends 'company-irony)
-     ;;   (add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options)
-     ;;   (add-hook 'c-mode-hook 'irony-mode))
-
-     ;; (use-package rtags
-     ;;   :ensure t
-     ;;   :init
-     ;;   (add-hook 'c-mode-common-hook
-     ;;             (lambda ()
-     ;;               (when (rtags-is-indexed)
-     ;;                 (local-set-key (kbd "M-.") 'rtags-find-symbol-at-point)
-     ;;                 (local-set-key (kbd "M-;") 'rtags-find-symbol)
-     ;;                 (local-set-key (kbd "M-@") 'rtags-find-references)
-     ;;                 (local-set-key (kbd "M-,") 'rtags-location-stack-back)))))
-     ;; (use-package cuda-mode
-     ;;   :ensure t)
-   #+END_SRC
 
 ** Haskell
    #+BEGIN_SRC emacs-lisp
@@ -1107,75 +1020,67 @@
        :mode ("\\.py" . python-mode)
        :config
        (setq python-indent-offset 4))
-
-     ;;(use-package elpy :ensure t
-     ;;  :config
-     ;;  (elpy-enable))
-
-       ;(use-package ein :ensure t)
-       ;https://qiita.com/fury00812/items/08036e78a449d1cbeb48
    #+END_SRC
 
 ** Lisp
    #+BEGIN_SRC emacs-lisp
-          (setq inferior-lisp-program "ros -Q run")
-          (use-package slime
-            :ensure t
-            :config
-            (load (expand-file-name "~/.roswell/helper.el"))
-            ;; (setq inferior-lisp-program "/usr/local/bin/sbcl")
-            (setq common-lisp-hyperspec-root
-                  (concat "file://" (expand-file-name 
-                                     "~/Dropbox/Programming/HyperSpec-7-0/HyperSpec/")))
+     (setq inferior-lisp-program "ros -Q run")
+     (use-package slime
+       :ensure t
+       :config
+       (load (expand-file-name "~/.roswell/helper.el"))
+       ;; (setq inferior-lisp-program "/usr/local/bin/sbcl")
+       (setq common-lisp-hyperspec-root
+             (concat "file://" (expand-file-name 
+                                "~/Dropbox/Programming/HyperSpec-7-0/HyperSpec/")))
 
-            (slime-setup '(slime-repl)))
+       (slime-setup '(slime-repl)))
    #+END_SRC
 
 ** Rust
    #+BEGIN_SRC emacs-lisp
-          (use-package cargo
-            :ensure t)
+     (use-package cargo
+       :ensure t)
 
-          (use-package racer
-            :ensure t
-            :config
-            (add-hook 'racer-mode-hook #'eldoc-mode)
-            (add-hook 'racer-mode-hook #'company-mode)
-            (define-key rust-mode-map (kbd "TAB") #'company-indent-or-complete-common)
-            (setq company-tooltip-align-annotations t))
+     (use-package racer
+       :ensure t
+       :config
+       (add-hook 'racer-mode-hook #'eldoc-mode)
+       (add-hook 'racer-mode-hook #'company-mode)
+       (define-key rust-mode-map (kbd "TAB") #'company-indent-or-complete-common)
+       (setq company-tooltip-align-annotations t))
 
-          (use-package company-racer
-            :ensure t
-            :defer
-            :init
-            :after company
-            (with-eval-after-load 'company
-              (add-to-list 'company-backends 'company-racer)))
+     (use-package company-racer
+       :ensure t
+       :defer
+       :init
+       :after company
+       (with-eval-after-load 'company
+         (add-to-list 'company-backends 'company-racer)))
 
+     (use-package rustic
+       :ensure t
+       :commands (cargo-minor-mode)
+       ;; why? :mode "\\.rs" 
+       :config
+       (setq rustic-rls-pkg 'lsp)
+       (bind-keys :map rustic-mode-map
+                  ("C-c TAB" . rustic-format-buffer)
+                  ("TAB" . company-indent-or-complete-common))
+       (add-to-list 'exec-path (expand-file-name "~/.local/bin/"))
+       (setq-default rustic-format-trigger 'on-save)
+       (setq rustic-lsp-server 'rust-analyzer)
 
-          (use-package rustic
-            :ensure t
-            :commands (cargo-minor-mode)
-            ;; why? :mode "\\.rs" 
-            :config
-            (setq rustic-rls-pkg 'lsp)
-            (bind-keys :map rustic-mode-map
-                       ("C-c TAB" . rustic-format-buffer)
-                       ("TAB" . company-indent-or-complete-common))
-            (add-to-list 'exec-path (expand-file-name "~/.local/bin/"))
-            (setq-default rustic-format-trigger 'on-save)
-            (setq rustic-lsp-server 'rust-analyzer)
-
-            :init
-            (setq company-tooltip-align-annotations t)
-            (add-hook 'rustic-mode-hook #'cargo-minor-mode)
-            (add-hook 'rustic-mode-hook #'racer-mode)
-            (add-hook 'rustic-mode-hook #'flycheck-mode)
-            (add-hook 'rustic-mode-hook #'electric-pair-mode)
-            (cl-delete-if (lambda (element) (equal (cdr element) 'rust-mode)) auto-mode-alist)
-            (cl-delete-if (lambda (element) (equal (cdr element) 'rustic-mode)) auto-mode-alist)
-            (add-to-list 'auto-mode-alist '("\\.rs$" . rustic-mode))
-     )
+       :init
+       (setq company-tooltip-align-annotations t)
+       (add-hook 'rustic-mode-hook #'cargo-minor-mode)
+       (add-hook 'rustic-mode-hook #'racer-mode)
+       (add-hook 'rustic-mode-hook #'flycheck-mode)
+       (add-hook 'rustic-mode-hook #'electric-pair-mode)
+       (cl-delete-if (lambda (element) (equal (cdr element) 'rust-mode)) auto-mode-alist)
+       (cl-delete-if (lambda (element) (equal (cdr element) 'rustic-mode)) auto-mode-alist)
+       (add-to-list 'auto-mode-alist '("\\.rs$" . rustic-mode))
+       )
    #+END_SRC
 
 * Mail
@@ -1191,643 +1096,635 @@
 
 * Etc
   #+BEGIN_SRC emacs-lisp
-        (defun ks-venv38 ()
-          (interactive)
-          (pyvenv-activate "~/src/pipenv_3.8/.venv"))
+    (defun ks-venv38 ()
+      (interactive)
+      (pyvenv-activate "~/src/pipenv_3.8/.venv"))
 
-        (defun ks-region-to-link ()
-          (interactive)
-          (progn
-            (goto-char (region-end))
-            (insert "][")
-            (yank)
-            (insert "]]")
-            (goto-char (region-beginning))
-            (insert "[[")))
-
-
-        ;; https://emacs.stackexchange.com/questions/31646/how-to-paste-with-indentより転載
-        (defun yank-with-indent-2 ()
-          (let ((indent
-                 (buffer-substring-no-properties (line-beginning-position) (line-end-position))))
-            (message indent)
-            (yank)
-            (narrow-to-region (mark t) (point))
-            (pop-to-mark-command)
-            (replace-string "\n" (concat "\n" indent))
-            (widen)))
+    (defun ks-region-to-link ()
+      (interactive)
+      (progn
+        (goto-char (region-end))
+        (insert "][")
+        (yank)
+        (insert "]]")
+        (goto-char (region-beginning))
+        (insert "[[")))
 
 
-        (setq large-file-warning-threshold nil)
+    ;; https://emacs.stackexchange.com/questions/31646/how-to-paste-with-indentより転載
+    (defun yank-with-indent-2 ()
+      (let ((indent
+             (buffer-substring-no-properties (line-beginning-position) (line-end-position))))
+        (message indent)
+        (yank)
+        (narrow-to-region (mark t) (point))
+        (pop-to-mark-command)
+        (replace-string "\n" (concat "\n" indent))
+        (widen)))
 
-        (use-package recentf
-          :ensure t
-          :config
-          (setq recentf-max-saved-items 2000) ;; 2000ファイルまで履歴保存する
-          (setq recentf-auto-cleanup 'never)  ;; 存在しないファイルは消さない
-          (setq recentf-exclude '("/recentf" "COMMIT_EDITMSG" "/.?TAGS" "^/sudo:" "/\\.emacs\\.d/games/*-scores" "/\\.emacs\\.d/\\.cask/"))
-          (setq recentf-auto-save-timer (run-with-idle-timer 12000 t 'recentf-save-list)))
 
-        (use-package calendar
-          :ensure t
-          :bind (("<f9>" . calendar)))
+    (setq large-file-warning-threshold nil)
 
-        (defun ks/capture-journal ()
-          (interactive)
-          (let ((org-journal-find-file #'find-file)
-                (frm (make-frame)))
+    (use-package recentf
+      :ensure t
+      :config
+      (setq recentf-max-saved-items 2000) ;; 2000ファイルまで履歴保存する
+      (setq recentf-auto-cleanup 'never)  ;; 存在しないファイルは消さない
+      (setq recentf-exclude '("/recentf" "COMMIT_EDITMSG" "/.?TAGS" "^/sudo:" "/\\.emacs\\.d/games/*-scores" "/\\.emacs\\.d/\\.cask/"))
+      (setq recentf-auto-save-timer (run-with-idle-timer 12000 t 'recentf-save-list)))
+
+    (use-package calendar
+      :ensure t
+      :bind (("<f9>" . calendar)))
+
+    (defun ks/capture-journal ()
+      (interactive)
+      (let ((org-journal-find-file #'find-file)
+            (frm (make-frame)))
+        (progn
+          (select-frame-set-input-focus frm)
+          (set-frame-position frm (/ (x-display-pixel-width) 3) 0) 
+          (org-journal-new-entry nil)
+          (local-set-key (kbd "C-c C-c") 'delete-frame))))
+
+    ;;https://superuser.com/questions/308045/disallow-closing-last-emacs-window-via-window-manager-close-button
+    (defadvice handle-delete-frame (around my-handle-delete-frame-advice activate)
+      "Ask for confirmation before deleting the last frame"
+      (let ((frame   (posn-window (event-start event)))
+            (numfrs  (length (visible-frame-list))))
+        (when (> numfrs 1)
+          ad-do-it)))
+
+    ;;===============================================================
+    ;; Packages
+    ;;===============================================================
+    (use-package ediff
+      :ensure t
+      :config
+      (setq ediff-diff-program "~/bin/my-diff.sh")
+      ;; コントロール用のバッファを同一フレーム内に表示
+      (setq ediff-window-setup-function 'ediff-setup-windows-plain)
+      ;; diffのバッファを上下ではなく左右に並べる
+      (setq ediff-split-window-function 'split-window-horizontally))
+
+    ;; org-modeのExportでコードを色付きで出力するため
+    (use-package htmlize :ensure t)
+
+    (use-package pdf-tools
+      :ensure t
+
+      :mode (("\\.pdf?\\'" . pdf-view-mode))
+      :config
+      (add-hook 'pdf-view-mode-hook (lambda() (linum-mode -1)))
+      (add-hook 'pdf-view-mode-hook (lambda() (display-line-numbers-mode -1)))
+      (add-hook 'pdf-view-mode-hook (lambda() (pdf-tools-enable-minor-modes)))
+      (setq-default pdf-view-display-size 'fit-page))
+
+    (use-package magit
+      :ensure t
+      :bind (("<f3>" . magit-status))
+      :diminish auto-revert-mode
+      :config (add-hook 'ediff-prepare-buffer-hook #'show-all))
+
+    (use-package google-this
+      :ensure t)
+
+    (use-package shackle
+      :ensure t
+      :config
+      (shackle-mode t)
+
+      (setq helm-display-function 'pop-to-buffer)
+      (setq helm-swoop-split-window-function 'display-buffer)
+
+      ;;(setq  special-display-regexps '("\\*Org Se.*" "CAPTURE-.*?" "\\*Capture\\*"))
+      (setq  special-display-regexps '())
+
+      (setq shackle-rules
+            '(("*helm-ag*"              :select t   :align right :size 0.5)
+              ("*helm semantic/imenu*"  :select t   :align right :size 0.4)
+              ("*helm org inbuffer*"    :select t   :align right :size 0.4)
+              (flycheck-error-list-mode :select nil :align below :size 0.25)
+              (compilation-mode         :select nil :align below :size 0.25)
+              (messages-buffer-mode     :select t   :align below :size 0.25)
+              (inferior-emacs-lisp-mode :select t   :align below :size 0.25)
+              (ert-results-mode         :select t   :align below :size 0.5)
+              (calendar-mode            :select t   :align below :size 0.25)
+              (racer-help-mode          :select t   :same t)
+              ("*Google Translate*"     :select t   :align below :size 0.3)
+              (help-mode                :select t   :align right :size 0.5)
+              (helpful-mode             :select t   :align right :size 0.5)
+              (" *Deletions*"           :select t   :align below :size 0.25)
+              (" *Marked Files*"        :select t   :align below :size 0.25)
+              ("*Helm Swoop*"           :select t   :align below :size 0.25)
+              ("*Org Note*"             :select t   :align below :size 0.33)
+              ("*Org Links*"            :select t   :align below :size 0.2)
+              (" *Org todo*"            :select t   :align below :size 0.2)
+              ("*Man.*"                 :select t   :align below :size 0.5  :regexp t)
+              ("*helm.*"                :select t   :align below :size 0.33 :regexp t)
+              ("*Org Src.*"             :select t   :same t                  :regexp t))))
+
+    (use-package wrap-region
+      :ensure   t
+      :diminish wrap-region-mode
+      :config
+      (wrap-region-global-mode t)
+      (wrap-region-add-wrappers
+       '(("(" ")")
+         ("[" "]")
+         ("{" "}")
+         ("<" ">")
+         ("'" "'")
+         ("\"" "\"")
+         ("‘" "’"   "q")
+         ("“" "”"   "Q")
+         ("*" "*"   "b"   org-mode)                 ; bolden
+         ("*" "*"   "*"   org-mode)                 ; bolden
+         ("/" "/"   "i"   org-mode)                 ; italics
+         ("/" "/"   "/"   org-mode)                 ; italics
+         ("~" "~"   "c"   org-mode)                 ; code
+         ("~" "~"   "~"   org-mode)                 ; code
+         ("=" "="   "v"   org-mode)                 ; verbatim
+         ("=" "="   "="   org-mode)                 ; verbatim
+         ("_" "_"   "u" '(org-mode markdown-mode))  ; underline
+         ("**" "**" "b"   markdown-mode)            ; bolden
+         ("*" "*"   "i"   markdown-mode)            ; italics
+         ("`" "`"   "c" '(markdown-mode ruby-mode)) ; code
+         ("`" "'"   "c"   lisp-mode)                ; code
+         )))
+
+    (use-package multiple-cursors
+      :ensure t
+      :config
+      (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
+      (global-set-key (kbd "C->") 'mc/mark-next-like-this)
+      (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+      (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this))
+
+    (use-package open-junk-file
+      :ensure t)
+
+    (use-package avy
+      :ensure t
+      :bind* ("C-." . avy-goto-char-timer)
+      :config
+      (avy-setup-default))
+
+    (use-package winner
+      :init
+      (winner-mode 1)
+      (global-set-key (kbd "C-z") 'winner-undo))
+
+    (use-package elfeed
+      :ensure t
+      :if (file-exists-p (get-my-ws "dotfiles-secret/elfeed.el"))
+      :init
+      (load (get-my-ws "dotfiles-secret/elfeed.el"))
+      :config
+      (setq shr-inhibit-images t))
+
+    (use-package yasnippet
+      :ensure t
+      :config
+      (add-to-list 'warning-suppress-types '(yasnippet backquote-change))
+      (yas-global-mode 1))
+
+    (use-package restart-emacs
+      :ensure t)
+
+    (use-package persp-mode
+      :ensure t)
+
+    (use-package auto-save-buffers-enhanced
+      :ensure t)
+
+    (use-package lispxmp
+      :ensure t)
+
+    (use-package super-save
+      :ensure t
+      :diminish super-save-mode
+      :init
+      (super-save-mode 1)
+      (setq super-save-exclude nil)
+      (setq super-save-auto-save-when-idle t))
+
+    (use-package auctex
+      :defer t
+      :ensure t)
+
+    (defun ssbb-pyenv-hook ()
+      "Automatically activates pyenv version if .python-version file exists."
+      (f-traverse-upwards
+       (lambda (path)
+         (let ((pyenv-version-path (f-expand ".python-version" path)))
+           (if (f-exists? pyenv-version-path)
+               (pyenv-mode-set (s-trim (f-read-text pyenv-version-path 'utf-8))))))))
+
+    (add-hook 'find-file-hook 'ssbb-pyenv-hook)
+
+    (use-package gnuplot-mode
+      :ensure t)
+    (use-package gnuplot
+      :ensure t)
+
+    (use-package markdown-mode
+      :ensure t
+      :commands (markdown-mode gfm-mode)
+      :mode (("README\\.md\\'" . gfm-mode)
+             ("\\.md\\'" . markdown-mode)
+             ("\\.markdown\\'" . markdown-mode))
+      :init (setq markdown-command "multimarkdown"))
+
+    (use-package org2blog
+      :ensure t
+      :defer t
+      :if (file-exists-p (get-my-ws "dotfiles-secret/org2blog.el"))
+      :after org
+      :config
+      (load (get-my-ws "dotfiles-secret/org2blog.el")))
+
+    ;; shellの文字化けを回避
+    (add-hook 'shell-mode-hook
+              (lambda ()
+                (set-buffer-process-coding-system 'utf-8-unix 'utf-8-unix)
+                ))
+    (setq default-process-coding-system '(utf-8 . utf-8))
+
+    (use-package atomic-chrome
+      :ensure t
+      :init
+      (atomic-chrome-start-server))
+
+    (use-package realgud
+      :ensure t)
+
+    (use-package undo-tree
+      :ensure t
+      :diminish undo-tree-mode
+      :config
+      (global-undo-tree-mode 1))
+
+
+
+    ;; My elisp
+    ;;===============================================================
+
+    (defun ks-make-bibtex-symbolic-link (bibkey path)
+      (let* ((default-directory my-ref-pdfs)
+             (target (f-relative path)))
+        (shell-command-to-string
+         (s-lex-format "ln -s \"${target}\" ${bibkey}.pdf"))))
+
+    (defun ks-get-books (title)
+      (let ((len (/ (length title) 2)))
+        (s-lines (shell-command-to-string
+                  (s-lex-format "find ~/Dropbox/Book | agrep -E ${len} \"${title}\"")))))
+
+    (defun ks-get-bibtex-title (bibkey)
+      (let* ((key bibkey)
+             (hs (gethash key (parsebib-collect-entries)))
+             (value (cdr (assoc "title" hs)))
+             (title (s-chop-prefix "{" (s-chop-suffix "}" value)))
+             )
+        title))
+
+    (defun ks-get-path-of-book (title)
+      (let ((books (ks-get-books title)))
+        (helm :sources (helm-build-sync-source "books"
+                         :candidates books
+                         :fuzzy-match t)
+              :buffer "*helm books*")))
+
+    (defun ks-init-bib-pdf (start end)
+      (interactive "r")
+      (let* ((bibkey (buffer-substring-no-properties start end))
+             (title (ks-get-bibtex-title bibkey))
+             (path (ks-get-path-of-book title))
+             )
+        (ks-make-bibtex-symbolic-link bibkey path)))
+
+
+    (defun join-lines () (interactive)
+           (setq fill-column 100000)
+           (fill-paragraph nil)
+           (setq fill-column 78)
+           )
+
+    (defun my-toggle-bar ()
+      "メニューバーとツールバーの表示を切り替える関数"
+      (lexical-let ((vis 1))
+        #'(lambda  ()
+            (interactive)
             (progn
-              (select-frame-set-input-focus frm)
-              (set-frame-position frm (/ (x-display-pixel-width) 3) 0) 
-              (org-journal-new-entry nil)
-              (local-set-key (kbd "C-c C-c") 'delete-frame))))
+              (setq vis (- vis))
+              (tool-bar-mode vis)
+              (menu-bar-mode vis)))))
+    ;;(global-set-key (kbd "<f6>") (my-toggle-bar))
 
-        ;;https://superuser.com/questions/308045/disallow-closing-last-emacs-window-via-window-manager-close-button
-        (defadvice handle-delete-frame (around my-handle-delete-frame-advice activate)
-          "Ask for confirmation before deleting the last frame"
-          (let ((frame   (posn-window (event-start event)))
-                (numfrs  (length (visible-frame-list))))
-            (when (> numfrs 1)
-              ad-do-it)))
+    (setq default-file-name-coding-system 'utf-8)
 
-        ;;===============================================================
-        ;; Packages
-        ;;===============================================================
-        (use-package ediff
-          :ensure t
-          :config
-          (setq ediff-diff-program "~/bin/my-diff.sh")
-          ;; コントロール用のバッファを同一フレーム内に表示
-          (setq ediff-window-setup-function 'ediff-setup-windows-plain)
-          ;; diffのバッファを上下ではなく左右に並べる
-          (setq ediff-split-window-function 'split-window-horizontally))
+    (add-to-list 'process-coding-system-alist '("git" utf-8 . utf-8))
+    (add-hook 'git-commit-mode-hook
+              '(lambda ()
+                 (set-buffer-file-coding-system 'utf-8)))
 
-        ;; org-modeのExportでコードを色付きで出力するため
-        (use-package htmlize :ensure t)
+    (defun isbn-to-bibtex-lead-jp (isbn)
+      "Search lead.to for ISBN bibtex entry.
+                     You have to copy the entry if it is on the page to your bibtex
+                     file."
+      (interactive "sISBN: ")
+      (browse-url
+       (format
+        "http://lead.to/amazon/jp/?key=%s+&si=all&op=bt&bn=&so=sa&ht=jp"
+        isbn)))
 
-        (use-package pdf-tools
-          :ensure t
+    (setq org-icalendar-combined-agenda-file "~/Dropbox/Org/mycal.ics")
 
-          :mode (("\\.pdf?\\'" . pdf-view-mode))
-          :config
-          (add-hook 'pdf-view-mode-hook (lambda() (linum-mode -1)))
-          (add-hook 'pdf-view-mode-hook (lambda() (display-line-numbers-mode -1)))
-          (add-hook 'pdf-view-mode-hook (lambda() (pdf-tools-enable-minor-modes)))
-          (setq-default pdf-view-display-size 'fit-page))
+    ;; iCal の説明文
+    (setq org-icalendar-combined-description "OrgModeのスケジュール出力")
+    ;; カレンダーに適切なタイムゾーンを設定する（google 用には nil が必要）
+    (setq org-icalendar-timezone "UTC")
+    ;; DONE になった TODO は出力対象から除外する
+    (setq org-icalendar-include-todo t)
+    ;; （通常は，<>--<> で区間付き予定をつくる．非改行入力で日付がNoteに入らない）
+    (setq org-icalendar-use-scheduled '(event-if-todo))
+    ;; DL 付きで終日予定にする：締め切り日（スタンプで時間を指定しないこと）
+    (setq org-icalendar-use-deadline '(event-if-todo))
 
-        (use-package magit
-          :ensure t
-          :bind (("<f3>" . magit-status))
-          :diminish auto-revert-mode
-          :config (add-hook 'ediff-prepare-buffer-hook #'show-all))
+    (setq org-export-exclude-category '())
 
-        (use-package google-this
-          :ensure t)
+                     ;;; define filter. The filter is called on each entry in the agenda.
+                     ;;; It defines a regexp to search for two timestamps, gets the start
+                     ;;; and end point of the entry and does a regexp search. It also
+                     ;;; checks if the category of the entry is in an exclude list and
+                     ;;; returns either t or nil to skip or include the entry.
 
-        (use-package shackle
-          :ensure t
-          :config
-          (shackle-mode t)
+    (defun org-mycal-export-limit ()
+      "Limit the export to items that have a date, time and a range. Also exclude certain categories."
+      (setq org-tst-regexp "<\\([0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\} ... [0-9]\\{2\\}:[0-9]\\{2\\}[^\r\n>]*?\
+                     \)>")
+      (setq org-tstr-regexp (concat org-tst-regexp "--?-?" org-tst-regexp))
+      (save-excursion
+                                            ; get categories
+        (setq mycategory (org-get-category))
+                                            ; get start and end of tree
+        (org-back-to-heading t)
+        (setq mystart    (point))
+        (org-end-of-subtree)
+        (setq myend      (point))
+        (goto-char mystart)
+                                            ; search for timerange
+        (setq myresult (re-search-forward org-tstr-regexp myend t))
+                                            ; search for categories to exclude
+        (setq mycatp (member mycategory org-export-exclude-category))
+                                            ; return t if ok, nil when not ok
+        (if (and myresult (not mycatp)) t nil)))
 
-          (setq helm-display-function 'pop-to-buffer)
-          (setq helm-swoop-split-window-function 'display-buffer)
-
-          ;;(setq  special-display-regexps '("\\*Org Se.*" "CAPTURE-.*?" "\\*Capture\\*"))
-          (setq  special-display-regexps '())
-
-          (setq shackle-rules
-                '(("*helm-ag*"              :select t   :align right :size 0.5)
-                  ("*helm semantic/imenu*"  :select t   :align right :size 0.4)
-                  ("*helm org inbuffer*"    :select t   :align right :size 0.4)
-                  (flycheck-error-list-mode :select nil :align below :size 0.25)
-                  (compilation-mode         :select nil :align below :size 0.25)
-                  (messages-buffer-mode     :select t   :align below :size 0.25)
-                  (inferior-emacs-lisp-mode :select t   :align below :size 0.25)
-                  (ert-results-mode         :select t   :align below :size 0.5)
-                  (calendar-mode            :select t   :align below :size 0.25)
-                  (racer-help-mode          :select t   :same t)
-                  ("*Google Translate*"     :select t   :align below :size 0.3)
-                  (help-mode                :select t   :align right :size 0.5)
-                  (helpful-mode             :select t   :align right :size 0.5)
-                  (" *Deletions*"           :select t   :align below :size 0.25)
-                  (" *Marked Files*"        :select t   :align below :size 0.25)
-                  ("*Helm Swoop*"           :select t   :align below :size 0.25)
-                  ("*Org Note*"             :select t   :align below :size 0.33)
-                  ("*Org Links*"            :select t   :align below :size 0.2)
-                  (" *Org todo*"            :select t   :align below :size 0.2)
-                  ("*Man.*"                 :select t   :align below :size 0.5  :regexp t)
-                  ("*helm.*"                :select t   :align below :size 0.33 :regexp t)
-                  ("*Org Src.*"             :select t   :same t                  :regexp t))))
-
-        (use-package wrap-region
-          :ensure   t
-          :diminish wrap-region-mode
-          :config
-          (wrap-region-global-mode t)
-          (wrap-region-add-wrappers
-           '(("(" ")")
-             ("[" "]")
-             ("{" "}")
-             ("<" ">")
-             ("'" "'")
-             ("\"" "\"")
-             ("‘" "’"   "q")
-             ("“" "”"   "Q")
-             ("*" "*"   "b"   org-mode)                 ; bolden
-             ("*" "*"   "*"   org-mode)                 ; bolden
-             ("/" "/"   "i"   org-mode)                 ; italics
-             ("/" "/"   "/"   org-mode)                 ; italics
-             ("~" "~"   "c"   org-mode)                 ; code
-             ("~" "~"   "~"   org-mode)                 ; code
-             ("=" "="   "v"   org-mode)                 ; verbatim
-             ("=" "="   "="   org-mode)                 ; verbatim
-             ("_" "_"   "u" '(org-mode markdown-mode))  ; underline
-             ("**" "**" "b"   markdown-mode)            ; bolden
-             ("*" "*"   "i"   markdown-mode)            ; italics
-             ("`" "`"   "c" '(markdown-mode ruby-mode)) ; code
-             ("`" "'"   "c"   lisp-mode)                ; code
-             )))
-
-        (use-package multiple-cursors
-          :ensure t
-          :config
-          (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
-          (global-set-key (kbd "C->") 'mc/mark-next-like-this)
-          (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
-          (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this))
-
-        (use-package open-junk-file
-          :ensure t)
-
-        (use-package avy
-          :ensure t
-          :bind* ("C-." . avy-goto-char-timer)
-          :config
-          (avy-setup-default))
-
-        (use-package winner
-          :init
-          (winner-mode 1)
-          (global-set-key (kbd "C-z") 'winner-undo))
-
-        (use-package elfeed
-          :ensure t
-          :if (file-exists-p (get-my-ws "dotfiles-secret/elfeed.el"))
-          :init
-          (load (get-my-ws "dotfiles-secret/elfeed.el"))
-          :config
-          (setq shr-inhibit-images t))
-
-        (use-package yasnippet
-          :ensure t
-          :config
-          (add-to-list 'warning-suppress-types '(yasnippet backquote-change))
-          (yas-global-mode 1))
-
-        (use-package restart-emacs
-          :ensure t)
-
-        (use-package persp-mode
-          :ensure t)
-
-        (use-package auto-save-buffers-enhanced
-          :ensure t)
-
-        (use-package lispxmp
-          :ensure t)
-
-        (use-package super-save
-          :ensure t
-          :diminish super-save-mode
-          :init
-          (super-save-mode 1)
-          (setq super-save-exclude nil)
-          (setq super-save-auto-save-when-idle t))
-
-        (use-package auctex
-          :defer t
-          :ensure t)
-
-        (defun ssbb-pyenv-hook ()
-          "Automatically activates pyenv version if .python-version file exists."
-          (f-traverse-upwards
-           (lambda (path)
-             (let ((pyenv-version-path (f-expand ".python-version" path)))
-               (if (f-exists? pyenv-version-path)
-                   (pyenv-mode-set (s-trim (f-read-text pyenv-version-path 'utf-8))))))))
-
-        (add-hook 'find-file-hook 'ssbb-pyenv-hook)
-
-        (use-package gnuplot-mode
-          :ensure t)
-        (use-package gnuplot
-          :ensure t)
-
-        (use-package markdown-mode
-          :ensure t
-          :commands (markdown-mode gfm-mode)
-          :mode (("README\\.md\\'" . gfm-mode)
-                 ("\\.md\\'" . markdown-mode)
-                 ("\\.markdown\\'" . markdown-mode))
-          :init (setq markdown-command "multimarkdown"))
-
-        (use-package org2blog
-          :ensure t
-          :defer t
-          :if (file-exists-p (get-my-ws "dotfiles-secret/org2blog.el"))
-          :after org
-          :config
-          (load (get-my-ws "dotfiles-secret/org2blog.el")))
-
-        ;; shellの文字化けを回避
-        (add-hook 'shell-mode-hook
-                  (lambda ()
-                    (set-buffer-process-coding-system 'utf-8-unix 'utf-8-unix)
-                    ))
-        (setq default-process-coding-system '(utf-8 . utf-8))
-
-        (use-package atomic-chrome
-          :ensure t
-          :init
-          (atomic-chrome-start-server))
-
-        (use-package realgud
-          :ensure t)
-
-        (use-package undo-tree
-          :ensure t
-          :diminish undo-tree-mode
-          :config
-          (global-undo-tree-mode 1))
+                     ;;; activate filter and call export function
+    (defun org-mycal-export ()
+      (interactive)
+      (let ((org-icalendar-verify-function 'org-mycal-export-limit))
+        (org-icalendar-combine-agenda-files)))
 
 
+    ;; (defun ks-random-books() 
+    ;;   (interactive)
+    ;;   (org-babel-insert-result
+    ;;    (mapcar (lambda (n) (print (s-concat "[[" n "][" (f-filename n) "]]")))
+    ;;            (s-lines
+    ;;             (shell-command-to-string "cat <(find ~/Dropbox/Book)  <(cat ~/Dropbox/Book/kindle.org) | shuf -n 5")))
+    ;;    '("list")))
 
-        ;; My elisp
-        ;;===============================================================
+    (defun ks-random-books() 
+      (interactive)
+      (progn
+        (mapcar (lambda (n) (insert (s-concat "+ [[" n "][" (f-filename n) "]]\n")))
+                (s-lines (s-trim
+                          (shell-command-to-string "find ~/Dropbox/Book | shuf -n 3"))))
+        (mapcar (lambda (n) (insert (s-concat "+ " n "\n")))
+                (s-lines (s-trim
+                          (shell-command-to-string "cat ~/Dropbox/Book/kindle.org | shuf -n 3"))))))
 
-        (defun ks-make-bibtex-symbolic-link (bibkey path)
-          (let* ((default-directory my-ref-pdfs)
-                 (target (f-relative path)))
-            (shell-command-to-string
-             (s-lex-format "ln -s \"${target}\" ${bibkey}.pdf"))))
+    (defun ks-random-org-rome() 
+      (interactive 
+       (mapcar (lambda (n) (insert (s-concat "[[" n "][" (f-filename n) "]]\n")))
+               (s-lines
+                (shell-command-to-string "find ~/Dropbox/org-roam -name '*.org' | shuf -n 10")))))
 
-        (defun ks-get-books (title)
-          (let ((len (/ (length title) 2)))
-            (s-lines (shell-command-to-string
-                      (s-lex-format "find ~/Dropbox/Book | agrep -E ${len} \"${title}\"")))))
+    (defun ks-create-report (report-path)
+      (interactive "snew report: ")
+      (let* ((filename (s-concat (ts-format "%Y%m%d" (ts-now)) "-" report-path ".org"))
+             (fullpath (f-join (get-my-ws "Report") filename)))
+        (find-file fullpath)
+        (insert "rep2")
+        (yas-expand)))
 
-        (defun ks-get-bibtex-title (bibkey)
-          (let* ((key bibkey)
-                 (hs (gethash key (parsebib-collect-entries)))
-                 (value (cdr (assoc "title" hs)))
-                 (title (s-chop-prefix "{" (s-chop-suffix "}" value)))
-                 )
-            title))
+    (defun ks-learn-start ()
+      (interactive)
+      (org-clock-in))
 
-        (defun ks-get-path-of-book (title)
-          (let ((books (ks-get-books title)))
-            (helm :sources (helm-build-sync-source "books"
-                             :candidates books
-                             :fuzzy-match t)
-                  :buffer "*helm books*")))
+    (defun ks-learn-done (focus understand)
+      (interactive "nFocus: \nnUnderstand: ")
+      (let ((cur_cnt (org-entry-get (point) "count_learn")))
+        (progn
+          (when (org-clocking-p)
+            (org-clock-out))
 
-        (defun ks-init-bib-pdf (start end)
-          (interactive "r")
-          (let* ((bibkey (buffer-substring-no-properties start end))
-                 (title (ks-get-bibtex-title bibkey))
-                 (path (ks-get-path-of-book title))
-                 )
-            (ks-make-bibtex-symbolic-link bibkey path)))
+          (unless cur_cnt (setq cur_cnt "0"))
 
+          (org-entry-put (point) "count_learn"
+                         (number-to-string (+ 1 (string-to-number cur_cnt))))
+          (org-entry-put (point) "last_learn"
+                         (format-time-string (cdr org-time-stamp-formats)))
 
-        (defun join-lines () (interactive)
-               (setq fill-column 100000)
-               (fill-paragraph nil)
-               (setq fill-column 78)
-               )
+          (org-entry-put (point) "last_focus" (number-to-string focus))
+          (org-entry-put (point) "understand" (number-to-string understand))
 
-        (defun my-toggle-bar ()
-          "メニューバーとツールバーの表示を切り替える関数"
-          (lexical-let ((vis 1))
-            #'(lambda  ()
-                (interactive)
+          (ks-learn-next))))
+    (defun ks-learn-next ()
+      (save-excursion
+        (org-todo 'none)
+        (catch 'ks-learn-state
+          (while (re-search-forward "^\\(\*+\\)[ ]+\\(.+\\)$" nil t)
+            (let ((lv (length (match-string 1))))
+              (cond
+               ((<= lv 2)
+                (throw 'ks-learn-state nil))
+               ((string= "0" (org-entry-get (point) "count_learn"))
                 (progn
-                  (setq vis (- vis))
-                  (tool-bar-mode vis)
-                  (menu-bar-mode vis)))))
-        ;;(global-set-key (kbd "<f6>") (my-toggle-bar))
+                  (org-todo 'next)
+                  (throw 'ks-learn-state t)))))))))
 
-        (setq default-file-name-coding-system 'utf-8)
+    (defun ks-learn-init ()
+      (interactive)
+      (let ((cur_cnt (org-entry-get (point) "count_learn")))
+        (progn
+          (unless cur_cnt (org-entry-put (point) "count_learn" "0")))))
 
-        (add-to-list 'process-coding-system-alist '("git" utf-8 . utf-8))
-        (add-hook 'git-commit-mode-hook
-                  '(lambda ()
-                     (set-buffer-file-coding-system 'utf-8)))
+    (defun ks-learn-match-count-0 ()
+      (interactive)
+      (let ((ibuf (switch-to-buffer (org-get-indirect-buffer))))
+        (condition-case _        
+            (org-match-sparse-tree nil 
+                                   (s-lex-format "count_learn=0"))
+          (quit (kill-buffer ibuf)))))
 
-        (defun isbn-to-bibtex-lead-jp (isbn)
-          "Search lead.to for ISBN bibtex entry.
-                   You have to copy the entry if it is on the page to your bibtex
-                   file."
-          (interactive "sISBN: ")
-          (browse-url
-           (format
-            "http://lead.to/amazon/jp/?key=%s+&si=all&op=bt&bn=&so=sa&ht=jp"
-            isbn)))
+    (defun org-sparse-tree-indirect-buffer (arg)
+      (interactive "P")
+      (let ((ibuf (switch-to-buffer (org-get-indirect-buffer))))
+        (condition-case _
+            (org-sparse-tree arg)
+          (quit (kill-buffer ibuf)))))
 
-        (setq org-icalendar-combined-agenda-file "~/Dropbox/Org/mycal.ics")
+    (defun ks-learn-list-review (cnt)
+      (interactive "nLearn Count: ")
+      (let ((ago (cond
+                  ((= cnt 1) "\"-<1d>\"")
+                  ((= cnt 2) "\"-<2d>\"")
+                  ((= cnt 3) "\"-<1w>\"")
+                  ((= cnt 4) "\"-<2w>\"")
+                  ((<= cnt 5) "\"-<1m>\""))))
+        (org-match-sparse-tree nil (s-lex-format "count_learn=${cnt}+last_learn>=${ago}"))))
+    (defun ks-learn-list-review-1 ()
+      (interactive)
+      (ks-learn-list-review 1))
+    (defun ks-learn-list-review-2 ()
+      (interactive)
+      (ks-learn-list-review 2))
+    (defun ks-learn-list-review-3 ()
+      (interactive)
+      (ks-learn-list-review 3))
+    (defun ks-learn-list-review-4 ()
+      (interactive)
+      (ks-learn-list-review 4))
+    (defun ks-learn-list-review-5 ()
+      (interactive)
+      (ks-learn-list-review 5))
 
-        ;; iCal の説明文
-        (setq org-icalendar-combined-description "OrgModeのスケジュール出力")
-        ;; カレンダーに適切なタイムゾーンを設定する（google 用には nil が必要）
-        (setq org-icalendar-timezone "UTC")
-        ;; DONE になった TODO は出力対象から除外する
-        (setq org-icalendar-include-todo t)
-        ;; （通常は，<>--<> で区間付き予定をつくる．非改行入力で日付がNoteに入らない）
-        (setq org-icalendar-use-scheduled '(event-if-todo))
-        ;; DL 付きで終日予定にする：締め切り日（スタンプで時間を指定しないこと）
-        (setq org-icalendar-use-deadline '(event-if-todo))
+    (defun ks-learn-generate-ical ()
+      (interactive)
+      (let ((spans nil))
+        (save-excursion
+          (goto-char (point-min))
+          (while (re-search-forward "CLOCK: \\(\\[.+\\]\\)--\\(\\[.+\\]\\)" nil t)
+            (let* ((org-ts-s (match-string 1))
+                   (org-ts-e (match-string 2))
+                   (ts-s (ts-parse-org org-ts-s))
+                   (ts-e (ts-parse-org org-ts-e)))
+              (push (list :ts-s ts-s :ts-e ts-e :title (s-join "/" (org-get-outline-path))) spans))))
 
-        (setq org-export-exclude-category '())
+        (with-output-to-temp-buffer "*ks learn ical"
+          (princ "BEGIN:VCALENDAR\n")
+          (princ "VERSION:2.0\n")
+          (princ "PRODID:-//k-sunako//JP\n")
 
-                   ;;; define filter. The filter is called on each entry in the agenda.
-                   ;;; It defines a regexp to search for two timestamps, gets the start
-                   ;;; and end point of the entry and does a regexp search. It also
-                   ;;; checks if the category of the entry is in an exclude list and
-                   ;;; returns either t or nil to skip or include the entry.
+          (dolist (span spans)
+            (let ((s (plist-get span :ts-s))
+                  (e (plist-get span :ts-e))
+                  (tlt (plist-get span :title))
+                  (ts-default-format "%Y%m%dT%H%M%S"))
+              (princ "BEGIN:VEVENT\n")
+              (princ (concat "DTSTART;TZID=Asia/Tokyo:" (ts-format s) "\n"))
+              (princ (concat "DTEND;TZID=Asia/Tokyo:" (ts-format e) "\n"))
+              (princ (concat "SUMMARY:" tlt "\n"))
+              (princ "END:VEVENT\n")))
 
-        (defun org-mycal-export-limit ()
-          "Limit the export to items that have a date, time and a range. Also exclude certain categories."
-          (setq org-tst-regexp "<\\([0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\} ... [0-9]\\{2\\}:[0-9]\\{2\\}[^\r\n>]*?\
-                   \)>")
-          (setq org-tstr-regexp (concat org-tst-regexp "--?-?" org-tst-regexp))
-          (save-excursion
-                                                ; get categories
-            (setq mycategory (org-get-category))
-                                                ; get start and end of tree
-            (org-back-to-heading t)
-            (setq mystart    (point))
-            (org-end-of-subtree)
-            (setq myend      (point))
-            (goto-char mystart)
-                                                ; search for timerange
-            (setq myresult (re-search-forward org-tstr-regexp myend t))
-                                                ; search for categories to exclude
-            (setq mycatp (member mycategory org-export-exclude-category))
-                                                ; return t if ok, nil when not ok
-            (if (and myresult (not mycatp)) t nil)))
+          (princ "END:VCALENDAR\n"))))
 
-                   ;;; activate filter and call export function
-        (defun org-mycal-export ()
-          (interactive)
-          (let ((org-icalendar-verify-function 'org-mycal-export-limit))
-            (org-icalendar-combine-agenda-files)))
+    (defun ks-learn-generate-notebook-ref (notebookid)
+      (interactive "sNotebookID: ")
+      (let* ((dic '((0 . "0") (1 . "1") (2 . "2") (3 . "3")
+                    (4 . "4") (5 . "5") (6 . "6") (7 . "7")
+                    (8 . "8") (9 . "9")
+                    (10 . "A") (11 . "B") (12 . "C") (13 . "D")
+                    (14 . "E") (15 . "F") (16 . "G") (17 . "H")
+                    (18 . "I") (19 . "J") (20 . "K") (21 . "L")
+                    (22 . "M") (23 . "N") (24 . "O") (25 . "P")
+                    (26 . "Q") (27 . "R") (28 . "S") (29 . "T")
+                    (30 . "U") (31 . "V")))
+             (now (ts-now))
+             (month (ts-month now) )
+             (day (ts-day now))
+             (hour (ts-hour now))
+             (min (ts-min now)))
+        (insert (concat "notebook:" notebookid "/"
+                        (cdr (assoc month dic))
+                        (cdr (assoc day dic))
+                        (cdr (assoc hour dic))
+                        (cdr (assoc (/ min 2) dic))))))
 
-
-        ;; (defun ks-random-books() 
-        ;;   (interactive)
-        ;;   (org-babel-insert-result
-        ;;    (mapcar (lambda (n) (print (s-concat "[[" n "][" (f-filename n) "]]")))
-        ;;            (s-lines
-        ;;             (shell-command-to-string "cat <(find ~/Dropbox/Book)  <(cat ~/Dropbox/Book/kindle.org) | shuf -n 5")))
-        ;;    '("list")))
-
-        (defun ks-random-books() 
-          (interactive)
-          (progn
-            (mapcar (lambda (n) (insert (s-concat "+ [[" n "][" (f-filename n) "]]\n")))
-                    (s-lines (s-trim
-                              (shell-command-to-string "find ~/Dropbox/Book | shuf -n 3"))))
-            (mapcar (lambda (n) (insert (s-concat "+ " n "\n")))
-                    (s-lines (s-trim
-                              (shell-command-to-string "cat ~/Dropbox/Book/kindle.org | shuf -n 3"))))))
-
-        ;; (defun ks-random-org-rome() 
-        ;;   (interactive)
-        ;;   (org-babel-insert-result
-        ;;    (mapcar (lambda (n) (print (s-concat "[[" n "][" (f-filename n) "]]")))
-        ;;            (s-lines
-        ;;             (shell-command-to-string "find ~/Dropbox/org-roam -name '*.org' | shuf -n 10")))
-        ;;    '("list")))
-
-        (defun ks-random-org-rome() 
-          (interactive 
-           (mapcar (lambda (n) (insert (s-concat "[[" n "][" (f-filename n) "]]\n")))
-                   (s-lines
-                    (shell-command-to-string "find ~/Dropbox/org-roam -name '*.org' | shuf -n 10")))))
-
-        (defun ks-create-report (report-path)
-          (interactive "snew report: ")
-          (let* ((filename (s-concat (ts-format "%Y%m%d" (ts-now)) "-" report-path ".org"))
-                 (fullpath (f-join (get-my-ws "Report") filename)))
-            (find-file fullpath)
-            (insert "rep2")
-            (yas-expand)))
-
-        (defun ks-learn-start ()
-          (interactive)
-          (org-clock-in))
-
-        (defun ks-learn-done (focus understand)
-          (interactive "nFocus: \nnUnderstand: ")
-          (let ((cur_cnt (org-entry-get (point) "count_learn")))
+    (defun ks-learn-divide-clock (div)
+      (interactive "nTo Divide: ")
+      (let ((lst-clock))
+        (save-excursion
+          (save-restriction
             (progn
-              (when (org-clocking-p)
-                (org-clock-out))
-
-              (unless cur_cnt (setq cur_cnt "0"))
-
-              (org-entry-put (point) "count_learn"
-                             (number-to-string (+ 1 (string-to-number cur_cnt))))
-              (org-entry-put (point) "last_learn"
-                             (format-time-string (cdr org-time-stamp-formats)))
-
-              (org-entry-put (point) "last_focus" (number-to-string focus))
-              (org-entry-put (point) "understand" (number-to-string understand))
-
-              (ks-learn-next))))
-        (defun ks-learn-next ()
-          (save-excursion
-            (org-todo 'none)
-            (catch 'ks-learn-state
-              (while (re-search-forward "^\\(\*+\\)[ ]+\\(.+\\)$" nil t)
-                (let ((lv (length (match-string 1))))
-                  (cond
-                   ((<= lv 2)
-                    (throw 'ks-learn-state nil))
-                   ((string= "0" (org-entry-get (point) "count_learn"))
-                    (progn
-                      (org-todo 'next)
-                      (throw 'ks-learn-state t)))))))))
-
-        (defun ks-learn-init ()
-          (interactive)
-          (let ((cur_cnt (org-entry-get (point) "count_learn")))
-            (progn
-              (unless cur_cnt (org-entry-put (point) "count_learn" "0")))))
-
-        (defun ks-learn-match-count-0 ()
-          (interactive)
-          (let ((ibuf (switch-to-buffer (org-get-indirect-buffer))))
-            (condition-case _        
-                (org-match-sparse-tree nil 
-                                       (s-lex-format "count_learn=0"))
-              (quit (kill-buffer ibuf)))))
-
-        (defun org-sparse-tree-indirect-buffer (arg)
-          (interactive "P")
-          (let ((ibuf (switch-to-buffer (org-get-indirect-buffer))))
-            (condition-case _
-                (org-sparse-tree arg)
-              (quit (kill-buffer ibuf)))))
-
-        (defun ks-learn-list-review (cnt)
-          (interactive "nLearn Count: ")
-          (let ((ago (cond
-                      ((= cnt 1) "\"-<1d>\"")
-                      ((= cnt 2) "\"-<2d>\"")
-                      ((= cnt 3) "\"-<1w>\"")
-                      ((= cnt 4) "\"-<2w>\"")
-                      ((<= cnt 5) "\"-<1m>\""))))
-            (org-match-sparse-tree nil (s-lex-format "count_learn=${cnt}+last_learn>=${ago}"))))
-        (defun ks-learn-list-review-1 ()
-          (interactive)
-          (ks-learn-list-review 1))
-        (defun ks-learn-list-review-2 ()
-          (interactive)
-          (ks-learn-list-review 2))
-        (defun ks-learn-list-review-3 ()
-          (interactive)
-          (ks-learn-list-review 3))
-        (defun ks-learn-list-review-4 ()
-          (interactive)
-          (ks-learn-list-review 4))
-        (defun ks-learn-list-review-5 ()
-          (interactive)
-          (ks-learn-list-review 5))
-
-        (defun ks-learn-generate-ical ()
-          (interactive)
-          (let ((spans nil))
-            (save-excursion
-              (goto-char (point-min))
-              (while (re-search-forward "CLOCK: \\(\\[.+\\]\\)--\\(\\[.+\\]\\)" nil t)
+              ;; ナローイング (:LOGBOOK: -- :END:)
+              (org-narrow-to-element)
+              ;; CLOCK: []--[] => 0:00 のパターンを検索
+              (while (re-search-forward "\\(\\[.+\\]\\)--\\(\\[.+\\]\\)" nil t)
                 (let* ((org-ts-s (match-string 1))
                        (org-ts-e (match-string 2))
-                       (ts-s (ts-parse-org org-ts-s))
-                       (ts-e (ts-parse-org org-ts-e)))
-                  (push (list :ts-s ts-s :ts-e ts-e :title (s-join "/" (org-get-outline-path))) spans))))
+                       (ts-unix-s (ts-unix (ts-parse-org org-ts-s)))
+                       (ts-unix-e (ts-unix (ts-parse-org org-ts-e))))
+                  (push (list :ts-unix-s ts-unix-s :ts-unix-e ts-unix-e) lst-clock))))))
 
-            (with-output-to-temp-buffer "*ks learn ical"
-              (princ "BEGIN:VCALENDAR\n")
-              (princ "VERSION:2.0\n")
-              (princ "PRODID:-//k-sunako//JP\n")
+        (with-output-to-temp-buffer "*ks learn*"
 
-              (dolist (span spans)
-                (let ((s (plist-get span :ts-s))
-                      (e (plist-get span :ts-e))
-                      (tlt (plist-get span :title))
-                      (ts-default-format "%Y%m%dT%H%M%S"))
-                  (princ "BEGIN:VEVENT\n")
-                  (princ (concat "DTSTART;TZID=Asia/Tokyo:" (ts-format s) "\n"))
-                  (princ (concat "DTEND;TZID=Asia/Tokyo:" (ts-format e) "\n"))
-                  (princ (concat "SUMMARY:" tlt "\n"))
-                  (princ "END:VEVENT\n")))
+          (dotimes (i div)
+            (princ ":LOGBOOK:")
+            (terpri)
+            (dolist (clock (reverse lst-clock))
+              (let* (;;(i 0)
+                     (ts-unix-s (plist-get clock :ts-unix-s))
+                     (ts-unix-e (plist-get clock :ts-unix-e))
+                     (ts-unix-span (- ts-unix-e ts-unix-s))
+                     (ts-unix-span-per (/ ts-unix-span div))
+                     (ts-org-inactive-fmt (concat "[" (substring (cdr org-time-stamp-formats) 1 -1) "]"))
+                     (string-span (format "%d:%02d"
+                                          (/ ts-unix-span-per 60 60)
+                                          (/ ts-unix-span-per 60))))
 
-              (princ "END:VCALENDAR\n"))))
+                (let ((string-s-per (format-time-string ts-org-inactive-fmt
+                                                        (+ ts-unix-s (* i ts-unix-span-per))))
+                      (string-e-per  (format-time-string ts-org-inactive-fmt
+                                                         (+ ts-unix-s (* (+ i 1) ts-unix-span-per)))))
 
-        (defun ks-learn-generate-notebook-ref (notebookid)
-          (interactive "sNotebookID: ")
-          (let* ((dic '((0 . "0") (1 . "1") (2 . "2") (3 . "3")
-                       (4 . "4") (5 . "5") (6 . "6") (7 . "7")
-                       (8 . "8") (9 . "9")
-                       (10 . "A") (11 . "B") (12 . "C") (13 . "D")
-                       (14 . "E") (15 . "F") (16 . "G") (17 . "H")
-                       (18 . "I") (19 . "J") (20 . "K") (21 . "L")
-                       (22 . "M") (23 . "N") (24 . "O") (25 . "P")
-                       (26 . "Q") (27 . "R") (28 . "S") (29 . "T")
-                       (30 . "U") (31 . "V")))
-                (now (ts-now))
-                (month (ts-month now) )
-                (day (ts-day now))
-                (hour (ts-hour now))
-                (min (ts-min now)))
-            (insert (concat "notebook:" notebookid "/"
-                            (cdr (assoc month dic))
-                            (cdr (assoc day dic))
-                            (cdr (assoc hour dic))
-                            (cdr (assoc (/ min 2) dic))))))
+                  (princ (concat "CLOCK: " string-s-per "--" string-e-per " => " string-span))
+                  (terpri)
+                  )))
 
-        (defun ks-learn-divide-clock (div)
-          (interactive "nTo Divide: ")
-          (let ((lst-clock))
-            (save-excursion
-              (save-restriction
-                (progn
-                  ;; ナローイング (:LOGBOOK: -- :END:)
-                  (org-narrow-to-element)
-                  ;; CLOCK: []--[] => 0:00 のパターンを検索
-                  (while (re-search-forward "\\(\\[.+\\]\\)--\\(\\[.+\\]\\)" nil t)
-                    (let* ((org-ts-s (match-string 1))
-                           (org-ts-e (match-string 2))
-                           (ts-unix-s (ts-unix (ts-parse-org org-ts-s)))
-                           (ts-unix-e (ts-unix (ts-parse-org org-ts-e))))
-                      (push (list :ts-unix-s ts-unix-s :ts-unix-e ts-unix-e) lst-clock))))))
+            (princ ":END:")
+            (terpri)))))
 
-            (with-output-to-temp-buffer "*ks learn*"
-
-              (dotimes (i div)
-                (princ ":LOGBOOK:")
-                (terpri)
-                (dolist (clock (reverse lst-clock))
-                  (let* (;;(i 0)
-                         (ts-unix-s (plist-get clock :ts-unix-s))
-                         (ts-unix-e (plist-get clock :ts-unix-e))
-                         (ts-unix-span (- ts-unix-e ts-unix-s))
-                         (ts-unix-span-per (/ ts-unix-span div))
-                         (ts-org-inactive-fmt (concat "[" (substring (cdr org-time-stamp-formats) 1 -1) "]"))
-                         (string-span (format "%d:%02d"
-                                              (/ ts-unix-span-per 60 60)
-                                              (/ ts-unix-span-per 60))))
-
-                    (let ((string-s-per (format-time-string ts-org-inactive-fmt
-                                                            (+ ts-unix-s (* i ts-unix-span-per))))
-                          (string-e-per  (format-time-string ts-org-inactive-fmt
-                                                             (+ ts-unix-s (* (+ i 1) ts-unix-span-per)))))
-
-                      (princ (concat "CLOCK: " string-s-per "--" string-e-per " => " string-span))
-                      (terpri)
-                      )))
-
-                (princ ":END:")
-                (terpri)))))
-
-        (defhydra hydra-learning (global-map "<f2>" :color red)
-          "learning"
-          ("i" ks-learn-init "init")
-          ("s" ks-learn-start "start")
-          ("d" ks-learn-done "done")
-          ("p" org-previous-visible-heading "previous")
-          ("n" org-next-visible-heading "next")  
-          ("z" ks-learn-match-count-0)
-          ("1" ks-learn-list-review-1 "review for count=1")
-          ("2" ks-learn-list-review-2 "review for count=2")
-          ("3" ks-learn-list-review-3 "review for count=3")
-          ("4" ks-learn-list-review-4 "review for count=4")
-          ("5" ks-learn-list-review-5 "review for count=5")
-          )
-  (defun ks-logger ()
-    (interactive)
-    (let* ((now (ts-now))
-           (beg (ts-format "%Y%m%d" (ts-adjust 'day (ts-dow now) now)))
-           (end (ts-format "%Y%m%d" (ts-adjust 'day (- 6 (ts-dow now)) now)))
-           (filename (s-concat beg "-" end ".org"))
-           (dirpath "/home/snowfox/Dropbox/Report")
-           (fullpath (f-join dirpath filename)))
-      (if (f-exists? fullpath)
-          (find-file fullpath)
-        (progn (find-file fullpath)
-               (insert "ksl")
-               (yas-expand)))))
+    (defhydra hydra-learning (global-map "<f2>" :color red)
+      "learning"
+      ("i" ks-learn-init "init")
+      ("s" ks-learn-start "start")
+      ("d" ks-learn-done "done")
+      ("p" org-previous-visible-heading "previous")
+      ("n" org-next-visible-heading "next")  
+      ("z" ks-learn-match-count-0)
+      ("1" ks-learn-list-review-1 "review for count=1")
+      ("2" ks-learn-list-review-2 "review for count=2")
+      ("3" ks-learn-list-review-3 "review for count=3")
+      ("4" ks-learn-list-review-4 "review for count=4")
+      ("5" ks-learn-list-review-5 "review for count=5")
+      )
+    (defun ks-logger ()
+      (interactive)
+      (let* ((now (ts-now))
+             (beg (ts-format "%Y%m%d" (ts-adjust 'day (ts-dow now) now)))
+             (end (ts-format "%Y%m%d" (ts-adjust 'day (- 6 (ts-dow now)) now)))
+             (filename (s-concat beg "-" end ".org"))
+             (dirpath "/home/snowfox/Dropbox/Report")
+             (fullpath (f-join dirpath filename)))
+        (if (f-exists? fullpath)
+            (find-file fullpath)
+          (progn (find-file fullpath)
+                 (insert "ksl")
+                 (yas-expand)))))
 
   #+END_SRC
 
@@ -1842,10 +1739,6 @@
       (require 'emms-setup)
       (require 'emms-history)
 
-  ;;    (call-process-shell-command
-  ;;     (mapconcat #'shell-quote-argument
-  ;;                (list "alias" "pactrl='LC_ALL=C pactl'")
-  ;;                " "))
       (defadvice emms-volume--pulse-get-volume
           (around emms-volume--pulse-get-volume-around activate)
         (let ((process-environment (append process-environment '("LC_ALL=C"))))
@@ -1863,6 +1756,9 @@
        ("<XF86AudioNext>" . emms-next)
        ("<XF86AudioPlay>" . emms-pause)))
 #+end_src
+
+#+RESULTS:
+: emms-pause
 
 * ガーベージコレクションのメモリを戻す
   #+BEGIN_SRC emacs-lisp
