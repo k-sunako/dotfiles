@@ -1,3 +1,23 @@
+* library
+  #+begin_src emacs-lisp
+    (use-package ts :ensure t)
+    (use-package f :ensure t)
+    (use-package dash :ensure t)
+  #+end_src
+
+
+* advise
+  #+begin_src emacs-lisp
+    ;    (defun ad-activate-migemo (old-func &rest args)
+    ;      (apply old-func (plist-put args :migemo t)))
+;    (defun ad-activate-migemo (old-func &rest args)
+;      (apply old-func (nconc args '(:migemo t))))
+;    (advice-add #'helm-build-sync-source
+;                :around #'ad-activate-migemo)
+;    (advice-add #'helm-make-source
+;                :around #'ad-activate-migemo)
+  #+end_src
+
 * PC別設定
   #+BEGIN_SRC emacs-lisp
     (cond ((file-directory-p "~/Dropbox")   (setq my-workspace "~/Dropbox"))
@@ -20,13 +40,29 @@
 
   #+BEGIN_SRC emacs-lisp
 
-    (defvar best-gc-cons-threshold 4000000
+    (defvar best-gc-cons-threshold 500000
     "Best default gc threshold value. Should't be too big.")
 
     (setq gc-cons-threshold most-positive-fixnum)
 
   #+END_SRC
 
+* デバッグをON
+
+  #+begin_src elisp
+    (setq debug-on-error nil)
+  #+end_src
+
+* memoeri
+
+  #+begin_src elisp
+    (use-package gcmh
+      :ensure t
+      :diminish gcmh
+      :config
+      (gcmh-mode 1))
+  #+end_src
+  
 * Shell / 環境
 
   [[http://pragmaticemacs.com/emacs/pop-up-a-quick-shell-with-shell-pop/][Pop up a quick shell with shell-pop | Pragmatic Emacs]]
@@ -56,19 +92,32 @@
     (menu-bar-mode -1)
     (scroll-bar-mode -1)
     (tool-bar-mode -1)
-    (linum-mode 1)
+
+    ;; 行番号表示(Emacs26以降)
+    (global-display-line-numbers-mode t)
+    (custom-set-variables '(display-line-numbers-width-start t))
+
+    (use-package beacon
+      :ensure t
+      :diminish beacon-mode
+      :config
+      (beacon-mode 1))
+
 
     (set-default 'truncate-lines 1)
 
     (let* ((ffl (font-family-list))
-          (ffl-utf8 (mapcar (lambda (x) (decode-coding-string x 'utf-8)) ffl)))
-      (cond ((member "source han code jp n" ffl)
-             (set-frame-font "source han code jp n 12"))
-            ((member "源ノ角ゴシック Code JP" ffl-utf8)
-             (set-frame-font "源ノ角ゴシック Code JP n 12"))
-            ((member "Ricty Diminished" ffl)
-             (set-frame-font "Ricty Diminished 12"))
-            ))
+           (ffl-utf8 (mapcar (lambda (x) (decode-coding-string x 'utf-8)) ffl)))
+      (cond 
+       ((member "Ricty" ffl)
+        (set-frame-font "Ricty 15"))
+       ((member "source han code jp n" ffl)
+        (set-frame-font "source han code jp n 12"))
+       ((member "源ノ角ゴシック Code JP" ffl-utf8)
+        (set-frame-font "源ノ角ゴシック Code JP n 12"))
+       ((member "Ricty Diminished" ffl)
+        (set-frame-font "Ricty Diminished 12"))
+       ))
 
     ;; (load-theme 'monokai t)
     ;; (use-package atom-one-dark-theme
@@ -87,8 +136,8 @@
   #+BEGIN_SRC emacs-lisp
     (use-package dired
       :config
-                                            ;(define-key dired-mode-map (kbd "C-t") 'other-window)
-      (setq dired-listing-switches "-alh")
+      (define-key dired-mode-map (kbd "C-t") 'other-window)
+      (setq dired-listing-switches "-alGhv --group-directories-first")
       (setq dired-recursive-copies 'always)
       (setq dired-dwim-target t))
 
@@ -159,22 +208,24 @@
       :ensure t
       :config
       (openwith-mode t)
-      (setq openwith-associations '(("\\.pdf\\'" "atril" (file)))))
+      ;;(setq openwith-associations '(("\\.pdf\\'" "atril" (file)))))
+      (setq openwith-associations nil))
   #+END_SRC
 * IME
   #+BEGIN_SRC emacs-lisp
     (use-package ddskk
       :ensure t
+      :no-require t
       :config
       (global-set-key (kbd "C-x j") 'skk-auto-fill-mode)
       (setq default-input-method "japanese-skk")
 
       ;;https://uwabami.github.io/cc-env/Emacs.html
       (setq skk-sticky-key ";")
-      (setq skk-show-candidates-always-pop-to-buffer t)
-      (setq skk-henkan-show-candidates-rows 2)
-      (setq skk-show-inline 'vertical)
-      :no-require t)
+      ;;(setq skk-show-candidates-always-pop-to-buffer t)
+      ;;(setq skk-henkan-show-candidates-rows 2)
+      ;;(setq skk-show-inline 'vertical)
+      (setq skk-large-jisyo (get-my-ws "skkdic/SKK-JISYO.my")))
   #+END_SRC
 
 * キーバインディング
@@ -253,18 +304,33 @@
       ;;(setq projectile-project-search-path '("~/study" "~/src"))
       (projectile-discover-projects-in-search-path))
 
+    (use-package migemo
+      :ensure t
+      :config
+      (setq migemo-command "cmigemo")
+      (setq migemo-options '("-q" "--emacs"))
+
+      ;; Set your installed path
+      (setq migemo-dictionary "/usr/share/migemo/utf-8/migemo-dict")
+
+      (setq migemo-user-dictionary nil)
+      (setq migemo-regex-dictionary nil)
+      (setq migemo-coding-system 'utf-8-unix)
+      (migemo-init))
+
     (use-package helm
       :ensure t
       :diminish helm-migemo-mode
 
       :config
       (setq helm-truncate-lines t)
-      (setq helm-migemo-mode 1)
+      ;(setq helm-migemo-mode 1)
       (global-set-key (kbd "M-x") 'helm-M-x)
       (global-set-key (kbd "C-s") 'helm-swoop)
       (global-set-key (kbd "C-x C-f") 'helm-find-files)
       (global-set-key (kbd "C-x b") 'helm-buffers-list)
-      (global-set-key (kbd "<f4>") 'helm-for-files))
+      (global-set-key (kbd "<f4>") 'helm-for-files)
+      (helm-migemo-mode))
 
     (use-package helm-projectile
       :ensure t
@@ -308,6 +374,90 @@
 
   #+END_SRC
 
+* treemacs
+
+  #+begin_src emacs-lisp
+    (use-package treemacs
+      :ensure t
+      :defer t
+      :init
+      (with-eval-after-load 'winum
+        (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
+      :config
+      (progn
+        (setq treemacs-collapse-dirs                 (if treemacs-python-executable 3 0)
+              treemacs-deferred-git-apply-delay      0.5
+              treemacs-directory-name-transformer    #'identity
+              treemacs-display-in-side-window        t
+              treemacs-eldoc-display                 t
+              treemacs-file-event-delay              5000
+              treemacs-file-extension-regex          treemacs-last-period-regex-value
+              treemacs-file-follow-delay             0.2
+              treemacs-file-name-transformer         #'identity
+              treemacs-follow-after-init             t
+              treemacs-git-command-pipe              ""
+              treemacs-goto-tag-strategy             'refetch-index
+              treemacs-indentation                   2
+              treemacs-indentation-string            " "
+              treemacs-is-never-other-window         nil
+              treemacs-max-git-entries               5000
+              treemacs-missing-project-action        'ask
+              treemacs-move-forward-on-expand        nil
+              treemacs-no-png-images                 nil
+              treemacs-no-delete-other-windows       t
+              treemacs-project-follow-cleanup        nil
+              treemacs-persist-file                  (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
+              treemacs-position                      'left
+              treemacs-recenter-distance             0.1
+              treemacs-recenter-after-file-follow    nil
+              treemacs-recenter-after-tag-follow     nil
+              treemacs-recenter-after-project-jump   'always
+              treemacs-recenter-after-project-expand 'on-distance
+              treemacs-show-cursor                   nil
+              treemacs-show-hidden-files             t
+              treemacs-silent-filewatch              nil
+              treemacs-silent-refresh                nil
+              treemacs-sorting                       'alphabetic-asc
+              treemacs-space-between-root-nodes      t
+              treemacs-tag-follow-cleanup            t
+              treemacs-tag-follow-delay              1.5
+              treemacs-user-mode-line-format         nil
+              treemacs-user-header-line-format       nil
+              treemacs-width                         20
+              treemacs-workspace-switch-cleanup      nil)
+
+        ;; The default width and height of the icons is 22 pixels. If you are
+        ;; using a Hi-DPI display, uncomment this to double the icon size.
+        ;;(treemacs-resize-icons 44)
+
+        (treemacs-follow-mode t)
+        (treemacs-filewatch-mode t)
+        (treemacs-fringe-indicator-mode t)
+        (pcase (cons (not (null (executable-find "git")))
+                     (not (null treemacs-python-executable)))
+          (`(t . t)
+           (treemacs-git-mode 'deferred))
+          (`(t . _)
+           (treemacs-git-mode 'simple))))
+      :bind
+      (:map global-map
+            ("M-0"       . treemacs-select-window)
+            ("C-x t 1"   . treemacs-delete-other-windows)
+            ("<f7>"   . treemacs)
+            ("C-x t B"   . treemacs-bookmark)
+            ("C-x t C-t" . treemacs-find-file)
+            ("C-x t M-t" . treemacs-find-tag)))
+
+
+    (use-package treemacs-projectile
+      :after treemacs projectile
+      :ensure t)
+
+    (use-package treemacs-magit
+      :after treemacs magit
+      :ensure t)
+  #+end_src
+  
 * Org
 
   [[https://emacs.stackexchange.com/questions/26451/agenda-view-for-all-tasks-with-a-project-tag-and-at-a-certain-level][org mode - Agenda view for all tasks with a project tag and at a certain leve...]]
@@ -335,7 +485,7 @@
       (require 'ob-emacs-lisp)
       (require 'ob-haskell)
       ;;(require 'ob-rust)
-      (require 'ox-bibtex)
+      ;;(require 'ox-bibtex)
       (require 'ob-gnuplot)
       (require 'org-habit)
       (require 'org-protocol)
@@ -364,15 +514,24 @@
          (rust . t)
          (shell . t)
          (python . t)
-         (ipython . t)
+         ;;(ipython . t)
          ;;(jupyter .t)
          ))
 
       ;;; Agenda を現在のウィンドウと入れ替えで表示
       (setq org-agenda-window-setup 'current-window)
 
-      (setq org-agenda-files `(,(get-my-ws "Org/inbox.org")
-                               ,(get-my-ws "Org/project.org")))
+      (setq org-agenda-files `(,(get-my-ws "Org/inbox.org")))
+ 
+      (cl-flet ((org-file-p (x) (s-ends-with-p ".org" x)))
+        (let ((files (f-entries (get-my-ws "Org/core") #'org-file-p)))
+          (dolist (f files nil)
+            (add-to-list 'org-agenda-files f))))
+      (cl-flet ((org-file-p (x) (s-ends-with-p ".org" x)))
+        (let ((files (f-entries (get-my-ws "Org/projects") #'org-file-p)))
+          (dolist (f files nil)
+            (add-to-list 'org-agenda-files f))))
+
       (setq org-capture-templates `(("t" "Todo [inbox]" entry
                                      (file+headline ,(get-my-ws "Org/inbox.org") "Tasks")
                                      "* TODO %i%?")
@@ -421,8 +580,8 @@
     (use-package ob-rust
       :ensure t)
 
-    (use-package ob-ipython
-      :ensure t)
+;;    (use-package ob-ipython
+;;      :ensure t)
 
     (use-package org-download
       :ensure t
@@ -458,7 +617,7 @@
               (book          . "${author:5} ${title:40} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}")
               (t             . "${author:5} ${title:40} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}"))))
 
-    (require 'ox-bibtex)
+    ;;(require 'ox-bibtex)
     (use-package ox-latex
       :config
       (require 'ox-latex)
@@ -508,9 +667,10 @@
       (setq org-latex-pdf-process
             '("xelatex -shell-escape -interaction nonstopmode -output-directory %o %f"
               "biber %b"
-                                            ;"bibtex ~/Dropbox/Bibliography/references"
               "xelatex -shell-escape -interaction nonstopmode -output-directory %o %f"
-              "xelatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
+              "xelatex -shell-escape -interaction nonstopmode -output-directory %o %f"
+              "rm -fr _minted-%b"
+              ))
 
       (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
       (setq org-latex-default-class "koma-jarticle")
@@ -606,6 +766,7 @@
                   :map org-mode-map
                   (("C-c n i" . org-roam-insert)
                    ("C-c n I" . org-roam-insert-immediate)))
+      :config (global-set-key (kbd "<f6>") 'org-roam-dailies-today)
       )
 
     (use-package org-roam-server
@@ -662,21 +823,155 @@
    #+BEGIN_SRC emacs-lisp
      ;"))
 
+
      (use-package lsp-mode
-       :custom ((lsp-inhibit-message t)
-                (lsp-message-project-root-warning t)
-                (create-lockfiles nil))
-       :hook   (prog-major-mode . lsp-prog-major-mode-enable))
+       :config
+       (setq lsp-prefer-capf t)
+       ;; .venv, .mypy_cache を watch 対象から外す
+       (dolist (dir '(
+                      ;;"[/\\\\]\\.venv$"
+                      "[/\\\\]\\.mypy_cache$"
+                      "[/\\\\]__pycache__$"
+                      ))
+         (push dir lsp-file-watch-ignored))
+
+       ;; lsp-mode の設定はここを参照してください。
+       ;; https://emacs-lsp.github.io/lsp-mode/page/settings/
+
+       (setq lsp-auto-configure t)
+       (setq lsp-enable-completion-at-point t)
+
+       ;; クロスリファレンスとの統合を有効化する
+       ;; xref-find-definitions
+       ;; xref-find-references
+       (setq lsp-enable-xref t)
+
+       ;; linter framework として flycheck を使う
+       (setq lsp-diagnostics-provider :flycheck)
+
+       ;; ミニバッファでの関数情報表示
+       (setq lsp-eldoc-enable-hover t)
+
+       ;; nii: ミニバッファでの関数情報をシグニチャだけにする
+       ;; t: ミニバッファでの関数情報で、doc-string 本体を表示する
+       (setq lsp-eldoc-render-all nil)
+
+       ;; breadcrumb
+       ;; パンくずリストを表示する。
+       (setq lsp-headerline-breadcrumb-enable t)
+       (setq lsp-headerline-breadcrumb-segments '(project file symbols))
+
+       ;; snippet
+       (setq lsp-enable-snippet t)
+
+       (require 'dap-cpptools)
+
+       ;; フック関数の定義
+       ;; python-mode 用、lsp-mode コンフィグ
+       (defun lsp/python-mode-hook
+         ()
+         (when (fboundp 'company-mode)
+           ;; company をコンフィグする
+           (setq
+            ;; 1文字で completion 発動させる
+            company-minimum-prefix-length 1
+            ;; default is 0.2
+            company-idle-delay 0.0
+            )
+           )
+         )
+
+       :commands (lsp lsp-deferred)
+       :hook
+       (python-mode . lsp) ; python-mode で lsp-mode を有効化する
+       (python-mode . lsp/python-mode-hook) ; python-mode 用のフック関数を仕掛ける
+       )
+
+     ;;(use-package lsp-pyright
+     ;;  :init
+     ;;  (defun lsp-pyright/python-mode-hook ()
+     ;;    ;; lsp-pyright を有効化する
+     ;;    (require 'lsp-pyright)
+     ;;    (when (fboundp 'flycheck-mode)
+     ;;        ;; pyright で lint するので、python-mypy は使わない。
+     ;;        (setq flycheck-disabled-checkers '(python-mypy))))
+     ;;
+     ;;  :hook
+     ;;  (python-mode . lsp-pyright/python-mode-hook))
 
      (use-package lsp-ui
-       :ensure t
        :after lsp-mode
-       :custom (scroll-margin 0)
-       :hook   (lsp-mode . lsp-ui-mode))
+       :config
+
+       ;; ui-peek を有効化する
+       (setq lsp-ui-peek-enable t)
+
+       ;; 候補が一つでも、常にpeek表示する。
+       (setq lsp-ui-peek-always-show t)
+
+       ;; sideline で flycheck 等の情報を表示する
+       (setq lsp-ui-sideline-show-diagnostics t)
+       ;; sideline で コードアクションを表示する
+       (setq lsp-ui-sideline-show-code-actions t)
+       ;; ホバーで表示されるものを、ホバーの変わりにsidelineで表示する
+       ;;(setq lsp-ui-sideline-show-hover t)
+
+       :bind
+       (:map lsp-ui-mode-map
+             ;; デフォルトの xref-find-definitions だと、ジャンプはできるが、ui-peek が使えない。
+             ("M-." . lsp-ui-peek-find-definitions)
+
+             ;; デフォルトの xref-find-references だと、ジャンプはできるが、ui-peek が使えない。
+             ("M-?" . lsp-ui-peek-find-references)
+             )
+       :hook
+       (lsp-mode . lsp-ui-mode)
+     )
 
      ;; タブ
      (setq-default indent-tabs-mode nil)
      (setq-default tab-width 4 indent-tabs-mode nil)
+
+     (use-package lsp-pyright :ensure t)
+
+     (use-package dap-mode
+       :after lsp-mode
+       :commands dap-debug
+       :hook ((python-mode . dap-ui-mode)
+          (python-mode . dap-mode))
+       :config
+       (eval-when-compile
+         (require 'cl))
+       (require 'dap-python)
+       (require 'dap-lldb)
+
+       (dap-mode 1)
+
+       ;; The modes below are optional
+
+       (dap-ui-mode 1)
+       ;; enables mouse hover support
+       (dap-tooltip-mode 1)
+       ;; use tooltips for mouse hover
+       ;; if it is not enabled `dap-mode' will use the minibuffer.
+       (tooltip-mode 1)
+       ;; displays floating panel with debug buttons
+       ;; requies emacs 26+
+       (dap-ui-controls-mode 1)
+
+
+
+       (dap-register-debug-template "My App"
+                                    (list :type "python"
+                                          :cwd "~/src/dap-mode/"
+                                          :target-module (expand-file-name "~/src/dap-mode/hello.py")
+                                          :request "launch"
+                                          :name "My App"))
+
+       ;; Temporal fix
+       (defun dap-python--pyenv-executable-find (command)
+         (with-venv (executable-find "python")))
+       )
 
      (use-package flycheck
        :ensure t
@@ -813,9 +1108,9 @@
        :config
        (setq python-indent-offset 4))
 
-     (use-package elpy :ensure t
-       :config
-       (elpy-enable))
+     ;;(use-package elpy :ensure t
+     ;;  :config
+     ;;  (elpy-enable))
 
        ;(use-package ein :ensure t)
        ;https://qiita.com/fury00812/items/08036e78a449d1cbeb48
@@ -896,407 +1191,678 @@
 
 * Etc
   #+BEGIN_SRC emacs-lisp
-    (defun ks-venv38 ()
-      (pyvenv-activate "~/src/pipenv_3.8/.venv"))
+        (defun ks-venv38 ()
+          (interactive)
+          (pyvenv-activate "~/src/pipenv_3.8/.venv"))
 
-    (defun ks-region-to-link ()
-      (interactive)
-      (progn
-        (goto-char (region-end))
-        (insert "][")
-        (yank)
-        (insert "]]")
-        (goto-char (region-beginning))
-        (insert "[[")))
-
-
-    ;; https://emacs.stackexchange.com/questions/31646/how-to-paste-with-indentより転載
-    (defun yank-with-indent-2 ()
-      (let ((indent
-             (buffer-substring-no-properties (line-beginning-position) (line-end-position))))
-        (message indent)
-        (yank)
-        (narrow-to-region (mark t) (point))
-        (pop-to-mark-command)
-        (replace-string "\n" (concat "\n" indent))
-        (widen)))
+        (defun ks-region-to-link ()
+          (interactive)
+          (progn
+            (goto-char (region-end))
+            (insert "][")
+            (yank)
+            (insert "]]")
+            (goto-char (region-beginning))
+            (insert "[[")))
 
 
-    (setq large-file-warning-threshold nil)
-
-    (use-package recentf
-      :ensure t
-      :config
-      (setq recentf-max-saved-items 2000) ;; 2000ファイルまで履歴保存する
-      (setq recentf-auto-cleanup 'never)  ;; 存在しないファイルは消さない
-      (setq recentf-exclude '("/recentf" "COMMIT_EDITMSG" "/.?TAGS" "^/sudo:" "/\\.emacs\\.d/games/*-scores" "/\\.emacs\\.d/\\.cask/"))
-      (setq recentf-auto-save-timer (run-with-idle-timer 12000 t 'recentf-save-list)))
-
-    (use-package calendar
-      :ensure t
-      :bind (("<f9>" . calendar)))
-
-    (defun ks/capture-journal ()
-      (interactive)
-      (let ((org-journal-find-file #'find-file)
-            (frm (make-frame)))
-        (progn
-          (select-frame-set-input-focus frm)
-          (set-frame-position frm (/ (x-display-pixel-width) 3) 0) 
-          (org-journal-new-entry nil)
-          (local-set-key (kbd "C-c C-c") 'delete-frame))))
-
-    ;;https://superuser.com/questions/308045/disallow-closing-last-emacs-window-via-window-manager-close-button
-    (defadvice handle-delete-frame (around my-handle-delete-frame-advice activate)
-      "Ask for confirmation before deleting the last frame"
-      (let ((frame   (posn-window (event-start event)))
-            (numfrs  (length (visible-frame-list))))
-        (when (> numfrs 1)
-          ad-do-it)))
-
-    ;;===============================================================
-    ;; Packages
-    ;;===============================================================
-    (use-package ediff
-      :ensure t
-      :config
-      (setq ediff-diff-program "~/bin/my-diff.sh")
-      ;; コントロール用のバッファを同一フレーム内に表示
-      (setq ediff-window-setup-function 'ediff-setup-windows-plain)
-      ;; diffのバッファを上下ではなく左右に並べる
-      (setq ediff-split-window-function 'split-window-horizontally))
-
-    ;; org-modeのExportでコードを色付きで出力するため
-    (use-package htmlize :ensure t)
-
-    (use-package migemo
-      :ensure t
-      :config
-      (setq migemo-command "cmigemo")
-      (setq migemo-options '("-q" "--emacs"))
-
-      ;; Set your installed path
-      (setq migemo-dictionary "/usr/share/migemo/utf-8/migemo-dict")
-
-      (setq migemo-user-dictionary nil)
-      (setq migemo-regex-dictionary nil)
-      (setq migemo-coding-system 'utf-8-unix)
-      (migemo-init))
-
-    (use-package pdf-tools
-      :ensure t
-
-      :mode (("\\.pdf?\\'" . pdf-view-mode))
-      :config
-      (setq-default pdf-view-display-size 'fit-page))
-
-    (use-package magit
-      :ensure t
-      :bind (("<f3>" . magit-status))
-      :diminish auto-revert-mode
-      :config (add-hook 'ediff-prepare-buffer-hook #'show-all))
-
-    (use-package google-this
-      :ensure t)
-
-    ;; (use-package shackle
-    ;;   :ensure t
-    ;;   :config
-    ;;   (shackle-mode t)
-
-    ;;   (setq helm-display-function 'pop-to-buffer)
-    ;;   (setq helm-swoop-split-window-function 'display-buffer)
-
-    ;;   ;;(setq  special-display-regexps '("\\*Org Se.*" "CAPTURE-.*?" "\\*Capture\\*"))
-    ;;   (setq  special-display-regexps '())
-
-    ;;   (setq shackle-rules
-    ;;         '(("*helm-ag*"              :select t   :align right :size 0.5)
-    ;;           ("*helm semantic/imenu*"  :select t   :align right :size 0.4)
-    ;;           ("*helm org inbuffer*"    :select t   :align right :size 0.4)
-    ;;           (flycheck-error-list-mode :select nil :align below :size 0.25)
-    ;;           (compilation-mode         :select nil :align below :size 0.25)
-    ;;           (messages-buffer-mode     :select t   :align below :size 0.25)
-    ;;           (inferior-emacs-lisp-mode :select t   :align below :size 0.25)
-    ;;           (ert-results-mode         :select t   :align below :size 0.5)
-    ;;           (calendar-mode            :select t   :align below :size 0.25)
-    ;;           (racer-help-mode          :select t   :same t)
-    ;;           ("*Google Translate*"     :select t   :align below :size 0.3)
-    ;;           (help-mode                :select t   :align right :size 0.5)
-    ;;           (helpful-mode             :select t   :align right :size 0.5)
-    ;;           (" *Deletions*"           :select t   :align below :size 0.25)
-    ;;           (" *Marked Files*"        :select t   :align below :size 0.25)
-    ;;           ("*Helm Swoop*"           :select t   :align below :size 0.33)
-    ;;           ("*Org Note*"             :select t   :align below :size 0.33)
-    ;;           ("*Org Links*"            :select t   :align below :size 0.2)
-    ;;           (" *Org todo*"            :select t   :align below :size 0.2)
-    ;;           ("*Man.*"                 :select t   :align below :size 0.5  :regexp t)
-    ;;           ("*helm.*"                :select t   :align below :size 0.33 :regexp t)
-    ;;           ("*Org Src.*"             :select t   :same t                  :regexp t))))
-
-    (use-package wrap-region
-      :ensure   t
-      :diminish wrap-region-mode
-      :config
-      (wrap-region-global-mode t)
-      (wrap-region-add-wrappers
-       '(("(" ")")
-         ("[" "]")
-         ("{" "}")
-         ("<" ">")
-         ("'" "'")
-         ("\"" "\"")
-         ("‘" "’"   "q")
-         ("“" "”"   "Q")
-         ("*" "*"   "b"   org-mode)                 ; bolden
-         ("*" "*"   "*"   org-mode)                 ; bolden
-         ("/" "/"   "i"   org-mode)                 ; italics
-         ("/" "/"   "/"   org-mode)                 ; italics
-         ("~" "~"   "c"   org-mode)                 ; code
-         ("~" "~"   "~"   org-mode)                 ; code
-         ("=" "="   "v"   org-mode)                 ; verbatim
-         ("=" "="   "="   org-mode)                 ; verbatim
-         ("_" "_"   "u" '(org-mode markdown-mode))  ; underline
-         ("**" "**" "b"   markdown-mode)            ; bolden
-         ("*" "*"   "i"   markdown-mode)            ; italics
-         ("`" "`"   "c" '(markdown-mode ruby-mode)) ; code
-         ("`" "'"   "c"   lisp-mode)                ; code
-         )))
-
-    (use-package multiple-cursors
-      :ensure t
-      :config
-      (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
-      (global-set-key (kbd "C->") 'mc/mark-next-like-this)
-      (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
-      (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this))
-
-    (use-package open-junk-file
-      :ensure t)
-
-    (use-package avy
-      :ensure t
-      :bind* ("C-." . avy-goto-char-timer)
-      :config
-      (avy-setup-default))
-
-    (use-package winner
-      :init
-      (winner-mode 1)
-      (global-set-key (kbd "C-z") 'winner-undo))
-
-    (use-package elfeed
-      :ensure t
-      :if (file-exists-p (get-my-ws "dotfiles-secret/elfeed.el"))
-      :init
-      (load (get-my-ws "dotfiles-secret/elfeed.el"))
-      :config
-      (setq shr-inhibit-images t))
-
-    (use-package yasnippet
-      :ensure t
-      :config
-      (yas-global-mode 1))
-
-    (use-package restart-emacs
-      :ensure t)
-
-    (use-package persp-mode
-      :ensure t)
-
-    (use-package auto-save-buffers-enhanced
-      :ensure t)
-
-    (use-package lispxmp
-      :ensure t)
-
-    (use-package super-save
-      :ensure t
-      :diminish super-save-mode
-      :init
-      (super-save-mode 1)
-      (setq super-save-exclude nil)
-      (setq super-save-auto-save-when-idle t))
-
-    (use-package auctex
-      :defer t
-      :ensure t)
-
-    (defun ssbb-pyenv-hook ()
-      "Automatically activates pyenv version if .python-version file exists."
-      (f-traverse-upwards
-       (lambda (path)
-         (let ((pyenv-version-path (f-expand ".python-version" path)))
-           (if (f-exists? pyenv-version-path)
-               (pyenv-mode-set (s-trim (f-read-text pyenv-version-path 'utf-8))))))))
-
-    (add-hook 'find-file-hook 'ssbb-pyenv-hook)
-
-    (use-package gnuplot-mode
-      :ensure t)
-    (use-package gnuplot
-      :ensure t)
-
-    (use-package markdown-mode
-      :ensure t
-      :commands (markdown-mode gfm-mode)
-      :mode (("README\\.md\\'" . gfm-mode)
-             ("\\.md\\'" . markdown-mode)
-             ("\\.markdown\\'" . markdown-mode))
-      :init (setq markdown-command "multimarkdown"))
-
-    (use-package org2blog
-      :ensure t
-      :defer t
-      :if (file-exists-p (get-my-ws "dotfiles-secret/org2blog.el"))
-      :after org
-      :config
-      (load (get-my-ws "dotfiles-secret/org2blog.el")))
-
-    ;; shellの文字化けを回避
-    (add-hook 'shell-mode-hook
-              (lambda ()
-                (set-buffer-process-coding-system 'utf-8-unix 'utf-8-unix)
-                ))
-    (setq default-process-coding-system '(utf-8 . utf-8))
-
-    (use-package atomic-chrome
-      :ensure t
-      :init
-      (atomic-chrome-start-server))
-
-    (use-package realgud
-      :ensure t)
-
-    (use-package undo-tree
-      :ensure t
-      :diminish undo-tree-mode
-      :config
-      (global-undo-tree-mode 1))
+        ;; https://emacs.stackexchange.com/questions/31646/how-to-paste-with-indentより転載
+        (defun yank-with-indent-2 ()
+          (let ((indent
+                 (buffer-substring-no-properties (line-beginning-position) (line-end-position))))
+            (message indent)
+            (yank)
+            (narrow-to-region (mark t) (point))
+            (pop-to-mark-command)
+            (replace-string "\n" (concat "\n" indent))
+            (widen)))
 
 
+        (setq large-file-warning-threshold nil)
 
-    ;; My elisp
-    ;;===============================================================
+        (use-package recentf
+          :ensure t
+          :config
+          (setq recentf-max-saved-items 2000) ;; 2000ファイルまで履歴保存する
+          (setq recentf-auto-cleanup 'never)  ;; 存在しないファイルは消さない
+          (setq recentf-exclude '("/recentf" "COMMIT_EDITMSG" "/.?TAGS" "^/sudo:" "/\\.emacs\\.d/games/*-scores" "/\\.emacs\\.d/\\.cask/"))
+          (setq recentf-auto-save-timer (run-with-idle-timer 12000 t 'recentf-save-list)))
 
-    (defun ks-make-bibtex-symbolic-link (bibkey path)
-      (let* ((default-directory my-ref-pdfs)
-             (target (f-relative path)))
-        (shell-command-to-string
-         (s-lex-format "ln -s \"${target}\" ${bibkey}.pdf"))))
+        (use-package calendar
+          :ensure t
+          :bind (("<f9>" . calendar)))
 
-    (defun ks-get-books (title)
-      (let ((len (/ (length title) 2)))
-        (s-lines (shell-command-to-string
-                  (s-lex-format "find ~/Dropbox/Book | agrep -E ${len} \"${title}\"")))))
-
-    (defun ks-get-bibtex-title (bibkey)
-      (let* ((key bibkey)
-             (hs (gethash key (parsebib-collect-entries)))
-             (value (cdr (assoc "title" hs)))
-             (title (s-chop-prefix "{" (s-chop-suffix "}" value)))
-             )
-        title))
-
-    (defun ks-get-path-of-book (title)
-      (let ((books (ks-get-books title)))
-        (helm :sources (helm-build-sync-source "books"
-                         :candidates books
-                         :fuzzy-match t)
-              :buffer "*helm books*")))
-
-    (defun ks-init-bib-pdf (start end)
-      (interactive "r")
-      (let* ((bibkey (buffer-substring-no-properties start end))
-             (title (ks-get-bibtex-title bibkey))
-             (path (ks-get-path-of-book title))
-             )
-        (ks-make-bibtex-symbolic-link bibkey path)))
-
-
-    (defun join-lines () (interactive)
-           (setq fill-column 100000)
-           (fill-paragraph nil)
-           (setq fill-column 78)
-           )
-
-    (defun my-toggle-bar ()
-      "メニューバーとツールバーの表示を切り替える関数"
-      (lexical-let ((vis 1))
-        #'(lambda  ()
-            (interactive)
+        (defun ks/capture-journal ()
+          (interactive)
+          (let ((org-journal-find-file #'find-file)
+                (frm (make-frame)))
             (progn
-              (setq vis (- vis))
-              (tool-bar-mode vis)
-              (menu-bar-mode vis)))))
-    (global-set-key (kbd "<f6>") (my-toggle-bar))
+              (select-frame-set-input-focus frm)
+              (set-frame-position frm (/ (x-display-pixel-width) 3) 0) 
+              (org-journal-new-entry nil)
+              (local-set-key (kbd "C-c C-c") 'delete-frame))))
 
-    (setq default-file-name-coding-system 'utf-8)
+        ;;https://superuser.com/questions/308045/disallow-closing-last-emacs-window-via-window-manager-close-button
+        (defadvice handle-delete-frame (around my-handle-delete-frame-advice activate)
+          "Ask for confirmation before deleting the last frame"
+          (let ((frame   (posn-window (event-start event)))
+                (numfrs  (length (visible-frame-list))))
+            (when (> numfrs 1)
+              ad-do-it)))
 
-    (add-to-list 'process-coding-system-alist '("git" utf-8 . utf-8))
-    (add-hook 'git-commit-mode-hook
-              '(lambda ()
-                 (set-buffer-file-coding-system 'utf-8)))
+        ;;===============================================================
+        ;; Packages
+        ;;===============================================================
+        (use-package ediff
+          :ensure t
+          :config
+          (setq ediff-diff-program "~/bin/my-diff.sh")
+          ;; コントロール用のバッファを同一フレーム内に表示
+          (setq ediff-window-setup-function 'ediff-setup-windows-plain)
+          ;; diffのバッファを上下ではなく左右に並べる
+          (setq ediff-split-window-function 'split-window-horizontally))
 
-    (defun isbn-to-bibtex-lead-jp (isbn)
-      "Search lead.to for ISBN bibtex entry.
-               You have to copy the entry if it is on the page to your bibtex
-               file."
-      (interactive "sISBN: ")
-      (browse-url
-       (format
-        "http://lead.to/amazon/jp/?key=%s+&si=all&op=bt&bn=&so=sa&ht=jp"
-        isbn)))
+        ;; org-modeのExportでコードを色付きで出力するため
+        (use-package htmlize :ensure t)
 
-    (setq org-icalendar-combined-agenda-file "~/Dropbox/Org/mycal.ics")
+        (use-package pdf-tools
+          :ensure t
 
-    ;; iCal の説明文
-    (setq org-icalendar-combined-description "OrgModeのスケジュール出力")
-    ;; カレンダーに適切なタイムゾーンを設定する（google 用には nil が必要）
-    (setq org-icalendar-timezone "UTC")
-    ;; DONE になった TODO は出力対象から除外する
-    (setq org-icalendar-include-todo t)
-    ;; （通常は，<>--<> で区間付き予定をつくる．非改行入力で日付がNoteに入らない）
-    (setq org-icalendar-use-scheduled '(event-if-todo))
-    ;; DL 付きで終日予定にする：締め切り日（スタンプで時間を指定しないこと）
-    (setq org-icalendar-use-deadline '(event-if-todo))
+          :mode (("\\.pdf?\\'" . pdf-view-mode))
+          :config
+          (add-hook 'pdf-view-mode-hook (lambda() (linum-mode -1)))
+          (add-hook 'pdf-view-mode-hook (lambda() (display-line-numbers-mode -1)))
+          (add-hook 'pdf-view-mode-hook (lambda() (pdf-tools-enable-minor-modes)))
+          (setq-default pdf-view-display-size 'fit-page))
 
-    (setq org-export-exclude-category '())
+        (use-package magit
+          :ensure t
+          :bind (("<f3>" . magit-status))
+          :diminish auto-revert-mode
+          :config (add-hook 'ediff-prepare-buffer-hook #'show-all))
 
-               ;;; define filter. The filter is called on each entry in the agenda.
-               ;;; It defines a regexp to search for two timestamps, gets the start
-               ;;; and end point of the entry and does a regexp search. It also
-               ;;; checks if the category of the entry is in an exclude list and
-               ;;; returns either t or nil to skip or include the entry.
+        (use-package google-this
+          :ensure t)
 
-    (defun org-mycal-export-limit ()
-      "Limit the export to items that have a date, time and a range. Also exclude certain categories."
-      (setq org-tst-regexp "<\\([0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\} ... [0-9]\\{2\\}:[0-9]\\{2\\}[^\r\n>]*?\
-               \)>")
-      (setq org-tstr-regexp (concat org-tst-regexp "--?-?" org-tst-regexp))
-      (save-excursion
-                                            ; get categories
-        (setq mycategory (org-get-category))
-                                            ; get start and end of tree
-        (org-back-to-heading t)
-        (setq mystart    (point))
-        (org-end-of-subtree)
-        (setq myend      (point))
-        (goto-char mystart)
-                                            ; search for timerange
-        (setq myresult (re-search-forward org-tstr-regexp myend t))
-                                            ; search for categories to exclude
-        (setq mycatp (member mycategory org-export-exclude-category))
-                                            ; return t if ok, nil when not ok
-        (if (and myresult (not mycatp)) t nil)))
+        (use-package shackle
+          :ensure t
+          :config
+          (shackle-mode t)
 
-               ;;; activate filter and call export function
-    (defun org-mycal-export ()
-      (interactive)
-      (let ((org-icalendar-verify-function 'org-mycal-export-limit))
-        (org-icalendar-combine-agenda-files)))
+          (setq helm-display-function 'pop-to-buffer)
+          (setq helm-swoop-split-window-function 'display-buffer)
+
+          ;;(setq  special-display-regexps '("\\*Org Se.*" "CAPTURE-.*?" "\\*Capture\\*"))
+          (setq  special-display-regexps '())
+
+          (setq shackle-rules
+                '(("*helm-ag*"              :select t   :align right :size 0.5)
+                  ("*helm semantic/imenu*"  :select t   :align right :size 0.4)
+                  ("*helm org inbuffer*"    :select t   :align right :size 0.4)
+                  (flycheck-error-list-mode :select nil :align below :size 0.25)
+                  (compilation-mode         :select nil :align below :size 0.25)
+                  (messages-buffer-mode     :select t   :align below :size 0.25)
+                  (inferior-emacs-lisp-mode :select t   :align below :size 0.25)
+                  (ert-results-mode         :select t   :align below :size 0.5)
+                  (calendar-mode            :select t   :align below :size 0.25)
+                  (racer-help-mode          :select t   :same t)
+                  ("*Google Translate*"     :select t   :align below :size 0.3)
+                  (help-mode                :select t   :align right :size 0.5)
+                  (helpful-mode             :select t   :align right :size 0.5)
+                  (" *Deletions*"           :select t   :align below :size 0.25)
+                  (" *Marked Files*"        :select t   :align below :size 0.25)
+                  ("*Helm Swoop*"           :select t   :align below :size 0.25)
+                  ("*Org Note*"             :select t   :align below :size 0.33)
+                  ("*Org Links*"            :select t   :align below :size 0.2)
+                  (" *Org todo*"            :select t   :align below :size 0.2)
+                  ("*Man.*"                 :select t   :align below :size 0.5  :regexp t)
+                  ("*helm.*"                :select t   :align below :size 0.33 :regexp t)
+                  ("*Org Src.*"             :select t   :same t                  :regexp t))))
+
+        (use-package wrap-region
+          :ensure   t
+          :diminish wrap-region-mode
+          :config
+          (wrap-region-global-mode t)
+          (wrap-region-add-wrappers
+           '(("(" ")")
+             ("[" "]")
+             ("{" "}")
+             ("<" ">")
+             ("'" "'")
+             ("\"" "\"")
+             ("‘" "’"   "q")
+             ("“" "”"   "Q")
+             ("*" "*"   "b"   org-mode)                 ; bolden
+             ("*" "*"   "*"   org-mode)                 ; bolden
+             ("/" "/"   "i"   org-mode)                 ; italics
+             ("/" "/"   "/"   org-mode)                 ; italics
+             ("~" "~"   "c"   org-mode)                 ; code
+             ("~" "~"   "~"   org-mode)                 ; code
+             ("=" "="   "v"   org-mode)                 ; verbatim
+             ("=" "="   "="   org-mode)                 ; verbatim
+             ("_" "_"   "u" '(org-mode markdown-mode))  ; underline
+             ("**" "**" "b"   markdown-mode)            ; bolden
+             ("*" "*"   "i"   markdown-mode)            ; italics
+             ("`" "`"   "c" '(markdown-mode ruby-mode)) ; code
+             ("`" "'"   "c"   lisp-mode)                ; code
+             )))
+
+        (use-package multiple-cursors
+          :ensure t
+          :config
+          (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
+          (global-set-key (kbd "C->") 'mc/mark-next-like-this)
+          (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+          (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this))
+
+        (use-package open-junk-file
+          :ensure t)
+
+        (use-package avy
+          :ensure t
+          :bind* ("C-." . avy-goto-char-timer)
+          :config
+          (avy-setup-default))
+
+        (use-package winner
+          :init
+          (winner-mode 1)
+          (global-set-key (kbd "C-z") 'winner-undo))
+
+        (use-package elfeed
+          :ensure t
+          :if (file-exists-p (get-my-ws "dotfiles-secret/elfeed.el"))
+          :init
+          (load (get-my-ws "dotfiles-secret/elfeed.el"))
+          :config
+          (setq shr-inhibit-images t))
+
+        (use-package yasnippet
+          :ensure t
+          :config
+          (add-to-list 'warning-suppress-types '(yasnippet backquote-change))
+          (yas-global-mode 1))
+
+        (use-package restart-emacs
+          :ensure t)
+
+        (use-package persp-mode
+          :ensure t)
+
+        (use-package auto-save-buffers-enhanced
+          :ensure t)
+
+        (use-package lispxmp
+          :ensure t)
+
+        (use-package super-save
+          :ensure t
+          :diminish super-save-mode
+          :init
+          (super-save-mode 1)
+          (setq super-save-exclude nil)
+          (setq super-save-auto-save-when-idle t))
+
+        (use-package auctex
+          :defer t
+          :ensure t)
+
+        (defun ssbb-pyenv-hook ()
+          "Automatically activates pyenv version if .python-version file exists."
+          (f-traverse-upwards
+           (lambda (path)
+             (let ((pyenv-version-path (f-expand ".python-version" path)))
+               (if (f-exists? pyenv-version-path)
+                   (pyenv-mode-set (s-trim (f-read-text pyenv-version-path 'utf-8))))))))
+
+        (add-hook 'find-file-hook 'ssbb-pyenv-hook)
+
+        (use-package gnuplot-mode
+          :ensure t)
+        (use-package gnuplot
+          :ensure t)
+
+        (use-package markdown-mode
+          :ensure t
+          :commands (markdown-mode gfm-mode)
+          :mode (("README\\.md\\'" . gfm-mode)
+                 ("\\.md\\'" . markdown-mode)
+                 ("\\.markdown\\'" . markdown-mode))
+          :init (setq markdown-command "multimarkdown"))
+
+        (use-package org2blog
+          :ensure t
+          :defer t
+          :if (file-exists-p (get-my-ws "dotfiles-secret/org2blog.el"))
+          :after org
+          :config
+          (load (get-my-ws "dotfiles-secret/org2blog.el")))
+
+        ;; shellの文字化けを回避
+        (add-hook 'shell-mode-hook
+                  (lambda ()
+                    (set-buffer-process-coding-system 'utf-8-unix 'utf-8-unix)
+                    ))
+        (setq default-process-coding-system '(utf-8 . utf-8))
+
+        (use-package atomic-chrome
+          :ensure t
+          :init
+          (atomic-chrome-start-server))
+
+        (use-package realgud
+          :ensure t)
+
+        (use-package undo-tree
+          :ensure t
+          :diminish undo-tree-mode
+          :config
+          (global-undo-tree-mode 1))
+
+
+
+        ;; My elisp
+        ;;===============================================================
+
+        (defun ks-make-bibtex-symbolic-link (bibkey path)
+          (let* ((default-directory my-ref-pdfs)
+                 (target (f-relative path)))
+            (shell-command-to-string
+             (s-lex-format "ln -s \"${target}\" ${bibkey}.pdf"))))
+
+        (defun ks-get-books (title)
+          (let ((len (/ (length title) 2)))
+            (s-lines (shell-command-to-string
+                      (s-lex-format "find ~/Dropbox/Book | agrep -E ${len} \"${title}\"")))))
+
+        (defun ks-get-bibtex-title (bibkey)
+          (let* ((key bibkey)
+                 (hs (gethash key (parsebib-collect-entries)))
+                 (value (cdr (assoc "title" hs)))
+                 (title (s-chop-prefix "{" (s-chop-suffix "}" value)))
+                 )
+            title))
+
+        (defun ks-get-path-of-book (title)
+          (let ((books (ks-get-books title)))
+            (helm :sources (helm-build-sync-source "books"
+                             :candidates books
+                             :fuzzy-match t)
+                  :buffer "*helm books*")))
+
+        (defun ks-init-bib-pdf (start end)
+          (interactive "r")
+          (let* ((bibkey (buffer-substring-no-properties start end))
+                 (title (ks-get-bibtex-title bibkey))
+                 (path (ks-get-path-of-book title))
+                 )
+            (ks-make-bibtex-symbolic-link bibkey path)))
+
+
+        (defun join-lines () (interactive)
+               (setq fill-column 100000)
+               (fill-paragraph nil)
+               (setq fill-column 78)
+               )
+
+        (defun my-toggle-bar ()
+          "メニューバーとツールバーの表示を切り替える関数"
+          (lexical-let ((vis 1))
+            #'(lambda  ()
+                (interactive)
+                (progn
+                  (setq vis (- vis))
+                  (tool-bar-mode vis)
+                  (menu-bar-mode vis)))))
+        ;;(global-set-key (kbd "<f6>") (my-toggle-bar))
+
+        (setq default-file-name-coding-system 'utf-8)
+
+        (add-to-list 'process-coding-system-alist '("git" utf-8 . utf-8))
+        (add-hook 'git-commit-mode-hook
+                  '(lambda ()
+                     (set-buffer-file-coding-system 'utf-8)))
+
+        (defun isbn-to-bibtex-lead-jp (isbn)
+          "Search lead.to for ISBN bibtex entry.
+                   You have to copy the entry if it is on the page to your bibtex
+                   file."
+          (interactive "sISBN: ")
+          (browse-url
+           (format
+            "http://lead.to/amazon/jp/?key=%s+&si=all&op=bt&bn=&so=sa&ht=jp"
+            isbn)))
+
+        (setq org-icalendar-combined-agenda-file "~/Dropbox/Org/mycal.ics")
+
+        ;; iCal の説明文
+        (setq org-icalendar-combined-description "OrgModeのスケジュール出力")
+        ;; カレンダーに適切なタイムゾーンを設定する（google 用には nil が必要）
+        (setq org-icalendar-timezone "UTC")
+        ;; DONE になった TODO は出力対象から除外する
+        (setq org-icalendar-include-todo t)
+        ;; （通常は，<>--<> で区間付き予定をつくる．非改行入力で日付がNoteに入らない）
+        (setq org-icalendar-use-scheduled '(event-if-todo))
+        ;; DL 付きで終日予定にする：締め切り日（スタンプで時間を指定しないこと）
+        (setq org-icalendar-use-deadline '(event-if-todo))
+
+        (setq org-export-exclude-category '())
+
+                   ;;; define filter. The filter is called on each entry in the agenda.
+                   ;;; It defines a regexp to search for two timestamps, gets the start
+                   ;;; and end point of the entry and does a regexp search. It also
+                   ;;; checks if the category of the entry is in an exclude list and
+                   ;;; returns either t or nil to skip or include the entry.
+
+        (defun org-mycal-export-limit ()
+          "Limit the export to items that have a date, time and a range. Also exclude certain categories."
+          (setq org-tst-regexp "<\\([0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\} ... [0-9]\\{2\\}:[0-9]\\{2\\}[^\r\n>]*?\
+                   \)>")
+          (setq org-tstr-regexp (concat org-tst-regexp "--?-?" org-tst-regexp))
+          (save-excursion
+                                                ; get categories
+            (setq mycategory (org-get-category))
+                                                ; get start and end of tree
+            (org-back-to-heading t)
+            (setq mystart    (point))
+            (org-end-of-subtree)
+            (setq myend      (point))
+            (goto-char mystart)
+                                                ; search for timerange
+            (setq myresult (re-search-forward org-tstr-regexp myend t))
+                                                ; search for categories to exclude
+            (setq mycatp (member mycategory org-export-exclude-category))
+                                                ; return t if ok, nil when not ok
+            (if (and myresult (not mycatp)) t nil)))
+
+                   ;;; activate filter and call export function
+        (defun org-mycal-export ()
+          (interactive)
+          (let ((org-icalendar-verify-function 'org-mycal-export-limit))
+            (org-icalendar-combine-agenda-files)))
+
+
+        ;; (defun ks-random-books() 
+        ;;   (interactive)
+        ;;   (org-babel-insert-result
+        ;;    (mapcar (lambda (n) (print (s-concat "[[" n "][" (f-filename n) "]]")))
+        ;;            (s-lines
+        ;;             (shell-command-to-string "cat <(find ~/Dropbox/Book)  <(cat ~/Dropbox/Book/kindle.org) | shuf -n 5")))
+        ;;    '("list")))
+
+        (defun ks-random-books() 
+          (interactive)
+          (progn
+            (mapcar (lambda (n) (insert (s-concat "+ [[" n "][" (f-filename n) "]]\n")))
+                    (s-lines (s-trim
+                              (shell-command-to-string "find ~/Dropbox/Book | shuf -n 3"))))
+            (mapcar (lambda (n) (insert (s-concat "+ " n "\n")))
+                    (s-lines (s-trim
+                              (shell-command-to-string "cat ~/Dropbox/Book/kindle.org | shuf -n 3"))))))
+
+        ;; (defun ks-random-org-rome() 
+        ;;   (interactive)
+        ;;   (org-babel-insert-result
+        ;;    (mapcar (lambda (n) (print (s-concat "[[" n "][" (f-filename n) "]]")))
+        ;;            (s-lines
+        ;;             (shell-command-to-string "find ~/Dropbox/org-roam -name '*.org' | shuf -n 10")))
+        ;;    '("list")))
+
+        (defun ks-random-org-rome() 
+          (interactive 
+           (mapcar (lambda (n) (insert (s-concat "[[" n "][" (f-filename n) "]]\n")))
+                   (s-lines
+                    (shell-command-to-string "find ~/Dropbox/org-roam -name '*.org' | shuf -n 10")))))
+
+        (defun ks-create-report (report-path)
+          (interactive "snew report: ")
+          (let* ((filename (s-concat (ts-format "%Y%m%d" (ts-now)) "-" report-path ".org"))
+                 (fullpath (f-join (get-my-ws "Report") filename)))
+            (find-file fullpath)
+            (insert "rep2")
+            (yas-expand)))
+
+        (defun ks-learn-start ()
+          (interactive)
+          (org-clock-in))
+
+        (defun ks-learn-done (focus understand)
+          (interactive "nFocus: \nnUnderstand: ")
+          (let ((cur_cnt (org-entry-get (point) "count_learn")))
+            (progn
+              (when (org-clocking-p)
+                (org-clock-out))
+
+              (unless cur_cnt (setq cur_cnt "0"))
+
+              (org-entry-put (point) "count_learn"
+                             (number-to-string (+ 1 (string-to-number cur_cnt))))
+              (org-entry-put (point) "last_learn"
+                             (format-time-string (cdr org-time-stamp-formats)))
+
+              (org-entry-put (point) "last_focus" (number-to-string focus))
+              (org-entry-put (point) "understand" (number-to-string understand))
+
+              (ks-learn-next))))
+        (defun ks-learn-next ()
+          (save-excursion
+            (org-todo 'none)
+            (catch 'ks-learn-state
+              (while (re-search-forward "^\\(\*+\\)[ ]+\\(.+\\)$" nil t)
+                (let ((lv (length (match-string 1))))
+                  (cond
+                   ((<= lv 2)
+                    (throw 'ks-learn-state nil))
+                   ((string= "0" (org-entry-get (point) "count_learn"))
+                    (progn
+                      (org-todo 'next)
+                      (throw 'ks-learn-state t)))))))))
+
+        (defun ks-learn-init ()
+          (interactive)
+          (let ((cur_cnt (org-entry-get (point) "count_learn")))
+            (progn
+              (unless cur_cnt (org-entry-put (point) "count_learn" "0")))))
+
+        (defun ks-learn-match-count-0 ()
+          (interactive)
+          (let ((ibuf (switch-to-buffer (org-get-indirect-buffer))))
+            (condition-case _        
+                (org-match-sparse-tree nil 
+                                       (s-lex-format "count_learn=0"))
+              (quit (kill-buffer ibuf)))))
+
+        (defun org-sparse-tree-indirect-buffer (arg)
+          (interactive "P")
+          (let ((ibuf (switch-to-buffer (org-get-indirect-buffer))))
+            (condition-case _
+                (org-sparse-tree arg)
+              (quit (kill-buffer ibuf)))))
+
+        (defun ks-learn-list-review (cnt)
+          (interactive "nLearn Count: ")
+          (let ((ago (cond
+                      ((= cnt 1) "\"-<1d>\"")
+                      ((= cnt 2) "\"-<2d>\"")
+                      ((= cnt 3) "\"-<1w>\"")
+                      ((= cnt 4) "\"-<2w>\"")
+                      ((<= cnt 5) "\"-<1m>\""))))
+            (org-match-sparse-tree nil (s-lex-format "count_learn=${cnt}+last_learn>=${ago}"))))
+        (defun ks-learn-list-review-1 ()
+          (interactive)
+          (ks-learn-list-review 1))
+        (defun ks-learn-list-review-2 ()
+          (interactive)
+          (ks-learn-list-review 2))
+        (defun ks-learn-list-review-3 ()
+          (interactive)
+          (ks-learn-list-review 3))
+        (defun ks-learn-list-review-4 ()
+          (interactive)
+          (ks-learn-list-review 4))
+        (defun ks-learn-list-review-5 ()
+          (interactive)
+          (ks-learn-list-review 5))
+
+        (defun ks-learn-generate-ical ()
+          (interactive)
+          (let ((spans nil))
+            (save-excursion
+              (goto-char (point-min))
+              (while (re-search-forward "CLOCK: \\(\\[.+\\]\\)--\\(\\[.+\\]\\)" nil t)
+                (let* ((org-ts-s (match-string 1))
+                       (org-ts-e (match-string 2))
+                       (ts-s (ts-parse-org org-ts-s))
+                       (ts-e (ts-parse-org org-ts-e)))
+                  (push (list :ts-s ts-s :ts-e ts-e :title (s-join "/" (org-get-outline-path))) spans))))
+
+            (with-output-to-temp-buffer "*ks learn ical"
+              (princ "BEGIN:VCALENDAR\n")
+              (princ "VERSION:2.0\n")
+              (princ "PRODID:-//k-sunako//JP\n")
+
+              (dolist (span spans)
+                (let ((s (plist-get span :ts-s))
+                      (e (plist-get span :ts-e))
+                      (tlt (plist-get span :title))
+                      (ts-default-format "%Y%m%dT%H%M%S"))
+                  (princ "BEGIN:VEVENT\n")
+                  (princ (concat "DTSTART;TZID=Asia/Tokyo:" (ts-format s) "\n"))
+                  (princ (concat "DTEND;TZID=Asia/Tokyo:" (ts-format e) "\n"))
+                  (princ (concat "SUMMARY:" tlt "\n"))
+                  (princ "END:VEVENT\n")))
+
+              (princ "END:VCALENDAR\n"))))
+
+        (defun ks-learn-generate-notebook-ref (notebookid)
+          (interactive "sNotebookID: ")
+          (let* ((dic '((0 . "0") (1 . "1") (2 . "2") (3 . "3")
+                       (4 . "4") (5 . "5") (6 . "6") (7 . "7")
+                       (8 . "8") (9 . "9")
+                       (10 . "A") (11 . "B") (12 . "C") (13 . "D")
+                       (14 . "E") (15 . "F") (16 . "G") (17 . "H")
+                       (18 . "I") (19 . "J") (20 . "K") (21 . "L")
+                       (22 . "M") (23 . "N") (24 . "O") (25 . "P")
+                       (26 . "Q") (27 . "R") (28 . "S") (29 . "T")
+                       (30 . "U") (31 . "V")))
+                (now (ts-now))
+                (month (ts-month now) )
+                (day (ts-day now))
+                (hour (ts-hour now))
+                (min (ts-min now)))
+            (insert (concat "notebook:" notebookid "/"
+                            (cdr (assoc month dic))
+                            (cdr (assoc day dic))
+                            (cdr (assoc hour dic))
+                            (cdr (assoc (/ min 2) dic))))))
+
+        (defun ks-learn-divide-clock (div)
+          (interactive "nTo Divide: ")
+          (let ((lst-clock))
+            (save-excursion
+              (save-restriction
+                (progn
+                  ;; ナローイング (:LOGBOOK: -- :END:)
+                  (org-narrow-to-element)
+                  ;; CLOCK: []--[] => 0:00 のパターンを検索
+                  (while (re-search-forward "\\(\\[.+\\]\\)--\\(\\[.+\\]\\)" nil t)
+                    (let* ((org-ts-s (match-string 1))
+                           (org-ts-e (match-string 2))
+                           (ts-unix-s (ts-unix (ts-parse-org org-ts-s)))
+                           (ts-unix-e (ts-unix (ts-parse-org org-ts-e))))
+                      (push (list :ts-unix-s ts-unix-s :ts-unix-e ts-unix-e) lst-clock))))))
+
+            (with-output-to-temp-buffer "*ks learn*"
+
+              (dotimes (i div)
+                (princ ":LOGBOOK:")
+                (terpri)
+                (dolist (clock (reverse lst-clock))
+                  (let* (;;(i 0)
+                         (ts-unix-s (plist-get clock :ts-unix-s))
+                         (ts-unix-e (plist-get clock :ts-unix-e))
+                         (ts-unix-span (- ts-unix-e ts-unix-s))
+                         (ts-unix-span-per (/ ts-unix-span div))
+                         (ts-org-inactive-fmt (concat "[" (substring (cdr org-time-stamp-formats) 1 -1) "]"))
+                         (string-span (format "%d:%02d"
+                                              (/ ts-unix-span-per 60 60)
+                                              (/ ts-unix-span-per 60))))
+
+                    (let ((string-s-per (format-time-string ts-org-inactive-fmt
+                                                            (+ ts-unix-s (* i ts-unix-span-per))))
+                          (string-e-per  (format-time-string ts-org-inactive-fmt
+                                                             (+ ts-unix-s (* (+ i 1) ts-unix-span-per)))))
+
+                      (princ (concat "CLOCK: " string-s-per "--" string-e-per " => " string-span))
+                      (terpri)
+                      )))
+
+                (princ ":END:")
+                (terpri)))))
+
+        (defhydra hydra-learning (global-map "<f2>" :color red)
+          "learning"
+          ("i" ks-learn-init "init")
+          ("s" ks-learn-start "start")
+          ("d" ks-learn-done "done")
+          ("p" org-previous-visible-heading "previous")
+          ("n" org-next-visible-heading "next")  
+          ("z" ks-learn-match-count-0)
+          ("1" ks-learn-list-review-1 "review for count=1")
+          ("2" ks-learn-list-review-2 "review for count=2")
+          ("3" ks-learn-list-review-3 "review for count=3")
+          ("4" ks-learn-list-review-4 "review for count=4")
+          ("5" ks-learn-list-review-5 "review for count=5")
+          )
+  (defun ks-logger ()
+    (interactive)
+    (let* ((now (ts-now))
+           (beg (ts-format "%Y%m%d" (ts-adjust 'day (ts-dow now) now)))
+           (end (ts-format "%Y%m%d" (ts-adjust 'day (- 6 (ts-dow now)) now)))
+           (filename (s-concat beg "-" end ".org"))
+           (dirpath "/home/snowfox/Dropbox/Report")
+           (fullpath (f-join dirpath filename)))
+      (if (f-exists? fullpath)
+          (find-file fullpath)
+        (progn (find-file fullpath)
+               (insert "ksl")
+               (yas-expand)))))
 
   #+END_SRC
+
+* Music
+
+#+begin_src emacs-lisp
+    ;; Play music with Emacs
+    ;; Requires Tinytag to be available (install Python and run pip tiytag)
+    (use-package emms
+      :ensure t
+      :config
+      (require 'emms-setup)
+      (require 'emms-history)
+
+  ;;    (call-process-shell-command
+  ;;     (mapconcat #'shell-quote-argument
+  ;;                (list "alias" "pactrl='LC_ALL=C pactl'")
+  ;;                " "))
+      (defadvice emms-volume--pulse-get-volume
+          (around emms-volume--pulse-get-volume-around activate)
+        (let ((process-environment (append process-environment '("LC_ALL=C"))))
+          ad-do-it))
+      (emms-all)
+      (emms-default-players)
+      (setq emms-source-file-default-directory "~/Music/"
+            emms-info-functions '(emms-info-tinytag)
+            emms-browser-covers 'emms-browser-cache-thumbnail-async
+            emms-playlist-buffer-name "*Music*")
+      :bind
+      (("<f8>" . emms-browser)
+       ("<M-f8>" . emms)
+       ("<XF86AudioPrev>" . emms-previous)
+       ("<XF86AudioNext>" . emms-next)
+       ("<XF86AudioPlay>" . emms-pause)))
+#+end_src
 
 * ガーベージコレクションのメモリを戻す
   #+BEGIN_SRC emacs-lisp
