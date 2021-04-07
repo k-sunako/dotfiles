@@ -1,51 +1,27 @@
 * library
+  
   #+begin_src emacs-lisp
+    (require 'cl-lib)
+
     (use-package ts :ensure t)
     (use-package f :ensure t)
     (use-package dash :ensure t)
   #+end_src
 
-* PC別設定
-  #+BEGIN_SRC emacs-lisp
-    (cond ((file-directory-p "~/Dropbox")   (setq my-workspace "~/Dropbox"))
-          ((file-directory-p "~/Work") (setq my-workspace "~/Work")))
-    (defun get-my-ws (path)
-      (concat (file-name-as-directory my-workspace) path) )
-  #+END_SRC
 * 言語
 
-#+begin_src elisp
-
-(set-language-environment "Japanese")
-(prefer-coding-system 'utf-8)
-(set-default 'buffer-file-coding-system 'utf-8)
+#+begin_src emacs-lisp
+  (set-language-environment "Japanese")
+  (prefer-coding-system 'utf-8)
+  (set-default 'buffer-file-coding-system 'utf-8)
 #+end_src
-
-* ガーベージコレクションのメモリを一時変更
-
-  起動の高速化のために設定。最後に戻すことを忘れない。
-
-  #+BEGIN_SRC emacs-lisp
-
-    (defvar best-gc-cons-threshold 500000
-    "Best default gc threshold value. Should't be too big.")
-
-    (setq gc-cons-threshold most-positive-fixnum)
-
-  #+END_SRC
-
-* デバッグをON/OFF
-
-  #+begin_src elisp
-    (setq debug-on-error nil)
-  #+end_src
 
 * ガーベージコレクタ
 
-  #+begin_src elisp
+  #+begin_src emacs-lisp
     (use-package gcmh
       :ensure t
-      :diminish gcmh
+      :diminish gcmh-mode
       :config
       (gcmh-mode 1))
   #+end_src
@@ -89,7 +65,6 @@
       :diminish beacon-mode
       :config
       (beacon-mode 1))
-
 
     (set-default 'truncate-lines 1)
 
@@ -203,7 +178,7 @@
 
       ;;https://uwabami.github.io/cc-env/Emacs.html
       (setq skk-sticky-key ";")
-      (setq skk-large-jisyo (get-my-ws "skkdic/SKK-JISYO.my")))
+      (setq skk-large-jisyo "~/myspace/skkdic/SKK-JISYO.my"))
   #+END_SRC
 
 * キーバインディング
@@ -229,7 +204,6 @@
         "Heading handling in org-mode"
         ("C-p" org-previous-visible-heading "PrevH")
         ("C-n" org-next-visible-heading "NextH")))
-
 
     (use-package sequential-command
       :ensure t
@@ -322,33 +296,6 @@
 
   #+END_SRC
 
-* WEB
-
-  #+BEGIN_SRC emacs-lisp
-    (use-package eww
-      :init
-      (setq eww-search-prefix "http://www.google.co.jp/search?q=")
-      (setq browse-url-browser-function 'browse-url-generic
-            browse-url-generic-program "firefox")
-      (setq
-       browse-url-browser-function
-       '(
-         ("file:///home/snowfox/Dropbox/Programming/HyperSpec-7-0/HyperSpec/" . eww-browse-url)
-         ("." . browse-url-default-browser)
-         ))
-  
-      (defun shr-put-image-alt (spec alt &optional flags)
-        (insert alt))
-      (defun eww-mode-hook--disable-image ()
-        (setq-local shr-put-image-function 'shr-put-image-alt))
-
-      (add-hook 'eww-mode-hook 'eww-mode-hook--disable-image)
-
-  
-      )
-
-  #+END_SRC
-
 * treemacs
 
   #+begin_src emacs-lisp
@@ -423,7 +370,6 @@
             ("C-x t C-t" . treemacs-find-file)
             ("C-x t M-t" . treemacs-find-tag)))
 
-
     (use-package treemacs-projectile
       :after treemacs projectile
       :ensure t)
@@ -491,31 +437,27 @@
 
       ;;; Agenda を現在のウィンドウと入れ替えで表示
       (setq org-agenda-window-setup 'current-window)
+      (setq org-agenda-start-on-weekday 0)
+      (setq org-agenda-files '("~/myspace/Org/inbox.org"))
 
-      (setq org-agenda-files `(,(get-my-ws "Org/inbox.org")))
- 
-      (cl-flet ((org-file-p (x) (s-ends-with-p ".org" x)))
-        (let ((files (f-entries (get-my-ws "Org/core") #'org-file-p)))
+      (cl-flet ((org-file-p (x) (s-ends-with-p ".org" x)))        
+        (let ((files (f-entries "~/myspace/Org/core" #'org-file-p)))
           (dolist (f files nil)
             (add-to-list 'org-agenda-files f))))
       (cl-flet ((org-file-p (x) (s-ends-with-p ".org" x)))
-        (let ((files (f-entries (get-my-ws "Org/projects") #'org-file-p)))
+        (let ((files (f-entries "~/myspace/Org/projects" #'org-file-p)))
           (dolist (f files nil)
             (add-to-list 'org-agenda-files f))))
 
       (setq org-capture-templates `(("t" "Todo [inbox]" entry
-                                     (file+headline ,(get-my-ws "Org/inbox.org") "Tasks")
+                                     (file+headline "~/myspace/Org/inbox.org" "Tasks")
                                      "* TODO %i%?")
                                     ("p" "Protocol" entry
-                                     (file+olp+datetree ,(get-my-ws "Org/inbox.org") )
+                                     (file+headline "~/myspace/Org/inbox.org" "Scraps")
                                      "* %^{Title}\nSource: %u, %c\n  \n #+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n\n%?")
                                     ("L" "Protocol Link" entry
-                                     (file+olp+datetree ,(get-my-ws "Org/inbox.org"))
-                                     "* %? [[%:link][%:description]] \nCaptured On: %U")
-                                    ("j" "Journal" entry
-                                     (file+olp+datetree ,(get-my-ws "Org/journal.org"))
-                                     "* %?\nEntered on %U\n%a")))
-
+                                     (file+headline "~/myspace/Org/inbox.org" "Scraps")
+                                     "* %? [[%:link][%:description]] \nCaptured On: %U")))
 
       (setq org-todo-keywords '((sequence
                                  "NEXT(n)" "TODO(t)" "WAITING(w)" "SOMEDAY(s)"
@@ -540,12 +482,6 @@
       (setq org-habit-show-habits-only-for-today 1)
       (setq org-agenda-repeating-timestamp-show-all nil))
 
-    (use-package interleave
-      :ensure t
-      :after org
-      :config (setq interleave-split-direction 'horizontal)
-      )
-
     (use-package ob-rust
       :ensure t)
 
@@ -560,11 +496,10 @@
       :ensure t
       :after org
       :config
-      (setq my-ref-bib (get-my-ws "Bibliography/references.bib"))
-      (setq my-ref-note (get-my-ws "Bibliography/notes.org"))
-      (setq my-ref-pdfs (get-my-ws "Bibliography/bibtex-pdfs/"))
-      (setq my-ref-helm-bibtex-notes (get-my-ws
-                                      "Bibliography/helm-bibtex-notes/"))
+      (setq my-ref-bib  "~/myspace/Bibliography/references.bib")
+      (setq my-ref-note "~/myspace/Bibliography/notes.org")
+      (setq my-ref-pdfs "~/myspace/Bibliography/bibtex-pdfs/")
+      (setq my-ref-helm-bibtex-notes "~/myspace/Bibliography/helm-bibtex-notes/")
 
       (setq reftex-default-bibliography '(my-ref-bib))
       ;; ノート、bib ファイル、PDF のディレクトリなどを設定
@@ -714,7 +649,7 @@
     (use-package org-journal
       :ensure t
       :custom
-      (org-journal-dir (get-my-ws "Org/journal"))
+      (org-journal-dir "~/myspace/Org/journal")
       (org-journal-date-format "%A, %d %B %Y"))
 
     (use-package org-roam
@@ -723,7 +658,7 @@
       :hook
       (after-init . org-roam-mode)
       :custom
-      (org-roam-directory (get-my-ws "org-roam"))
+      (org-roam-directory "~/myspace/org-roam")
       (org-roam-db-location "/tmp/org-roam")
       :bind (:map org-roam-mode-map
                   (("C-c n l" . org-roam)
@@ -732,7 +667,7 @@
                   :map org-mode-map
                   (("C-c n i" . org-roam-insert)
                    ("C-c n I" . org-roam-insert-immediate)))
-      :config (global-set-key (kbd "<f6>") 'org-roam-dailies-today)
+      :config (global-set-key (kbd "<f6>") 'org-roam-dailies-find-today)
       )
 
     (use-package org-roam-server
@@ -757,7 +692,7 @@
       (deft-auto-save-interval 0.0)
       (deft-use-filter-string-for-filename t)
       (deft-default-extension "org")
-      (deft-directory (get-my-ws "org-roam")))
+      (deft-directory "~/myspace/org-roam"))
 
     ;; If you installed via MELPA
     (use-package org-roam-bibtex
@@ -767,11 +702,6 @@
       :bind (:map org-mode-map
                   (("C-c n a" . orb-note-actions))))
 
-    (use-package org-fc
-      :load-path "~/.emacs.d/elpa/org-fc"
-      :custom (org-fc-directories `(,(get-my-ws "org-roam")))
-      :config
-      (require 'org-fc-hydra))
   #+END_SRC
 
 * Utility
@@ -789,10 +719,10 @@
    #+BEGIN_SRC emacs-lisp
      (use-package lsp-mode
        :config
-       (setq lsp-prefer-capf t)
+       ;;(setq lsp-prefer-capf t)
        ;; .venv, .mypy_cache を watch 対象から外す
        (dolist (dir '(
-                      ;;"[/\\\\]\\.venv$"
+                      "[/\\\\]\\.venv$"
                       "[/\\\\]\\.mypy_cache$"
                       "[/\\\\]__pycache__$"
                       ))
@@ -925,6 +855,7 @@
 
      (use-package flycheck
        :ensure t
+       :diminish flycheck-mode
        :init
        (add-hook 'after-init-hook #'global-flycheck-mode)
        (setq-default flycheck-disabled-checkers '(emacs-lisp-checkdoc)))
@@ -943,6 +874,7 @@
 
      (use-package company
        :ensure t
+       :diminish company-mode
        :hook (after-init . global-company-mode)
        :config
        (setq company-dabbrev-downcase nil)
@@ -988,53 +920,12 @@
 
 **  C/C++
 
-
-** Haskell
-   #+BEGIN_SRC emacs-lisp
-     (use-package haskell-mode
-       :ensure t
-       :init
-       (autoload 'haskell-mode "haskell-mode" nil t)
-       (autoload 'haskell-cabal "haskell-cabal" nil t)
-
-       (add-to-list 'auto-mode-alist '("\\.hs$" . haskell-mode))
-       (add-to-list 'auto-mode-alist '("\\.lhs$" . literate-haskell-mode))
-       (add-to-list 'auto-mode-alist '("\\.cabal$" . haskell-cabal-mode))
-
-       (use-package company-ghc
-         :ensure t
-         :after (company)
-         :init
-         (add-to-list 'company-backends 'company-ghc)))
-   #+END_SRC
-
-** C#
-   #+BEGIN_SRC emacs-lisp
-    (use-package csharp-mode
-      :ensure t)
-   #+END_SRC
-
 ** Python
    #+BEGIN_SRC emacs-lisp
      (use-package python
        :mode ("\\.py" . python-mode)
        :config
        (setq python-indent-offset 4))
-   #+END_SRC
-
-** Lisp
-   #+BEGIN_SRC emacs-lisp
-     (setq inferior-lisp-program "ros -Q run")
-     (use-package slime
-       :ensure t
-       :config
-       (load (expand-file-name "~/.roswell/helper.el"))
-       ;; (setq inferior-lisp-program "/usr/local/bin/sbcl")
-       (setq common-lisp-hyperspec-root
-             (concat "file://" (expand-file-name 
-                                "~/Dropbox/Programming/HyperSpec-7-0/HyperSpec/")))
-
-       (slime-setup '(slime-repl)))
    #+END_SRC
 
 ** Rust
@@ -1082,17 +973,6 @@
        (add-to-list 'auto-mode-alist '("\\.rs$" . rustic-mode))
        )
    #+END_SRC
-
-* Mail
-  #+BEGIN_SRC emacs-lisp
-    (use-package wanderlust
-      :ensure t
-      :if (file-exists-p (get-my-ws "dotfiles-secret/wanderlust.el"))
-      :defer t
-      :init
-      ;;(load "~/Dropbox/dotfiles-secret/wanderlust.el")
-      (load (get-my-ws "dotfiles-secret/wanderlust.el")))
-  #+END_SRC
 
 * Etc
   #+BEGIN_SRC emacs-lisp
@@ -1186,8 +1066,6 @@
       :diminish auto-revert-mode
       :config (add-hook 'ediff-prepare-buffer-hook #'show-all))
 
-    (use-package google-this
-      :ensure t)
 
     (use-package shackle
       :ensure t
@@ -1264,12 +1142,6 @@
     (use-package open-junk-file
       :ensure t)
 
-    (use-package avy
-      :ensure t
-      :bind* ("C-." . avy-goto-char-timer)
-      :config
-      (avy-setup-default))
-
     (use-package winner
       :init
       (winner-mode 1)
@@ -1277,9 +1149,9 @@
 
     (use-package elfeed
       :ensure t
-      :if (file-exists-p (get-my-ws "dotfiles-secret/elfeed.el"))
+      :if (file-exists-p "~/myspace/dotfiles-secret/elfeed.el")
       :init
-      (load (get-my-ws "dotfiles-secret/elfeed.el"))
+      (load "~/myspace/dotfiles-secret/elfeed.el")
       :config
       (setq shr-inhibit-images t))
 
@@ -1292,13 +1164,7 @@
     (use-package restart-emacs
       :ensure t)
 
-    (use-package persp-mode
-      :ensure t)
-
     (use-package auto-save-buffers-enhanced
-      :ensure t)
-
-    (use-package lispxmp
       :ensure t)
 
     (use-package super-save
@@ -1309,10 +1175,6 @@
       (setq super-save-exclude nil)
       (setq super-save-auto-save-when-idle t))
 
-    (use-package auctex
-      :defer t
-      :ensure t)
-
     (defun ssbb-pyenv-hook ()
       "Automatically activates pyenv version if .python-version file exists."
       (f-traverse-upwards
@@ -1322,11 +1184,6 @@
                (pyenv-mode-set (s-trim (f-read-text pyenv-version-path 'utf-8))))))))
 
     (add-hook 'find-file-hook 'ssbb-pyenv-hook)
-
-    (use-package gnuplot-mode
-      :ensure t)
-    (use-package gnuplot
-      :ensure t)
 
     (use-package markdown-mode
       :ensure t
@@ -1339,10 +1196,10 @@
     (use-package org2blog
       :ensure t
       :defer t
-      :if (file-exists-p (get-my-ws "dotfiles-secret/org2blog.el"))
+      :if (file-exists-p "~/myspace/dotfiles-secret/org2blog.el")
       :after org
       :config
-      (load (get-my-ws "dotfiles-secret/org2blog.el")))
+      (load "~/myspace/dotfiles-secret/org2blog.el"))
 
     ;; shellの文字化けを回避
     (add-hook 'shell-mode-hook
@@ -1350,11 +1207,6 @@
                 (set-buffer-process-coding-system 'utf-8-unix 'utf-8-unix)
                 ))
     (setq default-process-coding-system '(utf-8 . utf-8))
-
-    (use-package atomic-chrome
-      :ensure t
-      :init
-      (atomic-chrome-start-server))
 
     (use-package realgud
       :ensure t)
@@ -1364,8 +1216,6 @@
       :diminish undo-tree-mode
       :config
       (global-undo-tree-mode 1))
-
-
 
     ;; My elisp
     ;;===============================================================
@@ -1515,7 +1365,7 @@
     (defun ks-create-report (report-path)
       (interactive "snew report: ")
       (let* ((filename (s-concat (ts-format "%Y%m%d" (ts-now)) "-" report-path ".org"))
-             (fullpath (f-join (get-my-ws "Report") filename)))
+             (fullpath (f-join "~/myspace/Report" filename)))
         (find-file fullpath)
         (insert "rep2")
         (yas-expand)))
@@ -1726,41 +1576,4 @@
                  (insert "ksl")
                  (yas-expand)))))
 
-  #+END_SRC
-
-* Music
-
-#+begin_src emacs-lisp
-    ;; Play music with Emacs
-    ;; Requires Tinytag to be available (install Python and run pip tiytag)
-    (use-package emms
-      :ensure t
-      :config
-      (require 'emms-setup)
-      (require 'emms-history)
-
-      (defadvice emms-volume--pulse-get-volume
-          (around emms-volume--pulse-get-volume-around activate)
-        (let ((process-environment (append process-environment '("LC_ALL=C"))))
-          ad-do-it))
-      (emms-all)
-      (emms-default-players)
-      (setq emms-source-file-default-directory "~/Music/"
-            emms-info-functions '(emms-info-tinytag)
-            emms-browser-covers 'emms-browser-cache-thumbnail-async
-            emms-playlist-buffer-name "*Music*")
-      :bind
-      (("<f8>" . emms-browser)
-       ("<M-f8>" . emms)
-       ("<XF86AudioPrev>" . emms-previous)
-       ("<XF86AudioNext>" . emms-next)
-       ("<XF86AudioPlay>" . emms-pause)))
-#+end_src
-
-#+RESULTS:
-: emms-pause
-
-* ガーベージコレクションのメモリを戻す
-  #+BEGIN_SRC emacs-lisp
-(setq gc-cons-threshold best-gc-cons-threshold)
   #+END_SRC
