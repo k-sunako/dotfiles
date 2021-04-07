@@ -253,6 +253,10 @@
     (use-package projectile
       :ensure t
       :config
+      (projectile-mode +1)
+      (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
+      (setq projectile-indexing-method 'alien)
+      (setq projectile-project-search-path '("~/repos"))
       (projectile-discover-projects-in-search-path))
 
     (use-package migemo
