@@ -738,6 +738,9 @@
        (setq lsp-auto-configure t)
        (setq lsp-enable-completion-at-point t)
 
+       (setq read-process-output-max (* 1024 1024))
+       (setq lsp-idle-delay 0.500)
+
        ;; クロスリファレンスとの統合を有効化する
        ;; xref-find-definitions
        ;; xref-find-references
