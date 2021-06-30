@@ -389,6 +389,12 @@
   [[https://emacs.stackexchange.com/questions/41150/top-level-heading-in-the-org-mode-agenda][Top level heading in the `org-mode` agenda - Emacs Stack Exchange]]
 
   #+BEGIN_SRC emacs-lisp
+    (use-package browse-at-remote
+      :ensure t
+      :functions (browse-at-remote-get-url)
+      :custom (browse-at-remote-prefer-symbolic nil)
+      :bind ("M-g r" . browse-at-remote))
+
     (use-package org
                                             ;:ensure org-plus-contrib
       :ensure t
@@ -399,7 +405,9 @@
 
       :config
 
-      (add-to-list 'org-file-apps '("\\.pdf\\'" . "atril %s"))
+      ;;(add-to-list 'org-file-apps '("\\.pdf\\'" . "atril %s"))
+      (add-to-list 'auto-mode-alist
+                   '("\\.pdf\\'" . pdf-view-mode))
 
       (setq org-src-fontify-natively t)
       (setq org-confirm-babel-evaluate nil)
@@ -456,6 +464,11 @@
       (setq org-capture-templates `(("t" "Todo [inbox]" entry
                                      (file+headline "~/myspace/Org/inbox.org" "Tasks")
                                      "* TODO %i%?")
+                                    ("c" "code [inbox]" entry
+                                     (file+headline "~/myspace/Org/inbox.org" "Codes")
+                                     "* %^{Title}\n%(with-current-buffer (org-capture-get :original-buffer) (browse-at-remote-get-url))\n%?\n#+BEGIN_QUOTE\n%i\n#+END_QUOTE")
+                                    ("r" "reference" plain
+                                     (file "~/myspace/Bibliography/references.bib"))
                                     ("p" "Protocol" entry
                                      (file+headline "~/myspace/Org/inbox.org" "Scraps")
                                      "* %^{Title}\nSource: %u, %c\n  \n #+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n\n%?")
@@ -493,7 +506,7 @@
       :ensure t
       :after org
       :config
-      (setq-default org-download-image-dir "/home/snowfox/画像")
+      (setq-default org-download-image-dir "~/myspace/images")
       )
 
     (use-package org-ref
@@ -705,6 +718,19 @@
       :diminish org-roam-bibtex-mode
       :bind (:map org-mode-map
                   (("C-c n a" . orb-note-actions))))
+
+    (defun remove-org-newlines-at-cjk-text (&optional _mode)
+      "先頭が '*', '#', '|' でなく、改行の前後が日本の文字の場合はその改行を除去する。"
+      (interactive)
+      (goto-char (point-min))
+      (while (re-search-forward "^\\([^|#*\n].+\\)\\(.\\)\n *\\(.\\)" nil t)
+        (if (and (> (string-to-char (match-string 2)) #x2000)
+                 (> (string-to-char (match-string 3)) #x2000))
+            (replace-match "\\1\\2\\3"))
+        (goto-char (point-at-bol))))
+
+    (with-eval-after-load "ox"
+      (add-hook 'org-export-before-processing-hook 'remove-org-newlines-at-cjk-text))
 
   #+END_SRC
 
@@ -983,6 +1009,7 @@
 
 * Etc
   #+BEGIN_SRC emacs-lisp
+
     (defun ks-venv38 ()
       (interactive)
       (pyvenv-activate "~/src/pipenv_3.8/.venv"))

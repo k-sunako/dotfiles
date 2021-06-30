@@ -33,6 +33,20 @@
 (require 'diminish)
 (require 'bind-key)
 
+(defvar bootstrap-version)
+(let ((bootstrap-file
+       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+      (bootstrap-version 5))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer
+        (url-retrieve-synchronously
+         "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+         'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
+(setq package-enable-at-startup nil)
+
 (org-babel-load-file (expand-file-name "~/.emacs.d/myinit.org"))
 
 ;;(defun ora-test-emacs ()
@@ -90,9 +104,10 @@
  '(org2blog/wp-image-thumbnails t)
  '(org2blog/wp-image-upload t)
  '(package-selected-packages
-   '(gh esup nntwitter dynamic-ruler graphviz-dot-mode dynamic-graphs dash lsp-pyright lsp-ui emms typescript-mode treemacs-magit treemacs-projectile burly magic-latex-buffer math-preview org-latex-impatient lispy beacon gcmh org-roam-bibtex org-ref ddskk-posframe elisp-format modus-vivendi-theme org-roam helm org-roam-server flatland-theme super-save auto-save-buffers-enhanced org-sidebar helm-org-rifle org-helm-rifle org-alert org-timeline emacsql-sqlite dap-ui vterm vterm-toggle company-quickhelp company-math openwith metaweblog ob-ipython deadgrep bibtex-utils deft helm-bibtex dired-single diredfl dired-subtree peep-dired dired-launch flycheck-mypy golden-ratio xelb ox-pandoc pdf-tools helm-tramp helm-org shell-pop realgud-ipdb cider ripgrep rg lsp-mode jedi-core pipenv with-venv org-drill google-translate iy-go-to-char atom-one-dark-theme engine-mode org-cliplink poly-R poly-markdown ess jupyter processing-mode sml-mode dap-mode yasnippet-snippets yasnipet-snippes yasnipeet-snippes dashboard doom-modeline doom-themes org2blog company-ein helm-projectile undo-tree realgud atomic-chrome gnuplot gnuplot-mode auctex powerline lispxmp restart-emacs elfeed avy open-junk-file multiple-cursors wrap-region shackle google-this magit migemo habitica wanderlust company-racer cargo pyenv-mode csharp-mode company-ghc haskell-mode cuda-mode rtags editorconfig cmake-mode helm-dash company aggressive-indent smartparens flycheck iedit expand-region org-journal org-download org-bullets ob-rust interleave helm-swoop projectile hydra sequential-command which-key ztree use-package poet-theme exec-path-from-shell diminish ddskk))
+   '(elisp-benchmarks browse-at-remote gh esup nntwitter dynamic-ruler graphviz-dot-mode dynamic-graphs dash lsp-pyright lsp-ui emms typescript-mode treemacs-magit treemacs-projectile burly magic-latex-buffer math-preview org-latex-impatient lispy beacon gcmh org-roam-bibtex org-ref ddskk-posframe elisp-format modus-vivendi-theme org-roam helm org-roam-server flatland-theme super-save auto-save-buffers-enhanced org-sidebar helm-org-rifle org-helm-rifle org-alert org-timeline emacsql-sqlite dap-ui vterm vterm-toggle company-quickhelp company-math openwith metaweblog ob-ipython deadgrep bibtex-utils deft helm-bibtex dired-single diredfl dired-subtree peep-dired dired-launch flycheck-mypy golden-ratio xelb ox-pandoc pdf-tools helm-tramp helm-org shell-pop realgud-ipdb cider ripgrep rg lsp-mode jedi-core pipenv with-venv org-drill google-translate iy-go-to-char atom-one-dark-theme engine-mode org-cliplink poly-R poly-markdown ess jupyter processing-mode sml-mode dap-mode yasnippet-snippets yasnipet-snippes yasnipeet-snippes dashboard doom-modeline doom-themes org2blog company-ein helm-projectile undo-tree realgud atomic-chrome gnuplot gnuplot-mode auctex powerline lispxmp restart-emacs elfeed avy open-junk-file multiple-cursors wrap-region shackle google-this magit migemo habitica wanderlust company-racer cargo pyenv-mode csharp-mode company-ghc haskell-mode cuda-mode rtags editorconfig cmake-mode helm-dash company aggressive-indent smartparens flycheck iedit expand-region org-journal org-download org-bullets ob-rust interleave helm-swoop projectile hydra sequential-command which-key ztree use-package poet-theme exec-path-from-shell diminish ddskk))
  '(processing-location "/usr/bin/processing-java")
- '(ripgrep-arguments '("-M 100")))
+ '(ripgrep-arguments '("-M 100"))
+ '(warning-suppress-types '((comp) (yasnippet backquote-change) (:warning))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
