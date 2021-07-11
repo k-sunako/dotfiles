@@ -1,16 +1,26 @@
 # key: rep2
 # name: report2
 # --
-#+SETUPFILE: ./report-header.org
+
+#+LaTeX_CLASS: koma-jarticle
+
+#+STARTUP:  overview
+#+STARTUP:  hidestars
+#+OPTIONS:  H:4 num:nil toc:nil \n:nil @:t ::t |:t ^:nil -:t f:t *:t TeX:t LaTeX:t skip:nil d:nil todo:t pri:nil tags:not-in-toc
+#+LINK_UP:
+#+LINK_HOME:
+#+MACRO: if-html (eval (if (org-export-derived-backend-p org-export-current-backend 'html) \$1))
+#+MACRO: if-latex (eval (if (org-export-derived-backend-p org-export-current-backend 'latex) \$1))
 
 #+TITLE: ${1: title}
 #+AUTHOR: k-sunako
 #+DATE: `(let ((x (org-time-stamp '(16) t ))))`
-\vspace*{-1.5cm}
+
+{{{if-latex(\vspace*{-1.5cm})}}}
 
 * 概要
   blabla
 
 * 参考文献
-
   #+LaTeX: \printbibliography[heading=none]
+  {{{if-html(bibliography:~/myspace/Bibliography/references.bib)}}}
