@@ -49,6 +49,8 @@
 
 (org-babel-load-file (expand-file-name "~/.emacs.d/myinit.org"))
 
+
+
 ;;(defun ora-test-emacs ()
 ;;  (interactive)
 ;;  (require 'async)
@@ -90,6 +92,8 @@
  '(irony-additional-clang-options '("-std=c++11"))
  '(lsp-inhibit-message t t)
  '(lsp-message-project-root-warning t t)
+ '(org-agenda-files
+   '("~/myspace/org-roam/daily/2021-07-11.org" "~/repos/learning-DAISY-feat-desc/reports/001.org" "/home/snowfox/myspace/Org/projects/prj-uml.org" "/home/snowfox/myspace/Org/projects/prj-topological-space.org" "/home/snowfox/myspace/Org/projects/prj-sage.org" "/home/snowfox/myspace/Org/projects/prj-project.org" "/home/snowfox/myspace/Org/projects/prj-probability.org" "/home/snowfox/myspace/Org/projects/prj-oss.org" "/home/snowfox/myspace/Org/projects/prj-lecture-ih-20210313.org" "/home/snowfox/myspace/Org/projects/prj-lecture-id-20201107.org" "/home/snowfox/myspace/Org/projects/prj-lecture-ed-20210314.org" "/home/snowfox/myspace/Org/projects/prj-lecture-ea-20210307.org" "/home/snowfox/myspace/Org/projects/prj-lecture-dl2.org" "/home/snowfox/myspace/Org/projects/prj-hacks.org" "/home/snowfox/myspace/Org/projects/prj-elisp.org" "/home/snowfox/myspace/Org/projects/prj-designpattern.org" "/home/snowfox/myspace/Org/projects/prj-cxx.org" "/home/snowfox/myspace/Org/core/math.org" "/home/snowfox/myspace/Org/core/linux.org" "/home/snowfox/myspace/Org/core/general.org" "/home/snowfox/myspace/Org/core/emacs.org" "~/myspace/Org/inbox.org"))
  '(org-agenda-time-grid
    '((daily today require-timed remove-match)
      (800 1000 1200 1400 1600 1800 2000)
@@ -100,14 +104,18 @@
  '(org-download-screenshot-method "scrot -s %s")
  '(org-journal-date-format "%A, %d %B %Y")
  '(org-journal-dir "~/Dropbox/Org/journal")
- '(org-roam-completion-system 'helm)
+
  '(org2blog/wp-image-thumbnails t)
  '(org2blog/wp-image-upload t)
  '(package-selected-packages
    '(elisp-benchmarks browse-at-remote gh esup nntwitter dynamic-ruler graphviz-dot-mode dynamic-graphs dash lsp-pyright lsp-ui emms typescript-mode treemacs-magit treemacs-projectile burly magic-latex-buffer math-preview org-latex-impatient lispy beacon gcmh org-roam-bibtex org-ref ddskk-posframe elisp-format modus-vivendi-theme org-roam helm org-roam-server flatland-theme super-save auto-save-buffers-enhanced org-sidebar helm-org-rifle org-helm-rifle org-alert org-timeline emacsql-sqlite dap-ui vterm vterm-toggle company-quickhelp company-math openwith metaweblog ob-ipython deadgrep bibtex-utils deft helm-bibtex dired-single diredfl dired-subtree peep-dired dired-launch flycheck-mypy golden-ratio xelb ox-pandoc pdf-tools helm-tramp helm-org shell-pop realgud-ipdb cider ripgrep rg lsp-mode jedi-core pipenv with-venv org-drill google-translate iy-go-to-char atom-one-dark-theme engine-mode org-cliplink poly-R poly-markdown ess jupyter processing-mode sml-mode dap-mode yasnippet-snippets yasnipet-snippes yasnipeet-snippes dashboard doom-modeline doom-themes org2blog company-ein helm-projectile undo-tree realgud atomic-chrome gnuplot gnuplot-mode auctex powerline lispxmp restart-emacs elfeed avy open-junk-file multiple-cursors wrap-region shackle google-this magit migemo habitica wanderlust company-racer cargo pyenv-mode csharp-mode company-ghc haskell-mode cuda-mode rtags editorconfig cmake-mode helm-dash company aggressive-indent smartparens flycheck iedit expand-region org-journal org-download org-bullets ob-rust interleave helm-swoop projectile hydra sequential-command which-key ztree use-package poet-theme exec-path-from-shell diminish ddskk))
  '(processing-location "/usr/bin/processing-java")
  '(ripgrep-arguments '("-M 100"))
- '(warning-suppress-types '((comp) (yasnippet backquote-change) (:warning))))
+ '(warning-suppress-types
+   '((org-roam)
+     (comp)
+     (yasnippet backquote-change)
+     (:warning))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
