@@ -81,11 +81,12 @@
         (set-frame-font "Ricty Diminished 12"))
        ))
 
-    (use-package flatland-theme
-      :ensure t
+    (use-package gruvbox-theme
+      :straight t
       :config
-      (load-theme 'flatland t))
-
+      (load-theme 'gruvbox-dark-medium t)
+      (set-face-attribute 'secondary-selection nil
+                          :weight 'bold :background "#1d2021"))
   #+END_SRC
 
 * Dired
@@ -965,12 +966,6 @@
                   (define-key c-mode-base-map "\C-ce"       'c-macro-expand)
                   (define-key c-mode-base-map "\C-ct"        'toggle-source)))
 
-     (use-package helm-dash
-       :ensure t
-       :after helm)
-
-     (use-package cmake-mode :ensure t)
-
      (use-package editorconfig
        :ensure t
        :diminish editorconfig-mode
@@ -1199,9 +1194,6 @@
       (global-set-key (kbd "C->") 'mc/mark-next-like-this)
       (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
       (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this))
-
-    (use-package open-junk-file
-      :ensure t)
 
     (use-package winner
       :init
