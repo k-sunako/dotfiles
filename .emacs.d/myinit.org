@@ -1,4 +1,10 @@
-* dd
+* first page
+
+#+begin_src emacs-lisp
+  (setq initial-buffer-choice "~/myspace/Org/dashboard.org")
+#+end_src
+
+* debug
 
   #+begin_src emacs-lisp
     (setq debug-on-error t)
@@ -618,375 +624,385 @@
 
   
   #+BEGIN_SRC emacs-lisp
-    (use-package org
-      :straight t
-      :diminish org-mode
-      :bind (("C-c c" . org-capture)
-             ("C-c a" . org-agenda)
-             ("<f11>" . org-clock-goto))
-
-      :config
-
-      ;;(add-to-list 'org-file-apps '("\\.pdf\\'" . "atril %s"))
-      (add-to-list 'auto-mode-alist
-                   '("\\.pdf\\'" . pdf-view-mode))
-
-      (setq org-src-fontify-natively t)
-      (setq org-confirm-babel-evaluate nil)
-                                            ;(setq org-src-window-setup 'other-window)
-      (setq org-src-window-setup 'current-window)
-      (setq org-link-file-path-type 'relative)
-
-      (require 'ob-emacs-lisp)
-      (require 'ob-haskell)
-      (require 'ob-gnuplot)
-      (require 'org-habit)
-      (require 'org-protocol)
-
-      (setq org-log-done t)
-
-      (setf (alist-get 'file org-link-frame-setup) 'find-file)
-
-      (setf org-html-mathjax-options
-            '((path "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML")
-              (scale "100")
-              (align "center")
-              (indent "2em")
-              (mathml nil)))
-
-      (setf org-html-mathjax-template
-            "<script type=\"text/javascript\" src=\"%PATH\"></script>")
-
-      ;; active Babel languages
-      (org-babel-do-load-languages
-       'org-babel-load-languages
-       '((haskell . t)
-         (emacs-lisp . t)
-         (gnuplot . t)
-         (latex . t)
-         (rust . t)
-         (shell . t)
-         (python . t)
-         ))
-
-                  ;;; Agenda を現在のウィンドウと入れ替えで表示
-      (setq org-agenda-window-setup 'current-window)
-      (setq org-agenda-start-on-weekday 0)
-      (setq org-agenda-files '("~/myspace/Org/inbox.org"))
-
-      (cl-flet ((org-file-p (x) (s-ends-with-p ".org" x)))        
-        (let ((files (f-entries "~/myspace/Org/core" #'org-file-p)))
-          (dolist (f files nil)
-            (add-to-list 'org-agenda-files f))))
-      (cl-flet ((org-file-p (x) (s-ends-with-p ".org" x)))
-        (let ((files (f-entries "~/myspace/Org/projects" #'org-file-p)))
-          (dolist (f files nil)
-            (add-to-list 'org-agenda-files f))))
-
-      (setq org-capture-templates `(("t" "Todo [inbox]" entry
-                                     (file+headline "~/myspace/Org/inbox.org" "Tasks")
-                                     "* TODO %i%?")
-
-                                    ("c" "code [inbox]" entry
-                                     (file+headline "~/myspace/Org/inbox.org" "Codes")
-                                     "* %^{Title}\n%(with-current-buffer (org-capture-get :original-buffer) (browse-at-remote-get-url))\n%?\n#+BEGIN_QUOTE\n%i\n#+END_QUOTE")
-                                    ("r" "reference" plain
-                                     (file "~/myspace/Bibliography/references.bib"))
-                                    ("p" "Protocol" entry
-                                     (file+headline "~/myspace/Org/inbox.org" "Scraps")
-                                     "* %^{Title}\nSource: %u, %c\n  \n #+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n\n%?")
-                                    ("L" "Protocol Link" entry
-                                     (file+headline "~/myspace/Org/inbox.org" "Scraps")
-                                     "* %? [[%:link][%:description]] \nCaptured On: %U")))
-
-      (setq org-todo-keywords '((sequence
-                                 "NEXT(n)" "TODO(t)" "WAITING(w)" "SOMEDAY(s)"
-                                 "|" "DONE(d)" "CANCELLED(c)")))
-
-      (setq org-agenda-custom-commands
-            '(("W" "Completed and/or deferred tasks from previous week"
-               ((todo "" ((org-agenda-span 7)
-                          (org-agenda-start-day "-7d")
-                          (org-agenda-entry-types '(:timestamp))
-                          (org-agenda-show-log t)))))
-              ("h" "Habits" tags-todo "STYLE=\"habit\""
-               ((org-agenda-overriding-header "Habits")
-                (org-agenda-sorting-strategy
-                 '(todo-state-down effort-up category-keep))))
-              ("p" "master projects" tags-todo "LEVEL>0/TODO=\"TODO\"")
-              ("N" "Todo: Next" tags-todo "TODO=\"NEXT\"")
-              ))
-
-      (setq org-format-latex-options (plist-put org-format-latex-options :scale 2.0))
-
-      (setq org-habit-show-habits-only-for-today 1)
-      (setq org-agenda-repeating-timestamp-show-all nil))
-
-    (use-package org-contrib
-      :after org
-      :ensure t
-      :config
-      (require 'ox-bibtex))
-
-    (use-package ob-rust
-      :ensure t)
-
-    (use-package org-download
-      :ensure t
-      :after org
-      :config
-      (setq-default org-download-image-dir "~/myspace/images")
-      )
-
-    (use-package org-ref
-      :straight t
-      :ensure t
-      :after org
-      :custom (org-ref-bib-html "")
-      :config
-      (setq my-ref-bib  "~/myspace/Bibliography/references.bib")
-      (setq my-ref-note "~/myspace/Bibliography/notes.org")
-      (setq my-ref-pdfs "~/myspace/Bibliography/bibtex-pdfs/")
-      (setq my-ref-helm-bibtex-notes "~/myspace/Bibliography/helm-bibtex-notes/")
-
-      (setq reftex-default-bibliography '(my-ref-bib))
-      ;; ノート、bib ファイル、PDF のディレクトリなどを設定
-      (setq org-ref-bibliography-notes my-ref-note
-            org-ref-default-bibliography `(,my-ref-bib)
-            org-ref-pdf-directory my-ref-pdfs)
-
-      ;; helm-bibtex を使う場合は以下の変数も設定しておく
-      (setq bibtex-completion-bibliography `(,my-ref-bib)
-            bibtex-completion-library-path my-ref-pdfs
-            bibtex-completion-notes-path my-ref-helm-bibtex-notes)
-
-      (setq bibtex-completion-display-formats
-            '((article       . "${author:5} ${title:40} ${journal:10} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}")
-              (inbook        . "${author:5} ${title:40} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}")
-              (book          . "${author:5} ${title:40} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}")
-              (t             . "${author:5} ${title:40} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}"))))
-
-    ;;(require 'ox-bibtex)
-    (use-package ox-latex
-      :config
-      (require 'ox-latex)
-
-      ;; pdfの生成プロセスで作成される中間ファイルを削除する設定
-      (setq org-latex-logfiles-extensions
-            (quote ("lof" "lot" "tex" "tex~" "aux" "idx"
-                    "log" "out" "toc" "nav" "snm"
-                    "vrb" "dvi" "fdb_latexmk"
-                    "blg" "brf" "fls" "entoc" "ps"
-                    "spl" "bbl" "run.xml" "bcf")))
-
-      (setq org-preview-latex-process-alist
-            '((dvipng
-               :programs ("xelatex" "dvipng")
-               :description "dvi > png"
-               :message "you need to install the programs: latex and dvipng."
-               :image-input-type "dvi"
-               :image-output-type "png"
-               :image-size-adjust (1.0 . 1.0)
-               :latex-compiler ("xel atex -shell-escape -interaction nonstopmode -output-directory %o %f")
-               :image-converter ("dvipng -D %D -T tight -o %O %f"))
-              (dvisvgm :programs ("latex" "dvisvgm")
-                       :description "dvi > svg"
-                       :message "you need to install the programs: latex and dvisvgm."
-                       :image-input-type "dvi"
-                       :image-output-type "svg"
-                       :image-size-adjust (1.7 . 1.5)
-                       :latex-compiler ("latex -interaction nonstopmode -output-directory %o %f")
-                       :image-converter ("dvisvgm %f -n -b min -c %S -o %O"))
-              (imagemagick :programs ("xelatex" "convert")
-                           :description "pdf > png"
-                           :message "you need to install the programs: latex and imagemagick."
-                           :image-input-type "pdf" :image-output-type "png"
-                           :image-size-adjust (1.0 . 1.0) :latex-compiler
-                           ("xelatex -shell-escape -interaction nonstopmode -output-directory %o %f")
-                           :image-converter ("convert -density %D -trim -antialias %f -quality 100 %O"))))
-
-      (setq org-latex-create-formula-image-program 'imagemagick)
-
-
-      (setq org-latex-compiler "xelatex")
-
-      (setq org-latex-listings 'minted)
-      (setq org-latex-minted-options
-            '(("style" "friendly")("frame" "lines") ("linenos=true")))
-      (setq org-latex-pdf-process
-            '("xelatex -shell-escape -interaction nonstopmode -output-directory %o %f"
-              "biber %b"
-              "xelatex -shell-escape -interaction nonstopmode -output-directory %o %f"
-              "xelatex -shell-escape -interaction nonstopmode -output-directory %o %f"
-              "rm -fr _minted-%b"
-              ))
-
-      (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
-      (setq org-latex-default-class "koma-jarticle")
-
-      (add-to-list 'org-latex-classes
-                   '("koma-article"
-                     "\\documentclass{scrartcl}"
-                     ("\\section{%s}" . "\\section*{%s}")
-                     ("\\subsection{%s}" . "\\subsection*{%s}")
-                     ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-                     ("\\paragraph{%s}" . "\\paragraph*{%s}")
-                     ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
-
-      (add-to-list 'org-latex-classes
-                   '(
-                     "koma-jarticle"
-                     "\\documentclass[12pt]{scrartcl}
-                                  [NO-DEFAULT-PACKAGES]
-                                  \\usepackage{amsmath}
-                                  \\usepackage{amssymb}
-                                  \\usepackage{mathrsfs}
-                                  \\usepackage{xunicode}
-                                  \\usepackage{fixltx2e}
-                                  \\usepackage{zxjatype}
-                                  \\usepackage[ipa]{zxjafont}
-                                  \\usepackage{xltxtra}
-                                  \\usepackage{graphicx}
-                                  \\usepackage{longtable}
-                                  \\usepackage{float}
-                                  \\usepackage{wrapfig}
-                                  \\usepackage{soul}
-                                  \\usepackage[xetex]{hyperref}
-                                  \\usepackage{xcolor}
-                                  \\usepackage{minted}
-                                  \\usepackage{geometry}
-                                  \\geometry{left=1cm,right=1cm,top=1cm,bottom=1cm}
-                                  \\usepackage[natbib=true]{biblatex} 
-                                  \\DeclareFieldFormat{apacase}{#1} 
-                                  \\addbibresource{~/myspace/Bibliography/references.bib}"
-                     ("\\section{%s}" . "\\section*{%s}")
-                     ("\\subsection{%s}" . "\\subsection*{%s}")
-                     ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-                     ("\\paragraph{%s}" . "\\paragraph*{%s}")
-                     ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
-
-      ;; tufte-handout class for writing classy handouts and papers
-      (add-to-list 'org-latex-classes
-                   '("tufte-handout"
-                     "\\documentclass[twoside,nobib]{tufte-handout}
-                        [NO-DEFAULT-PACKAGES]
-                        \\usepackage{zxjatype}
-                        \\usepackage[hiragino-dx]{zxjafont}"
-                     ("\\section{%s}" . "\\section*{%s}")
-                     ("\\subsection{%s}" . "\\subsection*{%s}")))
-      ;; tufte-book class
-      (add-to-list 'org-latex-classes
-                   '("tufte-book"
-                     "\\documentclass[twoside,nobib]{tufte-book}
-                       [NO-DEFAULT-PACKAGES]
-                         \\usepackage{zxjatype}
-                         \\usepackage[hiragino-dx]{zxjafont}"
-                     ("\\part{%s}" . "\\part*{%s}")
-                     ("\\chapter{%s}" . "\\chapter*{%s}")
-                     ("\\section{%s}" . "\\section*{%s}")
-                     ("\\subsection{%s}" . "\\subsection*{%s}")
-                     ("\\paragraph{%s}" . "\\paragraph*{%s}"))))
-
-
-    (use-package ox-pandoc
-      :ensure t
-      :config
-      ;; default options for all output formats
-      (setq org-pandoc-options '((standalone . t)))
-      ;; cancel above settings only for 'docx' format
-      (setq org-pandoc-options-for-docx '((standalone . nil)))
-      ;; special settings for beamer-pdf and latex-pdf exporters
-      (setq org-pandoc-options-for-beamer-pdf '((pdf-engine . "xelatex")))
-      (setq org-pandoc-options-for-latex-pdf '((pdf-engine . "xelatex")))
-      )
-
-
-    (setq org-roam-v2-ack t)
-
-    (use-package org-roam
-      :straight t
-      :custom
-      (org-roam-directory (file-truename "~/myspace/org-roam"))
-      (org-roam-db-location "/tmp/org-roam")
-      :bind (("C-c n l" . org-roam-buffer-toggle)
-             ("C-c n f" . org-roam-node-find)
-             ("C-c n g" . org-roam-graph)
-             ("C-c n i" . org-roam-node-insert)
-             ("C-c n c" . org-roam-capture)
-             ;; Dailies
-             ("C-c n j" . org-roam-dailies-capture-today))
-      :init
-      (org-roam-setup)
-      ;; If using org-roam-protocol
-      (require 'org-roam-protocol))
-
-
-    ;;        (use-package org-roam
-    ;;          :init (require 'org-roam-protocol)
-    ;;          :diminish org-roam-mode
-    ;;          :hook
-    ;;          (after-init . org-roam-mode)
-    ;;          :custom
-    ;;          (org-roam-directory "~/myspace/org-roam")
-    ;;          (org-roam-db-location "/tmp/org-roam")
-    ;;          :bind (:map org-roam-mode-map
-    ;;                      (("C-c n l" . org-roam)
-    ;;                       ("C-c n f" . org-roam-find-file)
-    ;;                       ("C-c n g" . org-roam-graph-show))
-    ;;                      :map org-mode-map
-    ;;                      (("C-c n i" . org-roam-insert)
-    ;;                       ("C-c n I" . org-roam-insert-immediate)))
-    ;;          :config (global-set-key (kbd "<f6>") 'org-roam-dailies-goto-today))
-
-    ;;            (use-package org-roam-server
-    ;;              :ensure t
-    ;;              :config
-    ;;              (setq org-roam-server-host "127.0.0.1"
-    ;;                    org-roam-server-port 9876
-    ;;                    org-roam-server-export-inline-images t
-    ;;                    org-roam-server-authenticate nil
-    ;;                    org-roam-server-network-poll t
-    ;;                    org-roam-server-network-arrows nil
-    ;;                    org-roam-server-network-label-truncate t
-    ;;                    org-roam-server-network-label-truncate-length 60
-    ;;                    org-roam-server-network-label-wrap-length 20))
-    ;;
-    (use-package deft
-      :after org
-      :bind
-      ("C-c n d" . deft)
-      :custom
-      (deft-recursive t)
-      (deft-auto-save-interval 0.0)
-      (deft-use-filter-string-for-filename t)
-      (deft-default-extension "org")
-      (deft-directory "~/myspace/org-roam"))
-
-    ;; If you installed via MELPA
-    (use-package org-roam-bibtex
-      :after org-roam
-      :straight (org-roam-bibtex
-                 :type git :host github
-                 :repo "org-roam/org-roam-bibtex"
-                 :branch "org-roam-v2")
-      :hook (org-roam-mode . org-roam-bibtex-mode)
-      :diminish org-roam-bibtex-mode
-
-      :bind (:map org-mode-map
-                  (("C-c n a" . orb-note-actions))))
-
-    (defun remove-org-newlines-at-cjk-text (&optional _mode)
-      "先頭が '*', '#', '|' でなく、改行の前後が日本の文字の場合はその改行を除去する。"
-      (interactive)
-      (goto-char (point-min))
-      (while (re-search-forward "^\\([^|#*\n].+\\)\\(.\\)\n *\\(.\\)" nil t)
-        (if (and (> (string-to-char (match-string 2)) #x2000)
-                 (> (string-to-char (match-string 3)) #x2000))
-            (replace-match "\\1\\2\\3"))
-        (goto-char (point-at-bol))))
-
-    (with-eval-after-load "ox"
-      (add-hook 'org-export-before-processing-hook 'remove-org-newlines-at-cjk-text))
+      (use-package org
+        :straight t
+        :diminish org-mode
+        :bind (("C-c c" . org-capture)
+               ("C-c a" . org-agenda)
+               ("<f11>" . org-clock-goto))
+    
+        :config
+        (defun org-confirm-elisp-link-function--no-confirm-my-org-file (prompt)
+          "自分が書いたorgファイルの(のディレクトリにある)elispリンクはconfirmなし。
+    それ以外のディレクトリではconfirmする。"
+          (or (string-match "/myspace/Org/" (or (buffer-file-name) ""))
+              (member (buffer-name) '("*trace-output*"))
+              (y-or-n-p prompt)))
+        (setq org-confirm-elisp-link-function
+              'org-confirm-elisp-link-function--no-confirm-my-org-file)
+        (setq org-confirm-shell-link-function
+              'org-confirm-elisp-link-function--no-confirm-my-org-file)
+    
+        ;;(add-to-list 'org-file-apps '("\\.pdf\\'" . "atril %s"))
+        (add-to-list 'auto-mode-alist
+                     '("\\.pdf\\'" . pdf-view-mode))
+    
+        (setq org-src-fontify-natively t)
+        (setq org-confirm-babel-evaluate nil)
+                                              ;(setq org-src-window-setup 'other-window)
+        (setq org-src-window-setup 'current-window)
+        (setq org-link-file-path-type 'relative)
+    
+        (require 'ob-emacs-lisp)
+        (require 'ob-haskell)
+        (require 'ob-gnuplot)
+        (require 'org-habit)
+        (require 'org-protocol)
+    
+        (setq org-log-done t)
+    
+        (setf (alist-get 'file org-link-frame-setup) 'find-file)
+    
+        (setf org-html-mathjax-options
+              '((path "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML")
+                (scale "100")
+                (align "center")
+                (indent "2em")
+                (mathml nil)))
+    
+        (setf org-html-mathjax-template
+              "<script type=\"text/javascript\" src=\"%PATH\"></script>")
+    
+        ;; active Babel languages
+        (org-babel-do-load-languages
+         'org-babel-load-languages
+         '((haskell . t)
+           (emacs-lisp . t)
+           (gnuplot . t)
+           (latex . t)
+           (rust . t)
+           (shell . t)
+           (python . t)
+           ))
+    
+                    ;;; Agenda を現在のウィンドウと入れ替えで表示
+        (setq org-agenda-window-setup 'current-window)
+        (setq org-agenda-start-on-weekday 0)
+        (setq org-agenda-files '("~/myspace/Org/inbox.org"))
+    
+        (cl-flet ((org-file-p (x) (s-ends-with-p ".org" x)))        
+          (let ((files (f-entries "~/myspace/Org/core" #'org-file-p)))
+            (dolist (f files nil)
+              (add-to-list 'org-agenda-files f))))
+        (cl-flet ((org-file-p (x) (s-ends-with-p ".org" x)))
+          (let ((files (f-entries "~/myspace/Org/projects" #'org-file-p)))
+            (dolist (f files nil)
+              (add-to-list 'org-agenda-files f))))
+    
+        (setq org-capture-templates `(("t" "Todo [inbox]" entry
+                                       (file+headline "~/myspace/Org/inbox.org" "Tasks")
+                                       "* TODO %i%?")
+    
+                                      ("c" "code [inbox]" entry
+                                       (file+headline "~/myspace/Org/inbox.org" "Codes")
+                                       "* %^{Title}\n%(with-current-buffer (org-capture-get :original-buffer) (browse-at-remote-get-url))\n%?\n#+BEGIN_QUOTE\n%i\n#+END_QUOTE")
+                                      ("r" "reference" plain
+                                       (file "~/myspace/Bibliography/references.bib"))
+                                      ("p" "Protocol" entry
+                                       (file+headline "~/myspace/Org/inbox.org" "Scraps")
+                                       "* %^{Title}\nSource: %u, %c\n  \n #+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n\n%?")
+                                      ("L" "Protocol Link" entry
+                                       (file+headline "~/myspace/Org/inbox.org" "Scraps")
+                                       "* %? [[%:link][%:description]] \nCaptured On: %U")))
+    
+        (setq org-todo-keywords '((sequence
+                                   "NEXT(n)" "TODO(t)" "WAITING(w)" "SOMEDAY(s)"
+                                   "|" "DONE(d)" "CANCELLED(c)")))
+    
+        (setq org-agenda-custom-commands
+              '(("W" "Completed and/or deferred tasks from previous week"
+                 ((todo "" ((org-agenda-span 7)
+                            (org-agenda-start-day "-7d")
+                            (org-agenda-entry-types '(:timestamp))
+                            (org-agenda-show-log t)))))
+                ("h" "Habits" tags-todo "STYLE=\"habit\""
+                 ((org-agenda-overriding-header "Habits")
+                  (org-agenda-sorting-strategy
+                   '(todo-state-down effort-up category-keep))))
+                ("p" "master projects" tags-todo "LEVEL>0/TODO=\"TODO\"")
+                ("N" "Todo: Next" tags-todo "TODO=\"NEXT\"")
+                ))
+    
+        (setq org-format-latex-options (plist-put org-format-latex-options :scale 2.0))
+    
+        (setq org-habit-show-habits-only-for-today 1)
+        (setq org-agenda-repeating-timestamp-show-all nil))
+    
+      (use-package org-contrib
+        :after org
+        :ensure t
+        :config
+        (require 'ox-bibtex))
+    
+      (use-package ob-rust
+        :ensure t)
+    
+      (use-package org-download
+        :ensure t
+        :after org
+        :config
+        (setq-default org-download-image-dir "~/myspace/images")
+        )
+    
+      (use-package org-ref
+        :straight t
+        :ensure t
+        :after org
+        :custom (org-ref-bib-html "")
+        :config
+        (setq my-ref-bib  "~/myspace/Bibliography/references.bib")
+        (setq my-ref-note "~/myspace/Bibliography/notes.org")
+        (setq my-ref-pdfs "~/myspace/Bibliography/bibtex-pdfs/")
+        (setq my-ref-helm-bibtex-notes "~/myspace/Bibliography/helm-bibtex-notes/")
+    
+        (setq reftex-default-bibliography '(my-ref-bib))
+        ;; ノート、bib ファイル、PDF のディレクトリなどを設定
+        (setq org-ref-bibliography-notes my-ref-note
+              org-ref-default-bibliography `(,my-ref-bib)
+              org-ref-pdf-directory my-ref-pdfs)
+    
+        ;; helm-bibtex を使う場合は以下の変数も設定しておく
+        (setq bibtex-completion-bibliography `(,my-ref-bib)
+              bibtex-completion-library-path my-ref-pdfs
+              bibtex-completion-notes-path my-ref-helm-bibtex-notes)
+    
+        (setq bibtex-completion-display-formats
+              '((article       . "${author:5} ${title:40} ${journal:10} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}")
+                (inbook        . "${author:5} ${title:40} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}")
+                (book          . "${author:5} ${title:40} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}")
+                (t             . "${author:5} ${title:40} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}"))))
+    
+      ;;(require 'ox-bibtex)
+      (use-package ox-latex
+        :config
+        (require 'ox-latex)
+    
+        ;; pdfの生成プロセスで作成される中間ファイルを削除する設定
+        (setq org-latex-logfiles-extensions
+              (quote ("lof" "lot" "tex" "tex~" "aux" "idx"
+                      "log" "out" "toc" "nav" "snm"
+                      "vrb" "dvi" "fdb_latexmk"
+                      "blg" "brf" "fls" "entoc" "ps"
+                      "spl" "bbl" "run.xml" "bcf")))
+    
+        (setq org-preview-latex-process-alist
+              '((dvipng
+                 :programs ("xelatex" "dvipng")
+                 :description "dvi > png"
+                 :message "you need to install the programs: latex and dvipng."
+                 :image-input-type "dvi"
+                 :image-output-type "png"
+                 :image-size-adjust (1.0 . 1.0)
+                 :latex-compiler ("xel atex -shell-escape -interaction nonstopmode -output-directory %o %f")
+                 :image-converter ("dvipng -D %D -T tight -o %O %f"))
+                (dvisvgm :programs ("latex" "dvisvgm")
+                         :description "dvi > svg"
+                         :message "you need to install the programs: latex and dvisvgm."
+                         :image-input-type "dvi"
+                         :image-output-type "svg"
+                         :image-size-adjust (1.7 . 1.5)
+                         :latex-compiler ("latex -interaction nonstopmode -output-directory %o %f")
+                         :image-converter ("dvisvgm %f -n -b min -c %S -o %O"))
+                (imagemagick :programs ("xelatex" "convert")
+                             :description "pdf > png"
+                             :message "you need to install the programs: latex and imagemagick."
+                             :image-input-type "pdf" :image-output-type "png"
+                             :image-size-adjust (1.0 . 1.0) :latex-compiler
+                             ("xelatex -shell-escape -interaction nonstopmode -output-directory %o %f")
+                             :image-converter ("convert -density %D -trim -antialias %f -quality 100 %O"))))
+    
+        (setq org-latex-create-formula-image-program 'imagemagick)
+    
+    
+        (setq org-latex-compiler "xelatex")
+    
+        (setq org-latex-listings 'minted)
+        (setq org-latex-minted-options
+              '(("style" "friendly")("frame" "lines") ("linenos=true")))
+        (setq org-latex-pdf-process
+              '("xelatex -shell-escape -interaction nonstopmode -output-directory %o %f"
+                "biber %b"
+                "xelatex -shell-escape -interaction nonstopmode -output-directory %o %f"
+                "xelatex -shell-escape -interaction nonstopmode -output-directory %o %f"
+                "rm -fr _minted-%b"
+                ))
+    
+        (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
+        (setq org-latex-default-class "koma-jarticle")
+    
+        (add-to-list 'org-latex-classes
+                     '("koma-article"
+                       "\\documentclass{scrartcl}"
+                       ("\\section{%s}" . "\\section*{%s}")
+                       ("\\subsection{%s}" . "\\subsection*{%s}")
+                       ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+                       ("\\paragraph{%s}" . "\\paragraph*{%s}")
+                       ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+    
+        (add-to-list 'org-latex-classes
+                     '(
+                       "koma-jarticle"
+                       "\\documentclass[12pt]{scrartcl}
+                                    [NO-DEFAULT-PACKAGES]
+                                    \\usepackage{amsmath}
+                                    \\usepackage{amssymb}
+                                    \\usepackage{mathrsfs}
+                                    \\usepackage{xunicode}
+                                    \\usepackage{fixltx2e}
+                                    \\usepackage{zxjatype}
+                                    \\usepackage[ipa]{zxjafont}
+                                    \\usepackage{xltxtra}
+                                    \\usepackage{graphicx}
+                                    \\usepackage{longtable}
+                                    \\usepackage{float}
+                                    \\usepackage{wrapfig}
+                                    \\usepackage{soul}
+                                    \\usepackage[xetex]{hyperref}
+                                    \\usepackage{xcolor}
+                                    \\usepackage{minted}
+                                    \\usepackage{geometry}
+                                    \\geometry{left=1cm,right=1cm,top=1cm,bottom=1cm}
+                                    \\usepackage[natbib=true]{biblatex} 
+                                    \\DeclareFieldFormat{apacase}{#1} 
+                                    \\addbibresource{~/myspace/Bibliography/references.bib}"
+                       ("\\section{%s}" . "\\section*{%s}")
+                       ("\\subsection{%s}" . "\\subsection*{%s}")
+                       ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+                       ("\\paragraph{%s}" . "\\paragraph*{%s}")
+                       ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+    
+        ;; tufte-handout class for writing classy handouts and papers
+        (add-to-list 'org-latex-classes
+                     '("tufte-handout"
+                       "\\documentclass[twoside,nobib]{tufte-handout}
+                          [NO-DEFAULT-PACKAGES]
+                          \\usepackage{zxjatype}
+                          \\usepackage[hiragino-dx]{zxjafont}"
+                       ("\\section{%s}" . "\\section*{%s}")
+                       ("\\subsection{%s}" . "\\subsection*{%s}")))
+        ;; tufte-book class
+        (add-to-list 'org-latex-classes
+                     '("tufte-book"
+                       "\\documentclass[twoside,nobib]{tufte-book}
+                         [NO-DEFAULT-PACKAGES]
+                           \\usepackage{zxjatype}
+                           \\usepackage[hiragino-dx]{zxjafont}"
+                       ("\\part{%s}" . "\\part*{%s}")
+                       ("\\chapter{%s}" . "\\chapter*{%s}")
+                       ("\\section{%s}" . "\\section*{%s}")
+                       ("\\subsection{%s}" . "\\subsection*{%s}")
+                       ("\\paragraph{%s}" . "\\paragraph*{%s}"))))
+    
+    
+      (use-package ox-pandoc
+        :ensure t
+        :config
+        ;; default options for all output formats
+        (setq org-pandoc-options '((standalone . t)))
+        ;; cancel above settings only for 'docx' format
+        (setq org-pandoc-options-for-docx '((standalone . nil)))
+        ;; special settings for beamer-pdf and latex-pdf exporters
+        (setq org-pandoc-options-for-beamer-pdf '((pdf-engine . "xelatex")))
+        (setq org-pandoc-options-for-latex-pdf '((pdf-engine . "xelatex")))
+        )
+    
+    
+      (setq org-roam-v2-ack t)
+    
+      (use-package org-roam
+        :straight t
+        :custom
+        (org-roam-directory (file-truename "~/myspace/org-roam"))
+        (org-roam-db-location "/tmp/org-roam")
+        :bind (("C-c n l" . org-roam-buffer-toggle)
+               ("C-c n f" . org-roam-node-find)
+               ("C-c n g" . org-roam-graph)
+               ("C-c n i" . org-roam-node-insert)
+               ("C-c n c" . org-roam-capture)
+               ;; Dailies
+               ("C-c n j" . org-roam-dailies-capture-today))
+        :init
+        (org-roam-setup)
+        ;; If using org-roam-protocol
+        (require 'org-roam-protocol))
+    
+    
+      ;;        (use-package org-roam
+      ;;          :init (require 'org-roam-protocol)
+      ;;          :diminish org-roam-mode
+      ;;          :hook
+      ;;          (after-init . org-roam-mode)
+      ;;          :custom
+      ;;          (org-roam-directory "~/myspace/org-roam")
+      ;;          (org-roam-db-location "/tmp/org-roam")
+      ;;          :bind (:map org-roam-mode-map
+      ;;                      (("C-c n l" . org-roam)
+      ;;                       ("C-c n f" . org-roam-find-file)
+      ;;                       ("C-c n g" . org-roam-graph-show))
+      ;;                      :map org-mode-map
+      ;;                      (("C-c n i" . org-roam-insert)
+      ;;                       ("C-c n I" . org-roam-insert-immediate)))
+      ;;          :config (global-set-key (kbd "<f6>") 'org-roam-dailies-goto-today))
+    
+      ;;            (use-package org-roam-server
+      ;;              :ensure t
+      ;;              :config
+      ;;              (setq org-roam-server-host "127.0.0.1"
+      ;;                    org-roam-server-port 9876
+      ;;                    org-roam-server-export-inline-images t
+      ;;                    org-roam-server-authenticate nil
+      ;;                    org-roam-server-network-poll t
+      ;;                    org-roam-server-network-arrows nil
+      ;;                    org-roam-server-network-label-truncate t
+      ;;                    org-roam-server-network-label-truncate-length 60
+      ;;                    org-roam-server-network-label-wrap-length 20))
+      ;;
+      (use-package deft
+        :after org
+        :bind
+        ("C-c n d" . deft)
+        :custom
+        (deft-recursive t)
+        (deft-auto-save-interval 0.0)
+        (deft-use-filter-string-for-filename t)
+        (deft-default-extension "org")
+        (deft-directory "~/myspace/org-roam"))
+    
+      ;; If you installed via MELPA
+      (use-package org-roam-bibtex
+        :after org-roam
+        :straight (org-roam-bibtex
+                   :type git :host github
+                   :repo "org-roam/org-roam-bibtex"
+                   :branch "org-roam-v2")
+        :hook (org-roam-mode . org-roam-bibtex-mode)
+        :diminish org-roam-bibtex-mode
+    
+        :bind (:map org-mode-map
+                    (("C-c n a" . orb-note-actions))))
+    
+      (defun remove-org-newlines-at-cjk-text (&optional _mode)
+        "先頭が '*', '#', '|' でなく、改行の前後が日本の文字の場合はその改行を除去する。"
+        (interactive)
+        (goto-char (point-min))
+        (while (re-search-forward "^\\([^|#*\n].+\\)\\(.\\)\n *\\(.\\)" nil t)
+          (if (and (> (string-to-char (match-string 2)) #x2000)
+                   (> (string-to-char (match-string 3)) #x2000))
+              (replace-match "\\1\\2\\3"))
+          (goto-char (point-at-bol))))
+    
+      (with-eval-after-load "ox"
+        (add-hook 'org-export-before-processing-hook 'remove-org-newlines-at-cjk-text))
   #+END_SRC
 
 * Utility
