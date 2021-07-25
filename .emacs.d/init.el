@@ -46,6 +46,10 @@
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
 (setq package-enable-at-startup nil)
+(setq straight-disable-native-compile t)
+
+(add-to-list 'load-path "~/.emacs.d/straight/build/org/")
+(require 'org-loaddefs)
 
 (org-babel-load-file (expand-file-name "~/.emacs.d/myinit.org"))
 

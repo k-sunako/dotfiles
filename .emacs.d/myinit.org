@@ -1,3 +1,9 @@
+* dd
+
+  #+begin_src emacs-lisp
+    (setq debug-on-error t)
+  #+end_src
+
 * library
   
   #+begin_src emacs-lisp
@@ -248,58 +254,278 @@
 * 補完 / 絞り込み
 
   #+BEGIN_SRC emacs-lisp
-    (use-package ace-window
-      :bind (("C-t". ace-window)))
+            (use-package ace-window
+              :bind (("C-t". ace-window)))
 
-    (use-package projectile
-      :ensure t
-      :config
-      (projectile-mode +1)
-      (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
-      (setq projectile-indexing-method 'alien)
-      (setq projectile-project-search-path '("~/repos"))
-      (projectile-discover-projects-in-search-path))
+            (use-package projectile
+              :ensure t
+              :config
+              (projectile-mode +1)
+              (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
+              (setq projectile-indexing-method 'alien)
+              (setq projectile-project-search-path '("~/repos"))
+              (projectile-discover-projects-in-search-path))
 
-    (use-package migemo
-      :ensure t
-      :config
-      (setq migemo-command "cmigemo")
-      (setq migemo-options '("-q" "--emacs"))
+            (use-package migemo
+              :ensure t
+              :config
+              (setq migemo-command "cmigemo")
+              (setq migemo-options '("-q" "--emacs"))
 
-      ;; Set your installed path
-      (setq migemo-dictionary "/usr/share/migemo/utf-8/migemo-dict")
+              ;; Set your installed path
+              (setq migemo-dictionary "/usr/share/migemo/utf-8/migemo-dict")
 
-      (setq migemo-user-dictionary nil)
-      (setq migemo-regex-dictionary nil)
-      (setq migemo-coding-system 'utf-8-unix)
-      (migemo-init))
+              (setq migemo-user-dictionary nil)
+              (setq migemo-regex-dictionary nil)
+              (setq migemo-coding-system 'utf-8-unix))
+        ;;      (migemo-init))
 
-    (use-package helm
-      :straight helm
-      :diminish helm-migemo-mode
-      :init
-      (helm-mode 1)
-      :config
-      (setq helm-truncate-lines t)
-      (global-set-key (kbd "M-x") 'helm-M-x)
-      (global-set-key (kbd "C-s") 'helm-swoop)
-      (global-set-key (kbd "C-x C-f") 'helm-find-files)
-      (global-set-key (kbd "C-x b") 'helm-buffers-list)
-      (global-set-key (kbd "<f4>") 'helm-for-files)
-      (helm-migemo-mode))
+            (use-package selectrum
+              :straight t
+              :config
+              (selectrum-mode +1))
 
-    (use-package helm-projectile
-      :ensure t
-      :bind (("<f5>" . helm-projectile-find-file))
-      :config
-      (helm-projectile-on))
+            ;; Migemoを有効にする
+            ;; https://github.com/yamatakau08/.emacs.d/blob/master/.orderless.el
+            (use-package orderless
+              :straight t
 
-    (use-package helm-swoop
-      :ensure t
-      :after helm
-      :init
-      (setq helm-swoop-pre-input-function (lambda () "")))
+              :init
+              (setq ; completion-styles '(orderless)
+               completion-category-defaults nil
+               completion-category-overrides '((file (styles . (partial-completion)))))
 
+              :after migemo
+
+              :custom
+              (completion-styles '(orderless))
+              (orderless-matching-styles '(orderless-literal orderless-regexp orderless-migemo))
+
+              :config
+              ;; supported emacs-jp slack
+              ;;(setq orderless-matching-styles '(orderless-migemo))
+              ;;(setq orderless-matching-styles '(orderless-literal orderless-regexp orderless-migemo)) ; move to :custom block
+              (defalias 'orderless-migemo #'migemo-get-pattern)
+
+              (defun orderless-migemo (component)
+                (let ((pattern (migemo-get-pattern component)))
+                  (condition-case nil
+                      (progn (string-match-p pattern "") pattern)
+                    (invalid-regexp nil))))
+              )
+            ;;(use-package marginalia
+            ;;  
+            ;;  :config
+            ;;  (marginalia-mode))
+            ;; Enable richer annotations using the Marginalia package
+            (use-package marginalia
+              :straight t
+
+              ;; Either bind `marginalia-cycle` globally or only in the minibuffer
+              :bind (("M-A" . marginalia-cycle)
+                     :map minibuffer-local-map
+                     ("M-A" . marginalia-cycle))
+
+              ;; The :init configuration is always executed (Not lazy!)
+              :init
+
+              ;; Must be in the :init section of use-package such that the mode gets
+              ;; enabled right away. Note that this forces loading the package.
+              (marginalia-mode)
+              :config
+              (add-to-list 'marginalia-prompt-categories
+                           '("\\<File\\>" . file))
+              )
+            (use-package consult
+              :straight t
+              ;; Replace bindings. Lazily loaded due by `use-package'.
+              :bind (;; C-c bindings (mode-specific-map)
+                     ("C-c h" . consult-history)
+                     ("C-c m" . consult-mode-command)
+                     ("C-c b" . consult-bookmark)
+                     ("C-c k" . consult-kmacro)
+                     ;; C-x bindings (ctl-x-map)
+                     ("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
+                     ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
+                     ("C-x 4 b" . consult-buffer-other-window) ;; orig. switch-to-buffer-other-window
+                     ("C-x 5 b" . consult-buffer-other-frame)  ;; orig. switch-to-buffer-other-frame
+                     ;; Custom M-# bindings for fast register access
+                     ("M-#" . consult-register-load)
+                     ("M-'" . consult-register-store)          ;; orig. abbrev-prefix-mark (unrelated)
+                     ("C-M-#" . consult-register)
+                     ;; Other custom bindings
+                     ("M-y" . consult-yank-pop)                ;; orig. yank-pop
+                     ("<help> a" . consult-apropos)            ;; orig. apropos-command
+                     ;; M-g bindings (goto-map)
+                     ("M-g e" . consult-compile-error)
+                     ("M-g f" . consult-flymake)               ;; Alternative: consult-flycheck
+                     ("M-g g" . consult-goto-line)             ;; orig. goto-line
+                     ("M-g M-g" . consult-goto-line)           ;; orig. goto-line
+                     ("M-g o" . consult-outline)               ;; Alternative: consult-org-heading
+                     ("M-g m" . consult-mark)
+                     ("M-g k" . consult-global-mark)
+                     ("M-g i" . consult-imenu)
+                     ("M-g I" . consult-project-imenu)
+                     ;; M-s bindings (search-map)
+                     ("M-s f" . consult-find)
+                     ("M-s L" . consult-locate)
+                     ("M-s g" . consult-grep)
+                     ("M-s G" . consult-git-grep)
+                     ("M-s r" . consult-ripgrep)
+                     ("M-s l" . consult-line)
+                     ("M-s m" . consult-multi-occur)
+                     ("M-s k" . consult-keep-lines)
+                     ("M-s u" . consult-focus-lines)
+                     ;; Isearch integration
+                     ("M-s e" . consult-isearch)
+                     :map isearch-mode-map
+                     ("M-e" . consult-isearch)                 ;; orig. isearch-edit-string
+                     ("M-s e" . consult-isearch)               ;; orig. isearch-edit-string
+                     ("M-s l" . consult-line))                 ;; needed by consult-line to detect isearch
+
+              ;; Enable automatic preview at point in the *Completions* buffer.
+              ;; This is relevant when you use the default completion UI,
+              ;; and not necessary for Vertico, Selectrum, etc.
+              :hook (completion-list-mode . consult-preview-at-point-mode)
+
+              ;; The :init configuration is always executed (Not lazy)
+              :init
+
+              ;; Optionally configure the register formatting. This improves the register
+              ;; preview for `consult-register', `consult-register-load',
+              ;; `consult-register-store' and the Emacs built-ins.
+              (setq register-preview-delay 0
+                    register-preview-function #'consult-register-format)
+
+              ;; Optionally tweak the register preview window.
+              ;; This adds thin lines, sorting and hides the mode line of the window.
+              (advice-add #'register-preview :override #'consult-register-window)
+
+              ;; Optionally replace `completing-read-multiple' with an enhanced version.
+              (advice-add #'completing-read-multiple :override #'consult-completing-read-multiple)
+
+              ;; Use Consult to select xref locations with preview
+              (setq xref-show-xrefs-function #'consult-xref
+                    xref-show-definitions-function #'consult-xref)
+
+              ;; Configure other variables and modes in the :config section,
+              ;; after lazily loading the package.
+              :config
+
+              ;; Optionally configure preview. The default value
+              ;; is 'any, such that any key triggers the preview.
+              ;; (setq consult-preview-key 'any)
+              ;; (setq consult-preview-key (kbd "M-."))
+              ;; (setq consult-preview-key (list (kbd "<S-down>") (kbd "<S-up>")))
+              ;; For some commands and buffer sources it is useful to configure the
+              ;; :preview-key on a per-command basis using the `consult-customize' macro.
+              (consult-customize
+               consult-theme
+               :preview-key '(:debounce 0.2 any)
+               consult-ripgrep consult-git-grep consult-grep
+               consult-bookmark consult-recent-file consult-xref
+               consult--source-file consult--source-project-file consult--source-bookmark
+               :preview-key (kbd "M-."))
+
+              ;; Optionally configure the narrowing key.
+              ;; Both < and C-+ work reasonably well.
+              (setq consult-narrow-key "<") ;; (kbd "C-+")
+
+              ;; Optionally make narrowing help available in the minibuffer.
+              ;; You may want to use `embark-prefix-help-command' or which-key instead.
+              ;; (define-key consult-narrow-map (vconcat consult-narrow-key "?") #'consult-narrow-help)
+
+              ;; Optionally configure a function which returns the project root directory.
+              ;; There are multiple reasonable alternatives to chose from.
+                    ;;;; 1. project.el (project-roots)
+              (setq consult-project-root-function
+                    (lambda ()
+                      (when-let (project (project-current))
+                        (car (project-roots project)))))
+                    ;;;; 2. projectile.el (projectile-project-root)
+              ;; (autoload 'projectile-project-root "projectile")
+              ;; (setq consult-project-root-function #'projectile-project-root)
+                    ;;;; 3. vc.el (vc-root-dir)
+              ;; (setq consult-project-root-function #'vc-root-dir)
+                    ;;;; 4. locate-dominating-file
+              ;; (setq consult-project-root-function (lambda () (locate-dominating-file "." ".git")))
+
+              ;; C-x b の consult-buffer に recentf を追加する
+              ;; https://tam5917.hatenablog.com/entry/2021/04/29/235949
+              (setq consult--source-file
+                    `(:name     "File"
+                                :narrow   ?f
+                                :category file
+                                :face     consult-file
+                                :history  file-name-history
+                                :action   ,#'consult--file-action
+                                :enabled   ,(lambda () recentf-mode)
+                                :items ,recentf-list))
+
+              )
+            (use-package embark
+              :straight t
+
+              :bind
+              (("C-." . embark-act)         ;; pick some comfortable binding
+               ("C-;" . embark-dwim)        ;; good alternative: M-.
+               ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
+
+              :init
+
+              ;; Optionally replace the key help with a completing-read interface
+              (setq prefix-help-command #'embark-prefix-help-command)
+
+              :config
+
+              ;; Hide the mode line of the Embark live/completions buffers
+              (add-to-list 'display-buffer-alist
+                           '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+                             nil
+                             (window-parameters (mode-line-format . none)))))
+
+            ;; Consult users will also want the embark-consult package.
+            (use-package embark-consult
+              :straight t
+              :after (embark consult)
+              :demand t ; only necessary if you have the hook below
+              ;; if you want to have consult previews as you move around an
+              ;; auto-updating embark collect buffer
+              :hook
+              (embark-collect-mode . consult-preview-at-point-mode))
+
+
+;;        (use-package bibtex-actions
+;;          :bind (("C-c b" . bibtex-actions-insert-citation)
+;;                 :map minibuffer-local-map
+;;                 ("M-b" . bibtex-actions-insert-preset))
+;;          :after embark
+;;          :config
+;;          ;; Make the 'bibtex-actions' bindings and targets available to `embark'.
+;;          (add-to-list 'embark-target-finders 'bibtex-actions-citation-key-at-point)
+;;          (add-to-list 'embark-keymap-alist '(bibtex . bibtex-actions-map))
+;;          (add-to-list 'embark-keymap-alist '(citation-key . bibtex-actions-buffer-map))
+;;          ;; Make sure to set this to ensure 'bibtex-actions-open-link' command works correctly.
+;;          (bibtex-completion-additional-search-fields '(doi url))
+;;          (bibtex-completion-bibliography '("~/myspace/Bibliography/references.bib")))
+;;
+;;            ;; use consult-completing-read for enhanced interface
+;;            (advice-add #'completing-read-multiple :override #'consult-completing-read-multiple)
+;;
+;;
+;;            (use-package bibtex-actions-org-cite             
+;;              :bind (("C-c b" . org-cite-insert)
+;;                     ("M-o" . org-open-at-point)
+;;                     :map minibuffer-local-map
+;;                     ("M-b" . bibtex-actions-insert-preset))
+;;              :after (embark org oc bibtex-actions)
+;;              :config
+;;              ;; make sure to set this to ensure open commands work correctly
+;;              (bibtex-completion-additional-search-fields '(doi url))
+;;              (bibtex-completion-bibliography '("~/myspace/Bibliography/references.bib"))
+;;              (org-cite-global-bibliography '("~/myspace/Bibliography/references.bib")))
+;;
+;;    (setq bibtex-actions-at-point-function 'embark-act)
   #+END_SRC
 
 * treemacs
@@ -386,10 +612,11 @@
   #+end_src
   
 * Org
-
+  
   [[https://emacs.stackexchange.com/questions/26451/agenda-view-for-all-tasks-with-a-project-tag-and-at-a-certain-level][org mode - Agenda view for all tasks with a project tag and at a certain leve...]]
   [[https://emacs.stackexchange.com/questions/41150/top-level-heading-in-the-org-mode-agenda][Top level heading in the `org-mode` agenda - Emacs Stack Exchange]]
 
+  
   #+BEGIN_SRC emacs-lisp
     (use-package org
       :straight t
@@ -512,6 +739,7 @@
       )
 
     (use-package org-ref
+      :straight t
       :ensure t
       :after org
       :custom (org-ref-bib-html "")
@@ -528,7 +756,7 @@
             org-ref-pdf-directory my-ref-pdfs)
 
       ;; helm-bibtex を使う場合は以下の変数も設定しておく
-      (setq bibtex-completion-bibliography my-ref-bib
+      (setq bibtex-completion-bibliography `(,my-ref-bib)
             bibtex-completion-library-path my-ref-pdfs
             bibtex-completion-notes-path my-ref-helm-bibtex-notes)
 
@@ -687,8 +915,7 @@
              ("C-c n c" . org-roam-capture)
              ;; Dailies
              ("C-c n j" . org-roam-dailies-capture-today))
-      :config
-      (setq org-roam-completion-anywhere t)
+      :init
       (org-roam-setup)
       ;; If using org-roam-protocol
       (require 'org-roam-protocol))
@@ -767,9 +994,6 @@
     (use-package expand-region
       :ensure t
       :bind (("C--" . er/expand-region)))
-
-    (use-package iedit
-      :ensure t)
   #+END_SRC
 * プログラミング
 
