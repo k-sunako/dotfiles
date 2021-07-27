@@ -1067,8 +1067,8 @@
 
        ;; breadcrumb
        ;; パンくずリストを表示する。
-       (setq lsp-headerline-breadcrumb-enable t)
-       (setq lsp-headerline-breadcrumb-segments '(project file symbols))
+       ;;(setq lsp-headerline-breadcrumb-enable t)
+       ;;(setq lsp-headerline-breadcrumb-segments '(project file symbols))
 
        ;; snippet
        (setq lsp-enable-snippet t)
