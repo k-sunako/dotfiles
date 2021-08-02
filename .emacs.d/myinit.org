@@ -218,12 +218,12 @@
         ("C-p" org-previous-visible-heading "PrevH")
         ("C-n" org-next-visible-heading "NextH")))
 
-    (use-package sequential-command
-      :ensure t
-      :bind (:map esc-map (("u" . seq-upcase-backward-word)
-                           ("c" . seq-capitalize-backward-word)
-                           ("l" . seq-downcase-backward-word)))
-      :init (require 'sequential-command-config))
+;    (use-package sequential-command
+;      :ensure t
+;      :bind (:map esc-map (("u" . seq-upcase-backward-word)
+;                           ("c" . seq-capitalize-backward-word)
+;                           ("l" . seq-downcase-backward-word)))
+;      :init (require 'sequential-command-config))
 
 ;    (use-package iy-go-to-char
 ;      :ensure t
@@ -634,7 +634,7 @@
       :config
       (defun org-confirm-elisp-link-function--no-confirm-my-org-file (prompt)
         "自分が書いたorgファイルの(のディレクトリにある)elispリンクはconfirmなし。
-        それ以外のディレクトリではconfirmする。"
+            それ以外のディレクトリではconfirmする。"
         (or (string-match "/myspace/Org/" (or (buffer-file-name) ""))
             (member (buffer-name) '("*trace-output*"))
             (y-or-n-p prompt)))
@@ -685,7 +685,7 @@
          (python . t)
          ))
     
-                ;;; Agenda を現在のウィンドウと入れ替えで表示
+                    ;;; Agenda を現在のウィンドウと入れ替えで表示
       (setq org-agenda-window-setup 'current-window)
       (setq org-agenda-start-on-weekday 0)
       (setq org-agenda-files '("~/myspace/Org/inbox.org"))
@@ -851,28 +851,28 @@
                    '(
                      "koma-jarticle"
                      "\\documentclass[12pt]{scrartcl}
-                        [NO-DEFAULT-PACKAGES]
-                        \\usepackage{amsmath}
-                        \\usepackage{amssymb}
-                        \\usepackage{mathrsfs}
-                        \\usepackage{xunicode}
-                        \\usepackage{fixltx2e}
-                        \\usepackage{zxjatype}
-                        \\usepackage[ipa]{zxjafont}
-                        \\usepackage{xltxtra}
-                        \\usepackage{graphicx}
-                        \\usepackage{longtable}
-                        \\usepackage{float}
-                        \\usepackage{wrapfig}
-                        \\usepackage{soul}
-                        \\usepackage[xetex]{hyperref}
-                        \\usepackage{xcolor}
-                        \\usepackage{minted}
-                        \\usepackage{geometry}
-                        \\geometry{left=1cm,right=1cm,top=1cm,bottom=1cm}
-                        \\usepackage[natbib=true]{biblatex} 
-                        \\DeclareFieldFormat{apacase}{#1} 
-                        \\addbibresource{~/myspace/Bibliography/references.bib}"
+                            [NO-DEFAULT-PACKAGES]
+                            \\usepackage{amsmath}
+                            \\usepackage{amssymb}
+                            \\usepackage{mathrsfs}
+                            \\usepackage{xunicode}
+                            \\usepackage{fixltx2e}
+                            \\usepackage{zxjatype}
+                            \\usepackage[ipa]{zxjafont}
+                            \\usepackage{xltxtra}
+                            \\usepackage{graphicx}
+                            \\usepackage{longtable}
+                            \\usepackage{float}
+                            \\usepackage{wrapfig}
+                            \\usepackage{soul}
+                            \\usepackage[xetex]{hyperref}
+                            \\usepackage{xcolor}
+                            \\usepackage{minted}
+                            \\usepackage{geometry}
+                            \\geometry{left=1cm,right=1cm,top=1cm,bottom=1cm}
+                            \\usepackage[natbib=true]{biblatex} 
+                            \\DeclareFieldFormat{apacase}{#1} 
+                            \\addbibresource{~/myspace/Bibliography/references.bib}"
                      ("\\section{%s}" . "\\section*{%s}")
                      ("\\subsection{%s}" . "\\subsection*{%s}")
                      ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
@@ -883,18 +883,18 @@
       (add-to-list 'org-latex-classes
                    '("tufte-handout"
                      "\\documentclass[twoside,nobib]{tufte-handout}
-                  [NO-DEFAULT-PACKAGES]
-                  \\usepackage{zxjatype}
-                  \\usepackage[hiragino-dx]{zxjafont}"
+                      [NO-DEFAULT-PACKAGES]
+                      \\usepackage{zxjatype}
+                      \\usepackage[hiragino-dx]{zxjafont}"
                      ("\\section{%s}" . "\\section*{%s}")
                      ("\\subsection{%s}" . "\\subsection*{%s}")))
       ;; tufte-book class
       (add-to-list 'org-latex-classes
                    '("tufte-book"
                      "\\documentclass[twoside,nobib]{tufte-book}
-                 [NO-DEFAULT-PACKAGES]
-                   \\usepackage{zxjatype}
-                   \\usepackage[hiragino-dx]{zxjafont}"
+                     [NO-DEFAULT-PACKAGES]
+                       \\usepackage{zxjatype}
+                       \\usepackage[hiragino-dx]{zxjafont}"
                      ("\\part{%s}" . "\\part*{%s}")
                      ("\\chapter{%s}" . "\\chapter*{%s}")
                      ("\\section{%s}" . "\\section*{%s}")
@@ -933,6 +933,21 @@
       (org-roam-setup)
       ;; If using org-roam-protocol
       (require 'org-roam-protocol))
+    
+    (use-package org-roam-ui
+      :straight
+      (:host github :repo "org-roam/org-roam-ui" :branch "main" :files ("*.el" "out"))
+      :after org-roam
+      ;; :hook
+      ;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
+      ;;         a hookable mode anymore, you're advised to pick something yourself
+      ;;         if you don't care about startup time, use
+      ;;  :hook (after-init . org-roam-ui-mode)
+      :config
+      (setq org-roam-ui-sync-theme t
+            org-roam-ui-follow t
+            org-roam-ui-update-on-save t
+            org-roam-ui-open-on-start t))
     
     
     ;;        (use-package org-roam
