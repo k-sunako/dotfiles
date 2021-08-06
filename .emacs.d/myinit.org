@@ -756,7 +756,9 @@
       :straight t
       :ensure t
       :after org
-      :custom (org-ref-bib-html "")
+      :custom
+      (org-ref-bib-html "")
+      (helm-migemo-mode t)
       :config
       (setq my-ref-bib  "~/myspace/Bibliography/references.bib")
       (setq my-ref-note "~/myspace/Bibliography/notes.org")
@@ -774,11 +776,32 @@
             bibtex-completion-library-path my-ref-pdfs
             bibtex-completion-notes-path my-ref-helm-bibtex-notes)
     
+      (setq helm-migemo-mode t)
+      (setq helm-source-bibtex
+        (helm-build-sync-source "BibTeX entries"
+          :header-name (lambda (name)
+                         (format "%s%s: " name (if helm-bibtex-local-bib " (local)" "")))
+          :candidates 'helm-bibtex-candidates
+          :migemo t
+          :filtered-candidate-transformer 'helm-bibtex-candidates-formatter
+          :action (helm-make-actions
+                   "Open PDF, URL or DOI"       'helm-bibtex-open-any
+                   "Open URL or DOI in browser" 'helm-bibtex-open-url-or-doi
+                   "Insert citation"            'helm-bibtex-insert-citation
+                   "Insert reference"           'helm-bibtex-insert-reference
+                   "Insert BibTeX key"          'helm-bibtex-insert-key
+                   "Insert BibTeX entry"        'helm-bibtex-insert-bibtex
+                   "Attach PDF to email"        'helm-bibtex-add-PDF-attachment
+                   "Edit notes"                 'helm-bibtex-edit-notes
+                   "Show entry"                 'helm-bibtex-show-entry
+                   "Add PDF to library"         'helm-bibtex-add-pdf-to-library)))
+    
+      
       (setq bibtex-completion-display-formats
             '((article       . "${author:5} ${title:40} ${journal:10} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}")
               (inbook        . "${author:5} ${title:40} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}")
               (book          . "${author:5} ${title:40} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}")
-              (t             . "${author:5} ${title:40} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}"))))
+              (t             . "${author:5} ${title:40} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}"))))    
     
     ;;(require 'ox-bibtex)
     (use-package ox-latex
@@ -915,10 +938,10 @@
                                             ;	)
     
     
-    (setq org-roam-v2-ack t)
-    
     (use-package org-roam
       :straight t
+      :init
+      (setq org-roam-v2-ack t)
       :custom
       (org-roam-directory (file-truename "~/myspace/org-roam"))
       (org-roam-db-location "/tmp/org-roam")
@@ -997,7 +1020,7 @@
       :straight (org-roam-bibtex
                  :type git :host github
                  :repo "org-roam/org-roam-bibtex"
-                 :branch "org-roam-v2")
+                 :branch "main")
       :hook (org-roam-mode . org-roam-bibtex-mode)
       :diminish org-roam-bibtex-mode
     
