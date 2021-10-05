@@ -1,17 +1,20 @@
-* first page
+* 初期ページ
+初期ページとして、ダッシュボード表示する.
 
 #+begin_src emacs-lisp
   (setq initial-buffer-choice "~/myspace/Org/dashboard.org")
 #+end_src
 
-* debug
+* デバッグ用のフラグ
+~myinit.org~ の挙動を確認するときは ~t~ を設定.
 
   #+begin_src emacs-lisp
     (setq debug-on-error nil)
   #+end_src
 
-* library
-  
+* ライブラリ
+基本的なラブラリをインストール.
+
   #+begin_src emacs-lisp
     (require 'cl-lib)
 
@@ -21,6 +24,7 @@
   #+end_src
 
 * 言語
+日本語を設定する.
 
 #+begin_src emacs-lisp
   (set-language-environment "Japanese")
@@ -1019,6 +1023,7 @@
    #+BEGIN_SRC emacs-lisp
      (use-package lsp-mode
        :config
+       (define-key lsp-mode-map (kbd "C-c l") lsp-command-map)
        ;;(setq lsp-prefer-capf t)
        ;; .venv, .mypy_cache を watch 対象から外す
        (dolist (dir '(
@@ -1079,6 +1084,9 @@
      
        :commands (lsp lsp-deferred)
        :hook
+       (lsp-mode . (lambda ()
+                     (let ((lsp-keymap-prefix "C-c l"))
+                       (lsp-enable-which-key-integration))))
        (python-mode . lsp) ; python-mode で lsp-mode を有効化する
        (python-mode . lsp/python-mode-hook) ; python-mode 用のフック関数を仕掛ける
        )
