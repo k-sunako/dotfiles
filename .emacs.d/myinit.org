@@ -58,42 +58,44 @@
   メニューバー、ツールバー、スクロールバーは非表示。行の折り返しはしない。
 
   #+BEGIN_SRC emacs-lisp
-
-    (menu-bar-mode -1)
-    (scroll-bar-mode -1)
-    (tool-bar-mode -1)
-
-    ;; 行番号表示(Emacs26以降)
-    (global-display-line-numbers-mode t)
-    (custom-set-variables '(display-line-numbers-width-start t))
-
-    (use-package beacon
-      :ensure t
-      :diminish beacon-mode
-      :config
-      (beacon-mode 1))
-
-    (set-default 'truncate-lines 1)
-
-    (let* ((ffl (font-family-list))
-           (ffl-utf8 (mapcar (lambda (x) (decode-coding-string x 'utf-8)) ffl)))
-      (cond 
-       ((member "Ricty" ffl)
-        (set-frame-font "Ricty 15"))
-       ((member "source han code jp n" ffl)
-        (set-frame-font "source han code jp n 12"))
-       ((member "源ノ角ゴシック Code JP" ffl-utf8)
-        (set-frame-font "源ノ角ゴシック Code JP n 12"))
-       ((member "Ricty Diminished" ffl)
-        (set-frame-font "Ricty Diminished 12"))
-       ))
-
-    (use-package gruvbox-theme
-      :straight t
-      :config
-      (load-theme 'gruvbox-dark-medium t)
-      (set-face-attribute 'secondary-selection nil
-                          :weight 'bold :background "#1d2021"))
+        
+        (menu-bar-mode -1)
+        (scroll-bar-mode -1)
+        (tool-bar-mode -1)
+        
+        ;; 行番号表示(Emacs26以降)
+        (global-display-line-numbers-mode t)
+        (custom-set-variables '(display-line-numbers-width-start t))
+        
+        (use-package beacon
+          :ensure t
+          :diminish beacon-mode
+          :config
+          (beacon-mode 1))
+        
+        (set-default 'truncate-lines 1)
+        
+        (let* ((ffl (font-family-list))
+               (ffl-utf8 (mapcar (lambda (x) (decode-coding-string x 'utf-8)) ffl)))
+          (cond
+           ((member "NasuM" ffl)
+            (set-frame-font "NasuM 15"))
+           ((member "Ricty" ffl)
+            (set-frame-font "Ricty 15"))
+           ((member "source han code jp n" ffl)
+            (set-frame-font "source han code jp n 12"))
+           ((member "源ノ角ゴシック Code JP" ffl-utf8)
+            (set-frame-font "源ノ角ゴシック Code JP n 12"))
+           ((member "Ricty Diminished" ffl)
+            (set-frame-font "Ricty Diminished 12"))
+           ))
+        
+        (use-package gruvbox-theme
+          :straight t
+          :config
+          (load-theme 'gruvbox-dark-medium t)
+          (set-face-attribute 'secondary-selection nil
+                              :weight 'bold :background "#1d2021"))
   #+END_SRC
 
 * Dired
@@ -752,24 +754,24 @@
             bibtex-completion-notes-path my-ref-helm-bibtex-notes)
     
       (setq helm-migemo-mode t)
-      (setq helm-source-bibtex
-            (helm-build-sync-source "BibTeX entries"
-              :header-name (lambda (name)
-                             (format "%s%s: " name (if helm-bibtex-local-bib " (local)" "")))
-              :candidates 'helm-bibtex-candidates
-              :migemo t
-              :filtered-candidate-transformer 'helm-bibtex-candidates-formatter
-              :action (helm-make-actions
-                       "Open PDF, URL or DOI"       'helm-bibtex-open-any
-                       "Open URL or DOI in browser" 'helm-bibtex-open-url-or-doi
-                       "Insert citation"            'helm-bibtex-insert-citation
-                       "Insert reference"           'helm-bibtex-insert-reference
-                       "Insert BibTeX key"          'helm-bibtex-insert-key
-                       "Insert BibTeX entry"        'helm-bibtex-insert-bibtex
-                       "Attach PDF to email"        'helm-bibtex-add-PDF-attachment
-                       "Edit notes"                 'helm-bibtex-edit-notes
-                       "Show entry"                 'helm-bibtex-show-entry
-                       "Add PDF to library"         'helm-bibtex-add-pdf-to-library)))
+;;      (setq helm-source-bibtex
+;;            (helm-build-sync-source "BibTeX entries"
+;;              :header-name (lambda (name)
+;;                             (format "%s%s: " name (if helm-bibtex-local-bib " (local)" "")))
+;;              :candidates 'helm-bibtex-candidates
+;;              :migemo t
+;;              :filtered-candidate-transformer 'helm-bibtex-candidates-formatter
+;;              :action (helm-make-actions
+;;                       "Open PDF, URL or DOI"       'helm-bibtex-open-any
+;;                       "Open URL or DOI in browser" 'helm-bibtex-open-url-or-doi
+;;                       "Insert citation"            'helm-bibtex-insert-citation
+;;                       "Insert reference"           'helm-bibtex-insert-reference
+;;                       "Insert BibTeX key"          'helm-bibtex-insert-key
+;;                       "Insert BibTeX entry"        'helm-bibtex-insert-bibtex
+;;                       "Attach PDF to email"        'helm-bibtex-add-PDF-attachment
+;;                       "Edit notes"                 'helm-bibtex-edit-notes
+;;                       "Show entry"                 'helm-bibtex-show-entry
+;;                       "Add PDF to library"         'helm-bibtex-add-pdf-to-library)))
     
     
       (setq bibtex-completion-display-formats
@@ -933,7 +935,8 @@
              ;; Dailies
              ("C-c n j" . org-roam-dailies-capture-today))
       :init
-      (org-roam-setup)
+      ;;(org-roam-setup)
+      (org-roam-db-autosync-mode)
       ;; If using org-roam-protocol
       (require 'org-roam-protocol))
     
@@ -969,7 +972,7 @@
       :straight (org-roam-bibtex
                  :type git :host github
                  :repo "org-roam/org-roam-bibtex"
-                 :branch "main")
+                 :branch "master")
       :diminish org-roam-bibtex-mode
       :config
       (org-roam-bibtex-mode 1))
