@@ -1235,7 +1235,7 @@
 
 * Etc
   #+BEGIN_SRC emacs-lisp
-
+    
     ;; https://emacs.stackexchange.com/questions/31646/how-to-paste-with-indentより転載
     (defun yank-with-indent-2 ()
       (let ((indent
@@ -1246,10 +1246,10 @@
         (pop-to-mark-command)
         (replace-string "\n" (concat "\n" indent))
         (widen)))
-
-
+    
+    
     (setq large-file-warning-threshold nil)
-
+    
     (use-package recentf
       :ensure t
       :config
@@ -1257,11 +1257,11 @@
       (setq recentf-auto-cleanup 'never)  ;; 存在しないファイルは消さない
       (setq recentf-exclude '("/recentf" "COMMIT_EDITMSG" "/.?TAGS" "^/sudo:" "/\\.emacs\\.d/games/*-scores" "/\\.emacs\\.d/\\.cask/"))
       (setq recentf-auto-save-timer (run-with-idle-timer 12000 t 'recentf-save-list)))
-
+    
     (use-package calendar
       :ensure t
       :bind (("<f9>" . calendar)))
-
+    
     (defun ks/capture-journal ()
       (interactive)
       (let ((org-journal-find-file #'find-file)
@@ -1271,7 +1271,7 @@
           (set-frame-position frm (/ (x-display-pixel-width) 3) 0) 
           (org-journal-new-entry nil)
           (local-set-key (kbd "C-c C-c") 'delete-frame))))
-
+    
     ;;https://superuser.com/questions/308045/disallow-closing-last-emacs-window-via-window-manager-close-button
     (defadvice handle-delete-frame (around my-handle-delete-frame-advice activate)
       "Ask for confirmation before deleting the last frame"
@@ -1279,7 +1279,7 @@
             (numfrs  (length (visible-frame-list))))
         (when (> numfrs 1)
           ad-do-it)))
-
+    
     ;;===============================================================
     ;; Packages
     ;;===============================================================
@@ -1291,27 +1291,28 @@
       (setq ediff-window-setup-function 'ediff-setup-windows-plain)
       ;; diffのバッファを上下ではなく左右に並べる
       (setq ediff-split-window-function 'split-window-horizontally))
-
+    
     ;; org-modeのExportでコードを色付きで出力するため
     (use-package htmlize :ensure t)
-
+    
     (use-package pdf-tools
       :ensure t
-
+    
       :mode (("\\.pdf?\\'" . pdf-view-mode))
       :config
+      (pdf-loader-install)
       (add-hook 'pdf-view-mode-hook (lambda() (linum-mode -1)))
       (add-hook 'pdf-view-mode-hook (lambda() (display-line-numbers-mode -1)))
       (add-hook 'pdf-view-mode-hook (lambda() (pdf-tools-enable-minor-modes)))
       (setq-default pdf-view-display-size 'fit-page))
-
+    
     (use-package magit
       :ensure t
       :bind (("<f3>" . magit-status))
       :diminish auto-revert-mode
       :config (add-hook 'ediff-prepare-buffer-hook #'show-all))
-
-
+    
+    
     (use-package multiple-cursors
       :ensure t
       :config
@@ -1319,12 +1320,12 @@
       (global-set-key (kbd "C->") 'mc/mark-next-like-this)
       (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
       (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this))
-
+    
     (use-package winner
       :init
       (winner-mode 1)
       (global-set-key (kbd "C-z") 'winner-undo))
-
+    
     (use-package elfeed
       :ensure t
       :if (file-exists-p "~/myspace/dotfiles-secret/elfeed.el")
@@ -1332,19 +1333,19 @@
       (load "~/myspace/dotfiles-secret/elfeed.el")
       :config
       (setq shr-inhibit-images t))
-
+    
     (use-package yasnippet
       :ensure t
       :config
       (add-to-list 'warning-suppress-types '(yasnippet backquote-change))
       (yas-global-mode 1))
-
+    
     (use-package restart-emacs
       :ensure t)
-
+    
     (use-package auto-save-buffers-enhanced
       :ensure t)
-
+    
     (use-package super-save
       :ensure t
       :diminish super-save-mode
@@ -1352,7 +1353,7 @@
       (super-save-mode 1)
       (setq super-save-exclude nil)
       (setq super-save-auto-save-when-idle t))
-
+    
     (defun ssbb-pyenv-hook ()
       "Automatically activates pyenv version if .python-version file exists."
       (f-traverse-upwards
@@ -1360,9 +1361,9 @@
          (let ((pyenv-version-path (f-expand ".python-version" path)))
            (if (f-exists? pyenv-version-path)
                (pyenv-mode-set (s-trim (f-read-text pyenv-version-path 'utf-8))))))))
-
+    
     (add-hook 'find-file-hook 'ssbb-pyenv-hook)
-
+    
     (use-package markdown-mode
       :ensure t
       :commands (markdown-mode gfm-mode)
@@ -1370,7 +1371,7 @@
              ("\\.md\\'" . markdown-mode)
              ("\\.markdown\\'" . markdown-mode))
       :init (setq markdown-command "multimarkdown"))
-
+    
     (use-package org2blog
       :ensure t
       :defer t
@@ -1378,34 +1379,34 @@
       :after org
       :config
       (load "~/myspace/dotfiles-secret/org2blog.el"))
-
+    
     ;; shellの文字化けを回避
     (add-hook 'shell-mode-hook
               (lambda ()
                 (set-buffer-process-coding-system 'utf-8-unix 'utf-8-unix)
                 ))
     (setq default-process-coding-system '(utf-8 . utf-8))
-
+    
     (use-package undo-tree
       :ensure t
       :diminish undo-tree-mode
       :config
       (global-undo-tree-mode 1))
-
+    
     ;; My elisp
     ;;===============================================================
-
+    
     (defun ks-make-bibtex-symbolic-link (bibkey path)
       (let* ((default-directory my-ref-pdfs)
              (target (f-relative path)))
         (shell-command-to-string
          (s-lex-format "ln -s \"${target}\" ${bibkey}.pdf"))))
-
+    
     (defun ks-get-books (title)
       (let ((len (/ (length title) 2)))
         (s-lines (shell-command-to-string
                   (s-lex-format "find ~/Dropbox/Book | agrep -E ${len} \"${title}\"")))))
-
+    
     (defun ks-get-bibtex-title (bibkey)
       (let* ((key bibkey)
              (hs (gethash key (parsebib-collect-entries)))
@@ -1413,14 +1414,14 @@
              (title (s-chop-prefix "{" (s-chop-suffix "}" value)))
              )
         title))
-
+    
     (defun ks-get-path-of-book (title)
       (let ((books (ks-get-books title)))
         (helm :sources (helm-build-sync-source "books"
                          :candidates books
                          :fuzzy-match t)
               :buffer "*helm books*")))
-
+    
     (defun ks-init-bib-pdf (start end)
       (interactive "r")
       (let* ((bibkey (buffer-substring-no-properties start end))
@@ -1428,14 +1429,14 @@
              (path (ks-get-path-of-book title))
              )
         (ks-make-bibtex-symbolic-link bibkey path)))
-
-
+    
+    
     (defun join-lines () (interactive)
            (setq fill-column 100000)
            (fill-paragraph nil)
            (setq fill-column 78)
            )
-
+    
     (defun my-toggle-bar ()
       "メニューバーとツールバーの表示を切り替える関数"
       (lexical-let ((vis 1))
@@ -1446,14 +1447,14 @@
               (tool-bar-mode vis)
               (menu-bar-mode vis)))))
     ;;(global-set-key (kbd "<f6>") (my-toggle-bar))
-
+    
     (setq default-file-name-coding-system 'utf-8)
-
+    
     (add-to-list 'process-coding-system-alist '("git" utf-8 . utf-8))
     (add-hook 'git-commit-mode-hook
               '(lambda ()
                  (set-buffer-file-coding-system 'utf-8)))
-
+    
     (defun isbn-to-bibtex-lead-jp (isbn)
       "Search lead.to for ISBN bibtex entry.
                      You have to copy the entry if it is on the page to your bibtex
@@ -1463,8 +1464,8 @@
        (format
         "http://lead.to/amazon/jp/?key=%s+&si=all&op=bt&bn=&so=sa&ht=jp"
         isbn)))
-
-
+    
+    
     (defun ks-create-report (report-path)
       (interactive "snew report: ")
       (let* ((filename (s-concat (ts-format "%Y%m%d" (ts-now)) "-" report-path ".org"))
@@ -1472,12 +1473,12 @@
         (find-file fullpath)
         (insert "rep2")
         (yas-expand)))
-
+    
     (defun org-sparse-tree-indirect-buffer (arg)
       (interactive "P")
       (let ((ibuf (switch-to-buffer (org-get-indirect-buffer))))
         (condition-case _
             (org-sparse-tree arg)
           (quit (kill-buffer ibuf)))))
-
+    
   #+END_SRC
