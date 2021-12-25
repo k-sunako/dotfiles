@@ -58,44 +58,49 @@
   メニューバー、ツールバー、スクロールバーは非表示。行の折り返しはしない。
 
   #+BEGIN_SRC emacs-lisp
-        
-        (menu-bar-mode -1)
-        (scroll-bar-mode -1)
-        (tool-bar-mode -1)
-        
-        ;; 行番号表示(Emacs26以降)
-        (global-display-line-numbers-mode t)
-        (custom-set-variables '(display-line-numbers-width-start t))
-        
-        (use-package beacon
-          :ensure t
-          :diminish beacon-mode
-          :config
-          (beacon-mode 1))
-        
-        (set-default 'truncate-lines 1)
-        
-        (let* ((ffl (font-family-list))
-               (ffl-utf8 (mapcar (lambda (x) (decode-coding-string x 'utf-8)) ffl)))
-          (cond
-           ((member "NasuM" ffl)
-            (set-frame-font "NasuM 15"))
-           ((member "Ricty" ffl)
-            (set-frame-font "Ricty 15"))
-           ((member "source han code jp n" ffl)
-            (set-frame-font "source han code jp n 12"))
-           ((member "源ノ角ゴシック Code JP" ffl-utf8)
-            (set-frame-font "源ノ角ゴシック Code JP n 12"))
-           ((member "Ricty Diminished" ffl)
-            (set-frame-font "Ricty Diminished 12"))
-           ))
-        
-        (use-package gruvbox-theme
-          :straight t
-          :config
-          (load-theme 'gruvbox-dark-medium t)
-          (set-face-attribute 'secondary-selection nil
-                              :weight 'bold :background "#1d2021"))
+
+    (menu-bar-mode -1)
+    (scroll-bar-mode -1)
+    (tool-bar-mode -1)
+
+    ;; 行番号表示(Emacs26以降)
+    (global-display-line-numbers-mode t)
+    (custom-set-variables '(display-line-numbers-width-start t))
+
+    (use-package beacon
+      :ensure t
+      :diminish beacon-mode
+      :config
+      (beacon-mode 1))
+
+    (set-default 'truncate-lines 1)
+
+    (let* ((ffl (font-family-list))
+           (ffl-utf8 (mapcar (lambda (x) (decode-coding-string x 'utf-8)) ffl)))
+      (cond
+       ((member "NasuM" ffl)
+        (set-frame-font "NasuM 15"))
+       ((member "Ricty" ffl)
+        (set-frame-font "Ricty 15"))
+       ((member "source han code jp n" ffl)
+        (set-frame-font "source han code jp n 12"))
+       ((member "源ノ角ゴシック Code JP" ffl-utf8)
+        (set-frame-font "源ノ角ゴシック Code JP n 12"))
+       ((member "Ricty Diminished" ffl)
+        (set-frame-font "Ricty Diminished 12"))
+       ))
+
+    ;;(use-package gruvbox-theme
+    ;;  :straight t
+    ;;  :config
+    ;;  (load-theme 'gruvbox-dark-medium t)
+    ;;  (set-face-attribute 'secondary-selection nil
+    ;;                      :weight 'bold :background "#1d2021"))
+
+    (use-package nord-theme
+      :straight t
+      :config
+      (load-theme 'nord t))
   #+END_SRC
 
 * Dired
