@@ -602,15 +602,17 @@
   #+BEGIN_SRC emacs-lisp
     (use-package org
       :straight t
-      :diminish org-mode
+      ;;:diminish org-mode
+      :hook ((org-mode . org-indent-mode)
+             (org-capture-mode . skk-mode))
       :bind (("C-c c" . org-capture)
              ("C-c a" . org-agenda)
              ("<f11>" . org-clock-goto))
-    
+
       :config
       (defun org-confirm-elisp-link-function--no-confirm-my-org-file (prompt)
         "自分が書いたorgファイルの(のディレクトリにある)elispリンクはconfirmなし。
-                それ以外のディレクトリではconfirmする。"
+                    それ以外のディレクトリではconfirmする。"
         (or (string-match "/myspace/Org/" (or (buffer-file-name) ""))
             (member (buffer-name) '("*trace-output*"))
             (y-or-n-p prompt)))
@@ -618,37 +620,37 @@
             'org-confirm-elisp-link-function--no-confirm-my-org-file)
       (setq org-confirm-shell-link-function
             'org-confirm-elisp-link-function--no-confirm-my-org-file)
-    
+
       ;;(add-to-list 'org-file-apps '("\\.pdf\\'" . "atril %s"))
       (add-to-list 'auto-mode-alist
                    '("\\.pdf\\'" . pdf-view-mode))
-    
+
       (setq org-src-fontify-natively t)
       (setq org-confirm-babel-evaluate nil)
                                             ;(setq org-src-window-setup 'other-window)
       (setq org-src-window-setup 'current-window)
       (setq org-link-file-path-type 'relative)
-    
+
       (require 'ob-emacs-lisp)
       (require 'ob-haskell)
       (require 'ob-gnuplot)
       (require 'org-habit)
       (require 'org-protocol)
-    
+
       (setq org-log-done t)
-    
+
       (setf (alist-get 'file org-link-frame-setup) 'find-file)
-    
+
       (setf org-html-mathjax-options
             '((path "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML")
               (scale "100")
               (align "center")
               (indent "2em")
               (mathml nil)))
-    
+
       (setf org-html-mathjax-template
             "<script type=\"text/javascript\" src=\"%PATH\"></script>")
-    
+
       ;; active Babel languages
       (org-babel-do-load-languages
        'org-babel-load-languages
@@ -661,12 +663,12 @@
          (python . t)
          (dot . t)
          ))
-    
-                        ;;; Agenda を現在のウィンドウと入れ替えで表示
+
+                            ;;; Agenda を現在のウィンドウと入れ替えで表示
       (setq org-agenda-window-setup 'current-window)
       (setq org-agenda-start-on-weekday 0)
       (setq org-agenda-files '("~/myspace/Org/inbox.org"))
-    
+
       (cl-flet ((org-file-p (x) (s-ends-with-p ".org" x)))        
         (let ((files (f-entries "~/myspace/Org/core" #'org-file-p)))
           (dolist (f files nil)
@@ -675,11 +677,11 @@
         (let ((files (f-entries "~/myspace/Org/projects" #'org-file-p)))
           (dolist (f files nil)
             (add-to-list 'org-agenda-files f))))
-    
+
       (setq org-capture-templates `(("t" "Todo [inbox]" entry
                                      (file+headline "~/myspace/Org/inbox.org" "Tasks")
                                      "* TODO %i%?")
-    
+
                                     ("c" "code [inbox]" entry
                                      (file+headline "~/myspace/Org/inbox.org" "Codes")
                                      "* %^{Title}\n%(with-current-buffer (org-capture-get :original-buffer) (browse-at-remote-get-url))\n%?\n#+BEGIN_QUOTE\n%i\n#+END_QUOTE")
@@ -691,11 +693,11 @@
                                     ("L" "Protocol Link" entry
                                      (file+headline "~/myspace/Org/inbox.org" "Scraps")
                                      "* %? [[%:link][%:description]] \nCaptured On: %U")))
-    
+
       (setq org-todo-keywords '((sequence
                                  "NEXT(n)" "TODO(t)" "WAITING(w)" "SOMEDAY(s)"
                                  "|" "DONE(d)" "CANCELLED(c)")))
-    
+
       (setq org-agenda-custom-commands
             '(("W" "Completed and/or deferred tasks from previous week"
                ((todo "" ((org-agenda-span 7)
@@ -709,26 +711,26 @@
               ("p" "master projects" tags-todo "LEVEL>0/TODO=\"TODO\"")
               ("N" "Todo: Next" tags-todo "TODO=\"NEXT\"")
               ))
-    
+
       (setq org-format-latex-options (plist-put org-format-latex-options :scale 2.0))
-    
+
       (setq org-habit-show-habits-only-for-today 1)
       (setq org-agenda-repeating-timestamp-show-all nil))
-    
+
     (use-package org-contrib         
       :after org
       :ensure t
       :config
       (require 'ox-bibtex))
-    
-    
+
+
     (use-package org-download
       :ensure t
       :after org
       :config
       (setq-default org-download-image-dir "./images")
       )
-    
+
     (use-package org-ref
       :straight t
       :ensure t
@@ -741,50 +743,50 @@
       (setq my-ref-note "~/myspace/Bibliography/notes.org")
       (setq my-ref-pdfs "~/myspace/Bibliography/bibtex-pdfs/")
       (setq my-ref-helm-bibtex-notes "~/myspace/Bibliography/helm-bibtex-notes/")
-    
+
       (setq reftex-default-bibliography '(my-ref-bib))
       ;; ノート、bib ファイル、PDF のディレクトリなどを設定
       (setq org-ref-bibliography-notes my-ref-note
             org-ref-default-bibliography `(,my-ref-bib)
             org-ref-pdf-directory my-ref-pdfs)
-    
+
       ;; helm-bibtex を使う場合は以下の変数も設定しておく
       (setq bibtex-completion-bibliography `(,my-ref-bib)
             bibtex-completion-library-path my-ref-pdfs
             bibtex-completion-notes-path my-ref-helm-bibtex-notes)
-    
+
       (setq helm-migemo-mode t)
-;;      (setq helm-source-bibtex
-;;            (helm-build-sync-source "BibTeX entries"
-;;              :header-name (lambda (name)
-;;                             (format "%s%s: " name (if helm-bibtex-local-bib " (local)" "")))
-;;              :candidates 'helm-bibtex-candidates
-;;              :migemo t
-;;              :filtered-candidate-transformer 'helm-bibtex-candidates-formatter
-;;              :action (helm-make-actions
-;;                       "Open PDF, URL or DOI"       'helm-bibtex-open-any
-;;                       "Open URL or DOI in browser" 'helm-bibtex-open-url-or-doi
-;;                       "Insert citation"            'helm-bibtex-insert-citation
-;;                       "Insert reference"           'helm-bibtex-insert-reference
-;;                       "Insert BibTeX key"          'helm-bibtex-insert-key
-;;                       "Insert BibTeX entry"        'helm-bibtex-insert-bibtex
-;;                       "Attach PDF to email"        'helm-bibtex-add-PDF-attachment
-;;                       "Edit notes"                 'helm-bibtex-edit-notes
-;;                       "Show entry"                 'helm-bibtex-show-entry
-;;                       "Add PDF to library"         'helm-bibtex-add-pdf-to-library)))
-    
-    
+      ;;      (setq helm-source-bibtex
+      ;;            (helm-build-sync-source "BibTeX entries"
+      ;;              :header-name (lambda (name)
+      ;;                             (format "%s%s: " name (if helm-bibtex-local-bib " (local)" "")))
+      ;;              :candidates 'helm-bibtex-candidates
+      ;;              :migemo t
+      ;;              :filtered-candidate-transformer 'helm-bibtex-candidates-formatter
+      ;;              :action (helm-make-actions
+      ;;                       "Open PDF, URL or DOI"       'helm-bibtex-open-any
+      ;;                       "Open URL or DOI in browser" 'helm-bibtex-open-url-or-doi
+      ;;                       "Insert citation"            'helm-bibtex-insert-citation
+      ;;                       "Insert reference"           'helm-bibtex-insert-reference
+      ;;                       "Insert BibTeX key"          'helm-bibtex-insert-key
+      ;;                       "Insert BibTeX entry"        'helm-bibtex-insert-bibtex
+      ;;                       "Attach PDF to email"        'helm-bibtex-add-PDF-attachment
+      ;;                       "Edit notes"                 'helm-bibtex-edit-notes
+      ;;                       "Show entry"                 'helm-bibtex-show-entry
+      ;;                       "Add PDF to library"         'helm-bibtex-add-pdf-to-library)))
+
+
       (setq bibtex-completion-display-formats
             '((article       . "${author:5} ${title:40} ${journal:10} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}")
               (inbook        . "${author:5} ${title:40} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}")
               (book          . "${author:5} ${title:40} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}")
               (t             . "${author:5} ${title:40} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}"))))    
-    
+
     ;;(require 'ox-bibtex)
     (use-package ox-latex
       :config
       (require 'ox-latex)
-    
+
       ;; pdfの生成プロセスで作成される中間ファイルを削除する設定
       (setq org-latex-logfiles-extensions
             (quote ("lof" "lot" "tex" "tex~" "aux" "idx"
@@ -792,7 +794,7 @@
                     "vrb" "dvi" "fdb_latexmk"
                     "blg" "brf" "fls" "entoc" "ps"
                     "spl" "bbl" "run.xml" "bcf")))
-    
+
       (setq org-preview-latex-process-alist
             '((dvipng
                :programs ("xelatex" "dvipng")
@@ -818,12 +820,12 @@
                            :image-size-adjust (1.0 . 1.0) :latex-compiler
                            ("xelatex -shell-escape -interaction nonstopmode -output-directory %o %f")
                            :image-converter ("convert -density %D -trim -antialias %f -quality 100 %O"))))
-    
+
       (setq org-latex-create-formula-image-program 'imagemagick)
-    
-    
+
+
       (setq org-latex-compiler "xelatex")
-    
+
       (setq org-latex-listings 'minted)
       (setq org-latex-minted-options
             '(("style" "friendly")("frame" "lines") ("linenos=true")))
@@ -834,10 +836,10 @@
               "xelatex -shell-escape -interaction nonstopmode -output-directory %o %f"
               "rm -fr _minted-%b"
               ))
-    
+
       (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
       (setq org-latex-default-class "koma-jarticle")
-    
+
       (add-to-list 'org-latex-classes
                    '("koma-article"
                      "\\documentclass{scrartcl}"
@@ -846,62 +848,62 @@
                      ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
                      ("\\paragraph{%s}" . "\\paragraph*{%s}")
                      ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
-    
+
       (add-to-list 'org-latex-classes
                    '(
                      "koma-jarticle"
                      "\\documentclass[12pt]{scrartcl}
-                                [NO-DEFAULT-PACKAGES]
-                                \\usepackage{amsmath}
-                                \\usepackage{amssymb}
-                                \\usepackage{mathrsfs}
-                                \\usepackage{xunicode}
-                                \\usepackage{fixltx2e}
-                                \\usepackage{zxjatype}
-                                \\usepackage[ipa]{zxjafont}
-                                \\usepackage{xltxtra}
-                                \\usepackage{graphicx}
-                                \\usepackage{longtable}
-                                \\usepackage{float}
-                                \\usepackage{wrapfig}
-                                \\usepackage{soul}
-                                \\usepackage[xetex]{hyperref}
-                                \\usepackage{xcolor}
-                                \\usepackage{minted}
-                                \\usepackage{geometry}
-                                \\geometry{left=1cm,right=1cm,top=1cm,bottom=1cm}
-                                \\usepackage[natbib=true]{biblatex} 
-                                \\DeclareFieldFormat{apacase}{#1} 
-                                \\addbibresource{~/myspace/Bibliography/references.bib}"
+                                    [NO-DEFAULT-PACKAGES]
+                                    \\usepackage{amsmath}
+                                    \\usepackage{amssymb}
+                                    \\usepackage{mathrsfs}
+                                    \\usepackage{xunicode}
+                                    \\usepackage{fixltx2e}
+                                    \\usepackage{zxjatype}
+                                    \\usepackage[ipa]{zxjafont}
+                                    \\usepackage{xltxtra}
+                                    \\usepackage{graphicx}
+                                    \\usepackage{longtable}
+                                    \\usepackage{float}
+                                    \\usepackage{wrapfig}
+                                    \\usepackage{soul}
+                                    \\usepackage[xetex]{hyperref}
+                                    \\usepackage{xcolor}
+                                    \\usepackage{minted}
+                                    \\usepackage{geometry}
+                                    \\geometry{left=1cm,right=1cm,top=1cm,bottom=1cm}
+                                    \\usepackage[natbib=true]{biblatex} 
+                                    \\DeclareFieldFormat{apacase}{#1} 
+                                    \\addbibresource{~/myspace/Bibliography/references.bib}"
                      ("\\section{%s}" . "\\section*{%s}")
                      ("\\subsection{%s}" . "\\subsection*{%s}")
                      ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
                      ("\\paragraph{%s}" . "\\paragraph*{%s}")
                      ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
-    
+
       ;; tufte-handout class for writing classy handouts and papers
       (add-to-list 'org-latex-classes
                    '("tufte-handout"
                      "\\documentclass[twoside,nobib]{tufte-handout}
-                          [NO-DEFAULT-PACKAGES]
-                          \\usepackage{zxjatype}
-                          \\usepackage[hiragino-dx]{zxjafont}"
+                              [NO-DEFAULT-PACKAGES]
+                              \\usepackage{zxjatype}
+                              \\usepackage[hiragino-dx]{zxjafont}"
                      ("\\section{%s}" . "\\section*{%s}")
                      ("\\subsection{%s}" . "\\subsection*{%s}")))
       ;; tufte-book class
       (add-to-list 'org-latex-classes
                    '("tufte-book"
                      "\\documentclass[twoside,nobib]{tufte-book}
-                         [NO-DEFAULT-PACKAGES]
-                           \\usepackage{zxjatype}
-                           \\usepackage[hiragino-dx]{zxjafont}"
+                             [NO-DEFAULT-PACKAGES]
+                               \\usepackage{zxjatype}
+                               \\usepackage[hiragino-dx]{zxjafont}"
                      ("\\part{%s}" . "\\part*{%s}")
                      ("\\chapter{%s}" . "\\chapter*{%s}")
                      ("\\section{%s}" . "\\section*{%s}")
                      ("\\subsection{%s}" . "\\subsection*{%s}")
                      ("\\paragraph{%s}" . "\\paragraph*{%s}"))))
-    
-    
+
+
                                             ;     (use-package ox-pandoc
                                             ;	:ensure t
                                             ;	:config
@@ -913,15 +915,15 @@
                                             ;	(setq org-pandoc-options-for-beamer-pdf '((pdf-engine . "xelatex")))
                                             ;	(setq org-pandoc-options-for-latex-pdf '((pdf-engine . "xelatex")))
                                             ;	)
-    
-    
+
+
     (use-package org-roam
       :straight t
       :init
       (setq org-roam-v2-ack t)
       :custom
       (org-roam-directory (file-truename "~/myspace/org-roam"))
-      (org-roam-db-location "/tmp/org-roam")
+      (org-roam-db-location "~/tmp/org-roam")
       (org-roam-dailies-capture-templates '(("d" "default" entry
                                              "* %<%H:%M>\n%?"
                                              :if-new (file+head "%<%Y-%m-%d>.org"
@@ -939,7 +941,7 @@
       (org-roam-db-autosync-mode)
       ;; If using org-roam-protocol
       (require 'org-roam-protocol))
-    
+
     (use-package org-roam-ui
       :straight
       (:host github :repo "org-roam/org-roam-ui" :branch "main" :files ("*.el" "out"))
@@ -954,7 +956,7 @@
             org-roam-ui-follow t
             org-roam-ui-update-on-save t
             org-roam-ui-open-on-start t))
-    
+
     ;;    (use-package org-roam-bibtex
     ;;      :after org-roam
     ;;      :straight (org-roam-bibtex
@@ -976,7 +978,7 @@
       :diminish org-roam-bibtex-mode
       :config
       (org-roam-bibtex-mode 1))
-    
+
     (use-package org-noter
       :straight t
       :after (:any org pdf-view)
@@ -992,7 +994,7 @@
        org-noter-notes-search-path (list "~/myspace/Book")
        )
       )
-    
+
     (defun remove-org-newlines-at-cjk-text (&optional _mode)
       "先頭が '*', '#', '|' でなく、改行の前後が日本の文字の場合はその改行を除去する。"
       (interactive)
@@ -1002,7 +1004,7 @@
                  (> (string-to-char (match-string 3)) #x2000))
             (replace-match "\\1\\2\\3"))
         (goto-char (point-at-bol))))
-    
+
     (with-eval-after-load "ox"
       (add-hook 'org-export-before-processing-hook 'remove-org-newlines-at-cjk-text))
   #+END_SRC
@@ -1024,200 +1026,203 @@
 
 ** 一般
    #+BEGIN_SRC emacs-lisp
-     (use-package lsp-mode
-       :config
-       (define-key lsp-mode-map (kbd "C-c l") lsp-command-map)
-       ;;(setq lsp-prefer-capf t)
-       ;; .venv, .mypy_cache を watch 対象から外す
-       (dolist (dir '(
-                      "[/\\\\]\\.venv$"
-                      "[/\\\\]\\.mypy_cache$"
-                      "[/\\\\]__pycache__$"
-                      ))
-         (push dir lsp-file-watch-ignored))
-     
-       ;; lsp-mode の設定はここを参照してください。
-       ;; https://emacs-lsp.github.io/lsp-mode/page/settings/
-     
-       (setq lsp-auto-configure t)
-       (setq lsp-enable-completion-at-point t)
-     
-       (setq read-process-output-max (* 1024 1024))
-       (setq lsp-idle-delay 0.500)
-     
-       ;; クロスリファレンスとの統合を有効化する
-       ;; xref-find-definitions
-       ;; xref-find-references
-       (setq lsp-enable-xref t)
-     
-       ;; linter framework として flycheck を使う
-       (setq lsp-diagnostics-provider :flycheck)
-     
-       ;; ミニバッファでの関数情報表示
-       (setq lsp-eldoc-enable-hover t)
-     
-       ;; nii: ミニバッファでの関数情報をシグニチャだけにする
-       ;; t: ミニバッファでの関数情報で、doc-string 本体を表示する
-       (setq lsp-eldoc-render-all nil)
-     
-       ;; breadcrumb
-       ;; パンくずリストを表示する。
-       ;;(setq lsp-headerline-breadcrumb-enable t)
-       ;;(setq lsp-headerline-breadcrumb-segments '(project file symbols))
-     
-       ;; snippet
-       (setq lsp-enable-snippet t)
-     
-       ;;(require 'dap-cpptools)
-     
-       ;; フック関数の定義
-       ;; python-mode 用、lsp-mode コンフィグ
-       (defun lsp/python-mode-hook
-         ()
-         (when (fboundp 'company-mode)
-           ;; company をコンフィグする
-           (setq
-            ;; 1文字で completion 発動させる
-            company-minimum-prefix-length 1
-            ;; default is 0.2
-            company-idle-delay 0.0
+          (use-package lsp-mode
+            :config
+            (define-key lsp-mode-map (kbd "C-c l") lsp-command-map)
+            ;;(setq lsp-prefer-capf t)
+            ;; .venv, .mypy_cache を watch 対象から外す
+            (dolist (dir '(
+                           "[/\\\\]\\.venv$"
+                           "[/\\\\]\\.mypy_cache$"
+                           "[/\\\\]__pycache__$"
+                           ))
+              (push dir lsp-file-watch-ignored))
+
+            ;; lsp-mode の設定はここを参照してください。
+            ;; https://emacs-lsp.github.io/lsp-mode/page/settings/
+
+            (setq lsp-auto-configure t)
+            (setq lsp-enable-completion-at-point t)
+
+            (setq read-process-output-max (* 1024 1024))
+            (setq lsp-idle-delay 0.500)
+
+            ;; クロスリファレンスとの統合を有効化する
+            ;; xref-find-definitions
+            ;; xref-find-references
+            (setq lsp-enable-xref t)
+
+            ;; linter framework として flycheck を使う
+            (setq lsp-diagnostics-provider :flycheck)
+
+            ;; ミニバッファでの関数情報表示
+            (setq lsp-eldoc-enable-hover t)
+
+            ;; nii: ミニバッファでの関数情報をシグニチャだけにする
+            ;; t: ミニバッファでの関数情報で、doc-string 本体を表示する
+            (setq lsp-eldoc-render-all nil)
+
+            ;; breadcrumb
+            ;; パンくずリストを表示する。
+            ;;(setq lsp-headerline-breadcrumb-enable t)
+            ;;(setq lsp-headerline-breadcrumb-segments '(project file symbols))
+
+            ;; snippet
+            (setq lsp-enable-snippet t)
+
+            ;;(require 'dap-cpptools)
+
+            ;; フック関数の定義
+            ;; python-mode 用、lsp-mode コンフィグ
+            (defun lsp/python-mode-hook
+              ()
+              (when (fboundp 'company-mode)
+                ;; company をコンフィグする
+                (setq
+                 ;; 1文字で completion 発動させる
+                 company-minimum-prefix-length 1
+                 ;; default is 0.2
+                 company-idle-delay 0.0
+                 )
+                )
+              )
+
+            :commands (lsp lsp-deferred)
+            :hook
+            (lsp-mode . (lambda ()
+                          (let ((lsp-keymap-prefix "C-c l"))
+                            (lsp-enable-which-key-integration))))
+            (python-mode . lsp) ; python-mode で lsp-mode を有効化する
+            (python-mode . lsp/python-mode-hook) ; python-mode 用のフック関数を仕掛ける
             )
-           )
-         )
-     
-       :commands (lsp lsp-deferred)
-       :hook
-       (lsp-mode . (lambda ()
-                     (let ((lsp-keymap-prefix "C-c l"))
-                       (lsp-enable-which-key-integration))))
-       (python-mode . lsp) ; python-mode で lsp-mode を有効化する
-       (python-mode . lsp/python-mode-hook) ; python-mode 用のフック関数を仕掛ける
-       )
-     
-     (use-package lsp-ui
-       :after lsp-mode
-       :straight t
-       :config
-     
-       ;; ui-peek を有効化する
-       (setq lsp-ui-peek-enable t)
-     
-       ;; 候補が一つでも、常にpeek表示する。
-       (setq lsp-ui-peek-always-show t)
-     
-       ;; sideline で flycheck 等の情報を表示する
-       (setq lsp-ui-sideline-show-diagnostics t)
-       ;; sideline で コードアクションを表示する
-       (setq lsp-ui-sideline-show-code-actions t)
-       ;; ホバーで表示されるものを、ホバーの変わりにsidelineで表示する
-       ;;(setq lsp-ui-sideline-show-hover t)
-     
-       :bind
-       (:map lsp-ui-mode-map
-             ;; デフォルトの xref-find-definitions だと、ジャンプはできるが、ui-peek が使えない。
-             ("M-." . lsp-ui-peek-find-definitions)
-     
-             ;; デフォルトの xref-find-references だと、ジャンプはできるが、ui-peek が使えない。
-             ("M-?" . lsp-ui-peek-find-references)
-             )
-       :hook
-       (lsp-mode . lsp-ui-mode)
-     )
-     
-     ;; タブ
-     (setq-default indent-tabs-mode nil)
-     (setq-default tab-width 4 indent-tabs-mode nil)
-     
-     (use-package lsp-pyright :ensure t)
-     
-     (use-package dap-mode
-       :after lsp-mode
-       :straight t
-       :commands dap-debug
-       :hook ((python-mode . dap-ui-mode)
-          (python-mode . dap-mode))
-       :config
-       (eval-when-compile
-         (require 'cl))
-       (require 'dap-python)
-       (require 'dap-lldb)
-     
-       (dap-mode 1)
-     
-       ;; The modes below are optional
-     
-       (dap-ui-mode 1)
-       ;; enables mouse hover support
-       (dap-tooltip-mode 1)
-       ;; use tooltips for mouse hover
-       ;; if it is not enabled `dap-mode' will use the minibuffer.
-       (tooltip-mode 1)
-       ;; displays floating panel with debug buttons
-       ;; requies emacs 26+
-       (dap-ui-controls-mode 1)
-     
-     
-       (dap-register-debug-template "My App"
-                                    (list :type "python"
-                                          :cwd "~/repos/learning-DAISY-feat-desc"
-                                          :target-module (expand-file-name "~/repos/learning-DAISY-feat-desc/main.py")
-                                          :request "launch"
-                                          :name "My App"))
-     
-       ;; Temporal fix
-       (defun dap-python--pyenv-executable-find (command)
-         (with-venv (executable-find "python")))
-       )
-     
-     (use-package flycheck
-       :ensure t
-       :diminish flycheck-mode
-       :init
-       (add-hook 'after-init-hook #'global-flycheck-mode)
-       (setq-default flycheck-disabled-checkers '(emacs-lisp-checkdoc)))
-     
-     ;; 選択中の括弧の対を強調する
-     (show-paren-mode)
-     
-     (use-package smartparens
-       :ensure t
-       :diminish smartparens-mode
-       :config
-       (require 'smartparens-config)
-       (smartparens-global-mode 1))
-     
-     (use-package company
-       :ensure t
-       :diminish company-mode
-       :hook (after-init . global-company-mode)
-       :config
-       (setq company-dabbrev-downcase nil)
-       (setq company-idle-delay 0) ; デフォルトは0.5
-       (setq company-minimum-prefix-length 2) ; デフォルトは4
-       (define-key company-active-map (kbd "M-n") nil)
-       (define-key company-active-map (kbd "M-p") nil)
-       (define-key company-active-map (kbd "C-n") 'company-select-next)
-       (define-key company-active-map (kbd "C-p") 'company-select-previous)
-       (define-key company-active-map (kbd "C-h") nil))
-     
-     
-     (setq gdb-many-windows t)
-     
-     (add-hook 'c-mode-common-hook
-               '(lambda ()
-                  ;; 色々な設定
-                  (define-key c-mode-base-map "\C-c\C-c" 'comment-region)
-                  (define-key c-mode-base-map "\C-c\M-c" 'uncomment-region)
-                  (define-key c-mode-base-map "\C-cg"       'gdb)
-                  (define-key c-mode-base-map "\C-cc"       'make)
-                  (define-key c-mode-base-map "\C-ce"       'c-macro-expand)
-                  (define-key c-mode-base-map "\C-ct"        'toggle-source)))
-     
-     (use-package editorconfig
-       :ensure t
-       :diminish editorconfig-mode
-       :config
-       (editorconfig-mode 1))
+
+          (use-package lsp-ui
+            :after lsp-mode
+            :straight t
+            :config
+
+            ;; ui-peek を有効化する
+            (setq lsp-ui-peek-enable t)
+
+            ;; 候補が一つでも、常にpeek表示する。
+            (setq lsp-ui-peek-always-show t)
+
+            ;; sideline で flycheck 等の情報を表示する
+            (setq lsp-ui-sideline-show-diagnostics t)
+            ;; sideline で コードアクションを表示する
+            (setq lsp-ui-sideline-show-code-actions t)
+            ;; ホバーで表示されるものを、ホバーの変わりにsidelineで表示する
+            ;;(setq lsp-ui-sideline-show-hover t)
+
+            :bind
+            (:map lsp-ui-mode-map
+                  ;; デフォルトの xref-find-definitions だと、ジャンプはできるが、ui-peek が使えない。
+                  ("M-." . lsp-ui-peek-find-definitions)
+
+                  ;; デフォルトの xref-find-references だと、ジャンプはできるが、ui-peek が使えない。
+                  ("M-?" . lsp-ui-peek-find-references)
+                  )
+            :hook
+            (lsp-mode . lsp-ui-mode)
+          )
+
+          ;; タブ
+          (setq-default indent-tabs-mode nil)
+          (setq-default tab-width 4 indent-tabs-mode nil)
+
+          (use-package lsp-pyright :ensure t)
+
+          (use-package dap-mode
+            :after lsp-mode
+            :straight t
+            :commands dap-debug
+            :hook ((python-mode . dap-ui-mode)
+               (python-mode . dap-mode))
+            :config
+            (eval-when-compile
+              (require 'cl))
+            (require 'dap-python)
+            (require 'dap-lldb)
+
+            (dap-mode 1)
+
+            ;; The modes below are optional
+
+            (dap-ui-mode 1)
+            ;; enables mouse hover support
+            (dap-tooltip-mode 1)
+            ;; use tooltips for mouse hover
+            ;; if it is not enabled `dap-mode' will use the minibuffer.
+            (tooltip-mode 1)
+            ;; displays floating panel with debug buttons
+            ;; requies emacs 26+
+            (dap-ui-controls-mode 1)
+
+
+            (dap-register-debug-template "My App"
+                                         (list :type "python"
+                                               :cwd "~/repos/learning-DAISY-feat-desc"
+                                               :target-module (expand-file-name "~/repos/learning-DAISY-feat-desc/main.py")
+                                               :request "launch"
+                                               :name "My App"))
+
+            ;; Temporal fix
+            (defun dap-python--pyenv-executable-find (command)
+              (with-venv (executable-find "python")))
+            )
+
+          (use-package flycheck
+            :ensure t
+            :diminish flycheck-mode
+            :init
+            (add-hook 'after-init-hook #'global-flycheck-mode)
+            (setq-default flycheck-disabled-checkers '(emacs-lisp-checkdoc)))
+
+          ;; 選択中の括弧の対を強調する
+          (show-paren-mode)
+
+          (use-package smartparens
+            :ensure t
+            :diminish smartparens-mode
+            :config
+            (require 'smartparens-config)
+            (smartparens-global-mode 1))
+
+          (use-package company
+            :ensure t
+            :diminish company-mode
+            :hook (after-init . global-company-mode)
+            :config
+            (setq company-dabbrev-downcase nil)
+            (setq company-idle-delay 0) ; デフォルトは0.5
+            (setq company-minimum-prefix-length 2) ; デフォルトは4
+            (define-key company-active-map (kbd "M-n") nil)
+            (define-key company-active-map (kbd "M-p") nil)
+            (define-key company-active-map (kbd "C-n") 'company-select-next)
+            (define-key company-active-map (kbd "C-p") 'company-select-previous)
+            (define-key company-active-map (kbd "C-h") nil))
+
+
+          (setq gdb-many-windows t)
+
+          (add-hook 'c-mode-common-hook
+                    '(lambda ()
+                       ;; 色々な設定
+                       (define-key c-mode-base-map "\C-c\C-c" 'comment-region)
+                       (define-key c-mode-base-map "\C-c\M-c" 'uncomment-region)
+                       (define-key c-mode-base-map "\C-cg"       'gdb)
+                       (define-key c-mode-base-map "\C-cc"       'make)
+                       (define-key c-mode-base-map "\C-ce"       'c-macro-expand)
+                       (define-key c-mode-base-map "\C-ct"        'toggle-source)))
+
+          (use-package editorconfig
+            :ensure t
+            :diminish editorconfig-mode
+            :config
+            (editorconfig-mode 1))
+
+          (use-package cmake-mode
+            :straight t)
    #+END_SRC
 
 **  C/C++
@@ -1235,7 +1240,9 @@
 
 * Etc
   #+BEGIN_SRC emacs-lisp
-    
+
+    (use-package terraform-mode :straight t)
+
     ;; https://emacs.stackexchange.com/questions/31646/how-to-paste-with-indentより転載
     (defun yank-with-indent-2 ()
       (let ((indent
@@ -1246,10 +1253,10 @@
         (pop-to-mark-command)
         (replace-string "\n" (concat "\n" indent))
         (widen)))
-    
-    
+
+
     (setq large-file-warning-threshold nil)
-    
+
     (use-package recentf
       :ensure t
       :config
@@ -1257,11 +1264,11 @@
       (setq recentf-auto-cleanup 'never)  ;; 存在しないファイルは消さない
       (setq recentf-exclude '("/recentf" "COMMIT_EDITMSG" "/.?TAGS" "^/sudo:" "/\\.emacs\\.d/games/*-scores" "/\\.emacs\\.d/\\.cask/"))
       (setq recentf-auto-save-timer (run-with-idle-timer 12000 t 'recentf-save-list)))
-    
+
     (use-package calendar
       :ensure t
       :bind (("<f9>" . calendar)))
-    
+
     (defun ks/capture-journal ()
       (interactive)
       (let ((org-journal-find-file #'find-file)
@@ -1271,7 +1278,7 @@
           (set-frame-position frm (/ (x-display-pixel-width) 3) 0) 
           (org-journal-new-entry nil)
           (local-set-key (kbd "C-c C-c") 'delete-frame))))
-    
+
     ;;https://superuser.com/questions/308045/disallow-closing-last-emacs-window-via-window-manager-close-button
     (defadvice handle-delete-frame (around my-handle-delete-frame-advice activate)
       "Ask for confirmation before deleting the last frame"
@@ -1279,7 +1286,7 @@
             (numfrs  (length (visible-frame-list))))
         (when (> numfrs 1)
           ad-do-it)))
-    
+
     ;;===============================================================
     ;; Packages
     ;;===============================================================
@@ -1287,17 +1294,18 @@
       :ensure t
       :config
       (setq ediff-diff-program "~/bin/my-diff.sh")
+      ;;(setq ediff-diff-program "ediff")
       ;; コントロール用のバッファを同一フレーム内に表示
       (setq ediff-window-setup-function 'ediff-setup-windows-plain)
       ;; diffのバッファを上下ではなく左右に並べる
       (setq ediff-split-window-function 'split-window-horizontally))
-    
+
     ;; org-modeのExportでコードを色付きで出力するため
     (use-package htmlize :ensure t)
-    
+
     (use-package pdf-tools
       :ensure t
-    
+
       :mode (("\\.pdf?\\'" . pdf-view-mode))
       :config
       (pdf-loader-install)
@@ -1305,14 +1313,14 @@
       (add-hook 'pdf-view-mode-hook (lambda() (display-line-numbers-mode -1)))
       (add-hook 'pdf-view-mode-hook (lambda() (pdf-tools-enable-minor-modes)))
       (setq-default pdf-view-display-size 'fit-page))
-    
+
     (use-package magit
       :ensure t
       :bind (("<f3>" . magit-status))
       :diminish auto-revert-mode
       :config (add-hook 'ediff-prepare-buffer-hook #'show-all))
-    
-    
+
+
     (use-package multiple-cursors
       :ensure t
       :config
@@ -1320,12 +1328,12 @@
       (global-set-key (kbd "C->") 'mc/mark-next-like-this)
       (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
       (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this))
-    
+
     (use-package winner
       :init
       (winner-mode 1)
       (global-set-key (kbd "C-z") 'winner-undo))
-    
+
     (use-package elfeed
       :ensure t
       :if (file-exists-p "~/myspace/dotfiles-secret/elfeed.el")
@@ -1333,19 +1341,19 @@
       (load "~/myspace/dotfiles-secret/elfeed.el")
       :config
       (setq shr-inhibit-images t))
-    
+
     (use-package yasnippet
       :ensure t
       :config
       (add-to-list 'warning-suppress-types '(yasnippet backquote-change))
       (yas-global-mode 1))
-    
+
     (use-package restart-emacs
       :ensure t)
-    
+
     (use-package auto-save-buffers-enhanced
       :ensure t)
-    
+
     (use-package super-save
       :ensure t
       :diminish super-save-mode
@@ -1353,7 +1361,7 @@
       (super-save-mode 1)
       (setq super-save-exclude nil)
       (setq super-save-auto-save-when-idle t))
-    
+
     (defun ssbb-pyenv-hook ()
       "Automatically activates pyenv version if .python-version file exists."
       (f-traverse-upwards
@@ -1361,9 +1369,9 @@
          (let ((pyenv-version-path (f-expand ".python-version" path)))
            (if (f-exists? pyenv-version-path)
                (pyenv-mode-set (s-trim (f-read-text pyenv-version-path 'utf-8))))))))
-    
+
     (add-hook 'find-file-hook 'ssbb-pyenv-hook)
-    
+
     (use-package markdown-mode
       :ensure t
       :commands (markdown-mode gfm-mode)
@@ -1371,7 +1379,7 @@
              ("\\.md\\'" . markdown-mode)
              ("\\.markdown\\'" . markdown-mode))
       :init (setq markdown-command "multimarkdown"))
-    
+
     (use-package org2blog
       :ensure t
       :defer t
@@ -1379,34 +1387,34 @@
       :after org
       :config
       (load "~/myspace/dotfiles-secret/org2blog.el"))
-    
+
     ;; shellの文字化けを回避
     (add-hook 'shell-mode-hook
               (lambda ()
                 (set-buffer-process-coding-system 'utf-8-unix 'utf-8-unix)
                 ))
     (setq default-process-coding-system '(utf-8 . utf-8))
-    
+
     (use-package undo-tree
       :ensure t
       :diminish undo-tree-mode
       :config
       (global-undo-tree-mode 1))
-    
+
     ;; My elisp
     ;;===============================================================
-    
+
     (defun ks-make-bibtex-symbolic-link (bibkey path)
       (let* ((default-directory my-ref-pdfs)
              (target (f-relative path)))
         (shell-command-to-string
          (s-lex-format "ln -s \"${target}\" ${bibkey}.pdf"))))
-    
+
     (defun ks-get-books (title)
       (let ((len (/ (length title) 2)))
         (s-lines (shell-command-to-string
                   (s-lex-format "find ~/Dropbox/Book | agrep -E ${len} \"${title}\"")))))
-    
+
     (defun ks-get-bibtex-title (bibkey)
       (let* ((key bibkey)
              (hs (gethash key (parsebib-collect-entries)))
@@ -1414,14 +1422,14 @@
              (title (s-chop-prefix "{" (s-chop-suffix "}" value)))
              )
         title))
-    
+
     (defun ks-get-path-of-book (title)
       (let ((books (ks-get-books title)))
         (helm :sources (helm-build-sync-source "books"
                          :candidates books
                          :fuzzy-match t)
               :buffer "*helm books*")))
-    
+
     (defun ks-init-bib-pdf (start end)
       (interactive "r")
       (let* ((bibkey (buffer-substring-no-properties start end))
@@ -1429,14 +1437,14 @@
              (path (ks-get-path-of-book title))
              )
         (ks-make-bibtex-symbolic-link bibkey path)))
-    
-    
+
+
     (defun join-lines () (interactive)
            (setq fill-column 100000)
            (fill-paragraph nil)
            (setq fill-column 78)
            )
-    
+
     (defun my-toggle-bar ()
       "メニューバーとツールバーの表示を切り替える関数"
       (lexical-let ((vis 1))
@@ -1447,14 +1455,14 @@
               (tool-bar-mode vis)
               (menu-bar-mode vis)))))
     ;;(global-set-key (kbd "<f6>") (my-toggle-bar))
-    
+
     (setq default-file-name-coding-system 'utf-8)
-    
+
     (add-to-list 'process-coding-system-alist '("git" utf-8 . utf-8))
     (add-hook 'git-commit-mode-hook
               '(lambda ()
                  (set-buffer-file-coding-system 'utf-8)))
-    
+
     (defun isbn-to-bibtex-lead-jp (isbn)
       "Search lead.to for ISBN bibtex entry.
                      You have to copy the entry if it is on the page to your bibtex
@@ -1464,8 +1472,8 @@
        (format
         "http://lead.to/amazon/jp/?key=%s+&si=all&op=bt&bn=&so=sa&ht=jp"
         isbn)))
-    
-    
+
+
     (defun ks-create-report (report-path)
       (interactive "snew report: ")
       (let* ((filename (s-concat (ts-format "%Y%m%d" (ts-now)) "-" report-path ".org"))
@@ -1473,12 +1481,12 @@
         (find-file fullpath)
         (insert "rep2")
         (yas-expand)))
-    
+
     (defun org-sparse-tree-indirect-buffer (arg)
       (interactive "P")
       (let ((ibuf (switch-to-buffer (org-get-indirect-buffer))))
         (condition-case _
             (org-sparse-tree arg)
           (quit (kill-buffer ibuf)))))
-    
+
   #+END_SRC
