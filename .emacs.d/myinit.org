@@ -58,7 +58,6 @@
   メニューバー、ツールバー、スクロールバーは非表示。行の折り返しはしない。
 
   #+BEGIN_SRC emacs-lisp
-
     (menu-bar-mode -1)
     (scroll-bar-mode -1)
     (tool-bar-mode -1)
@@ -113,22 +112,22 @@
       (setq dired-listing-switches "-alGhv --group-directories-first")
       (setq dired-recursive-copies 'always)
       (setq dired-dwim-target t))
-    
+
     (use-package find-dired
       :custom ((find-ls-option '("-exec ls -ldh {} +" . "-ldh")))
       )
-    
+
     (use-package wdired
       :bind (:map dired-mode-map
                   ("e" . wdired-change-to-wdired-mode)))
-    
+
     (use-package dired-launch
       :ensure t
       :bind (:map dired-mode-map
                   ("J" . dired-launch-command))
       :config
       (setq dired-launch-default-launcher '("xdg-open"))
-    
+
       (setf dired-launch-extensions-map
             '(;; specify LibreOffice as the preferred application for
               ;; a Microsoft Excel file with the xslx extension
@@ -151,7 +150,7 @@
       :ensure t
       :config
       (diredfl-global-mode 1))
-    
+
     (use-package dired-single
       :ensure t
       :config
@@ -160,19 +159,19 @@
        loaded."
         ;; <add other stuff here>
         (define-key dired-mode-map [remap dired-find-file]
-          'dired-single-buffer)
+                    'dired-single-buffer)
         (define-key dired-mode-map [remap dired-mouse-find-file-other-window]
-          'dired-single-buffer-mouse)
+                    'dired-single-buffer-mouse)
         (define-key dired-mode-map [remap dired-up-directory]
-          'dired-single-up-directory))
-    
+                    'dired-single-up-directory))
+
       ;; if dired's already loaded, then the keymap will be bound
       (if (boundp 'dired-mode-map)
           ;; we're good to go; just add our bindings
           (my-dired-init)
         ;; it's not loaded yet, so add our bindings to the load-hook
         (add-hook 'dired-load-hook 'my-dired-init)))
-    
+
   #+END_SRC
 
 * IME
@@ -186,7 +185,7 @@
       :config
       (global-set-key (kbd "C-x C-j") 'skk-auto-fill-mode)
       (setq default-input-method "japanese-skk")
-    
+
       ;;https://uwabami.github.io/cc-env/Emacs.html
       (setq skk-sticky-key ";")
       (setq skk-large-jisyo "~/myspace/skkdic/SKK-JISYO.my"))
@@ -194,20 +193,19 @@
 
 * キーバインディング
   #+BEGIN_SRC emacs-lisp
-    
     (bind-key "C-x C-c" nil)
     (fset 'yes-or-no-p 'y-or-n-p)
     (global-set-key (kbd "C-t") 'other-window)
-    
+
     ;; http://akisute3.hatenablog.com/entry/20120318/1332059326
     (keyboard-translate ?\C-h ?\C-?)
-    
+
     (use-package which-key
       :ensure t
       :diminish which-key-mode
       :config
       (which-key-mode))
-    
+
     (use-package hydra
       :ensure t)
 
@@ -240,248 +238,248 @@
 * 補完 / 絞り込み
 
   #+BEGIN_SRC emacs-lisp
-                (use-package ace-window
-                  :bind (("C-t". ace-window)))
-    
-                (use-package projectile
-                  :ensure t
-                  :config
-                  (projectile-mode +1)
-                  (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
-                  (setq projectile-indexing-method 'alien)
-                  (setq projectile-project-search-path '("~/repos"))
-                  (projectile-discover-projects-in-search-path))
-    
-                (use-package migemo
-                  :ensure t
-                  :config
-                  (setq migemo-command "cmigemo")
-                  (setq migemo-options '("-q" "--emacs"))
-    
-                  ;; Set your installed path
-                  (setq migemo-dictionary "/usr/share/migemo/utf-8/migemo-dict")
-    
-                  (setq migemo-user-dictionary nil)
-                  (setq migemo-regex-dictionary nil)
-                  (setq migemo-coding-system 'utf-8-unix))
-            ;;      (migemo-init))
-    
-                (use-package selectrum
-                  :straight t
-                  :config
-                  (selectrum-mode +1))
-    
-                ;; Migemoを有効にする
-                ;; https://github.com/yamatakau08/.emacs.d/blob/master/.orderless.el
-                (use-package orderless
-                  :straight t
-    
-                  :init
-                  (setq ; completion-styles '(orderless)
-                   completion-category-defaults nil
-                   completion-category-overrides '((file (styles . (partial-completion)))))
-    
-                  :after migemo
-    
-                  :custom
-                  (completion-styles '(orderless))
-                  (orderless-matching-styles '(orderless-literal orderless-regexp orderless-migemo))
-    
-                  :config
-                  ;; supported emacs-jp slack
-                  ;;(setq orderless-matching-styles '(orderless-migemo))
-                  ;;(setq orderless-matching-styles '(orderless-literal orderless-regexp orderless-migemo)) ; move to :custom block
-                  (defalias 'orderless-migemo #'migemo-get-pattern)
-    
-                  (defun orderless-migemo (component)
-                    (let ((pattern (migemo-get-pattern component)))
-                      (condition-case nil
-                          (progn (string-match-p pattern "") pattern)
-                        (invalid-regexp nil))))
-                  )
-                ;;(use-package marginalia
-                ;;  
-                ;;  :config
-                ;;  (marginalia-mode))
-                ;; Enable richer annotations using the Marginalia package
-                (use-package marginalia
-                  :straight t
-    
-                  ;; Either bind `marginalia-cycle` globally or only in the minibuffer
-                  :bind (("M-A" . marginalia-cycle)
-                         :map minibuffer-local-map
-                         ("M-A" . marginalia-cycle))
-    
-                  ;; The :init configuration is always executed (Not lazy!)
-                  :init
-    
-                  ;; Must be in the :init section of use-package such that the mode gets
-                  ;; enabled right away. Note that this forces loading the package.
-                  (marginalia-mode)
-                  :config
-                  (add-to-list 'marginalia-prompt-categories
-                               '("\\<File\\>" . file))
-                  )
-                (use-package consult
-                  :straight t
-                  ;; Replace bindings. Lazily loaded due by `use-package'.
-                  :bind (;; C-c bindings (mode-specific-map)
-                         ("C-c h" . consult-history)
-                         ("C-c m" . consult-mode-command)
-                         ("C-c b" . consult-bookmark)
-                         ("C-c k" . consult-kmacro)
-                         ;; C-x bindings (ctl-x-map)
-                         ("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
-                         ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
-                         ("C-x 4 b" . consult-buffer-other-window) ;; orig. switch-to-buffer-other-window
-                         ("C-x 5 b" . consult-buffer-other-frame)  ;; orig. switch-to-buffer-other-frame
-                         ;; Custom M-# bindings for fast register access
-                         ("M-#" . consult-register-load)
-                         ("M-'" . consult-register-store)          ;; orig. abbrev-prefix-mark (unrelated)
-                         ("C-M-#" . consult-register)
-                         ;; Other custom bindings
-                         ("M-y" . consult-yank-pop)                ;; orig. yank-pop
-                         ("<help> a" . consult-apropos)            ;; orig. apropos-command
-                         ;; M-g bindings (goto-map)
-                         ("M-g e" . consult-compile-error)
-                         ("M-g f" . consult-flymake)               ;; Alternative: consult-flycheck
-                         ("M-g g" . consult-goto-line)             ;; orig. goto-line
-                         ("M-g M-g" . consult-goto-line)           ;; orig. goto-line
-                         ("M-g o" . consult-outline)               ;; Alternative: consult-org-heading
-                         ("M-g m" . consult-mark)
-                         ("M-g k" . consult-global-mark)
-                         ("M-g i" . consult-imenu)
-                         ("M-g I" . consult-project-imenu)
-                         ;; M-s bindings (search-map)
-                         ("M-s f" . consult-find)
-                         ("M-s L" . consult-locate)
-                         ("M-s g" . consult-grep)
-                         ("M-s G" . consult-git-grep)
-                         ("M-s r" . consult-ripgrep)
-                         ("M-s l" . consult-line)
-                         ("M-s m" . consult-multi-occur)
-                         ("M-s k" . consult-keep-lines)
-                         ("M-s u" . consult-focus-lines)
-                         ;; Isearch integration
-                         ("C-s" . consult-line)
-                         ("M-s e" . consult-isearch)
-                         :map isearch-mode-map
-                         ("M-e" . consult-isearch)                 ;; orig. isearch-edit-string
-                         ("M-s e" . consult-isearch)               ;; orig. isearch-edit-string
-                         ("M-s l" . consult-line))                 ;; needed by consult-line to detect isearch
-    
-                  ;; Enable automatic preview at point in the *Completions* buffer.
-                  ;; This is relevant when you use the default completion UI,
-                  ;; and not necessary for Vertico, Selectrum, etc.
-                  :hook (completion-list-mode . consult-preview-at-point-mode)
-    
-                  ;; The :init configuration is always executed (Not lazy)
-                  :init
-    
-                  ;; Optionally configure the register formatting. This improves the register
-                  ;; preview for `consult-register', `consult-register-load',
-                  ;; `consult-register-store' and the Emacs built-ins.
-                  (setq register-preview-delay 0
-                        register-preview-function #'consult-register-format)
-    
-                  ;; Optionally tweak the register preview window.
-                  ;; This adds thin lines, sorting and hides the mode line of the window.
-                  (advice-add #'register-preview :override #'consult-register-window)
-    
-                  ;; Optionally replace `completing-read-multiple' with an enhanced version.
-                  (advice-add #'completing-read-multiple :override #'consult-completing-read-multiple)
-    
-                  ;; Use Consult to select xref locations with preview
-                  (setq xref-show-xrefs-function #'consult-xref
-                        xref-show-definitions-function #'consult-xref)
-    
-                  ;; Configure other variables and modes in the :config section,
-                  ;; after lazily loading the package.
-                  :config
-    
-                  ;; Optionally configure preview. The default value
-                  ;; is 'any, such that any key triggers the preview.
-                  ;; (setq consult-preview-key 'any)
-                  ;; (setq consult-preview-key (kbd "M-."))
-                  ;; (setq consult-preview-key (list (kbd "<S-down>") (kbd "<S-up>")))
-                  ;; For some commands and buffer sources it is useful to configure the
-                  ;; :preview-key on a per-command basis using the `consult-customize' macro.
-                  (consult-customize
-                   consult-theme
-                   :preview-key '(:debounce 0.2 any)
-                   consult-ripgrep consult-git-grep consult-grep
-                   consult-bookmark consult-recent-file consult-xref
-                   consult--source-file consult--source-project-file consult--source-bookmark
-                   :preview-key (kbd "M-."))
-    
-                  ;; Optionally configure the narrowing key.
-                  ;; Both < and C-+ work reasonably well.
-                  (setq consult-narrow-key "<") ;; (kbd "C-+")
-    
-                  ;; Optionally make narrowing help available in the minibuffer.
-                  ;; You may want to use `embark-prefix-help-command' or which-key instead.
-                  ;; (define-key consult-narrow-map (vconcat consult-narrow-key "?") #'consult-narrow-help)
-    
-                  ;; Optionally configure a function which returns the project root directory.
-                  ;; There are multiple reasonable alternatives to chose from.
+    (use-package ace-window
+      :bind (("C-t". ace-window)))
+
+    (use-package projectile
+      :ensure t
+      :config
+      (projectile-mode +1)
+      (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
+      (setq projectile-indexing-method 'alien)
+      (setq projectile-project-search-path '("~/repos"))
+      (projectile-discover-projects-in-search-path))
+
+    (use-package migemo
+      :ensure t
+      :config
+      (setq migemo-command "cmigemo")
+      (setq migemo-options '("-q" "--emacs"))
+
+      ;; Set your installed path
+      (setq migemo-dictionary "/usr/share/migemo/utf-8/migemo-dict")
+
+      (setq migemo-user-dictionary nil)
+      (setq migemo-regex-dictionary nil)
+      (setq migemo-coding-system 'utf-8-unix))
+    ;;      (migemo-init))
+
+    (use-package selectrum
+      :straight t
+      :config
+      (selectrum-mode +1))
+
+    ;; Migemoを有効にする
+    ;; https://github.com/yamatakau08/.emacs.d/blob/master/.orderless.el
+    (use-package orderless
+      :straight t
+
+      :init
+      (setq ; completion-styles '(orderless)
+       completion-category-defaults nil
+       completion-category-overrides '((file (styles . (partial-completion)))))
+
+      :after migemo
+
+      :custom
+      (completion-styles '(orderless))
+      (orderless-matching-styles '(orderless-literal orderless-regexp orderless-migemo))
+
+      :config
+      ;; supported emacs-jp slack
+      ;;(setq orderless-matching-styles '(orderless-migemo))
+      ;;(setq orderless-matching-styles '(orderless-literal orderless-regexp orderless-migemo)) ; move to :custom block
+      (defalias 'orderless-migemo #'migemo-get-pattern)
+
+      (defun orderless-migemo (component)
+        (let ((pattern (migemo-get-pattern component)))
+          (condition-case nil
+              (progn (string-match-p pattern "") pattern)
+            (invalid-regexp nil))))
+      )
+    ;;(use-package marginalia
+    ;;  
+    ;;  :config
+    ;;  (marginalia-mode))
+    ;; Enable richer annotations using the Marginalia package
+    (use-package marginalia
+      :straight t
+
+      ;; Either bind `marginalia-cycle` globally or only in the minibuffer
+      :bind (("M-A" . marginalia-cycle)
+             :map minibuffer-local-map
+             ("M-A" . marginalia-cycle))
+
+      ;; The :init configuration is always executed (Not lazy!)
+      :init
+
+      ;; Must be in the :init section of use-package such that the mode gets
+      ;; enabled right away. Note that this forces loading the package.
+      (marginalia-mode)
+      :config
+      (add-to-list 'marginalia-prompt-categories
+                   '("\\<File\\>" . file))
+      )
+    (use-package consult
+      :straight t
+      ;; Replace bindings. Lazily loaded due by `use-package'.
+      :bind (;; C-c bindings (mode-specific-map)
+             ("C-c h" . consult-history)
+             ("C-c m" . consult-mode-command)
+             ("C-c b" . consult-bookmark)
+             ("C-c k" . consult-kmacro)
+             ;; C-x bindings (ctl-x-map)
+             ("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
+             ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
+             ("C-x 4 b" . consult-buffer-other-window) ;; orig. switch-to-buffer-other-window
+             ("C-x 5 b" . consult-buffer-other-frame)  ;; orig. switch-to-buffer-other-frame
+             ;; Custom M-# bindings for fast register access
+             ("M-#" . consult-register-load)
+             ("M-'" . consult-register-store)          ;; orig. abbrev-prefix-mark (unrelated)
+             ("C-M-#" . consult-register)
+             ;; Other custom bindings
+             ("M-y" . consult-yank-pop)                ;; orig. yank-pop
+             ("<help> a" . consult-apropos)            ;; orig. apropos-command
+             ;; M-g bindings (goto-map)
+             ("M-g e" . consult-compile-error)
+             ("M-g f" . consult-flymake)               ;; Alternative: consult-flycheck
+             ("M-g g" . consult-goto-line)             ;; orig. goto-line
+             ("M-g M-g" . consult-goto-line)           ;; orig. goto-line
+             ("M-g o" . consult-outline)               ;; Alternative: consult-org-heading
+             ("M-g m" . consult-mark)
+             ("M-g k" . consult-global-mark)
+             ("M-g i" . consult-imenu)
+             ("M-g I" . consult-project-imenu)
+             ;; M-s bindings (search-map)
+             ("M-s f" . consult-find)
+             ("M-s L" . consult-locate)
+             ("M-s g" . consult-grep)
+             ("M-s G" . consult-git-grep)
+             ("M-s r" . consult-ripgrep)
+             ("M-s l" . consult-line)
+             ("M-s m" . consult-multi-occur)
+             ("M-s k" . consult-keep-lines)
+             ("M-s u" . consult-focus-lines)
+             ;; Isearch integration
+             ("C-s" . consult-line)
+             ("M-s e" . consult-isearch)
+             :map isearch-mode-map
+             ("M-e" . consult-isearch)                 ;; orig. isearch-edit-string
+             ("M-s e" . consult-isearch)               ;; orig. isearch-edit-string
+             ("M-s l" . consult-line))                 ;; needed by consult-line to detect isearch
+
+      ;; Enable automatic preview at point in the *Completions* buffer.
+      ;; This is relevant when you use the default completion UI,
+      ;; and not necessary for Vertico, Selectrum, etc.
+      :hook (completion-list-mode . consult-preview-at-point-mode)
+
+      ;; The :init configuration is always executed (Not lazy)
+      :init
+
+      ;; Optionally configure the register formatting. This improves the register
+      ;; preview for `consult-register', `consult-register-load',
+      ;; `consult-register-store' and the Emacs built-ins.
+      (setq register-preview-delay 0
+            register-preview-function #'consult-register-format)
+
+      ;; Optionally tweak the register preview window.
+      ;; This adds thin lines, sorting and hides the mode line of the window.
+      (advice-add #'register-preview :override #'consult-register-window)
+
+      ;; Optionally replace `completing-read-multiple' with an enhanced version.
+      (advice-add #'completing-read-multiple :override #'consult-completing-read-multiple)
+
+      ;; Use Consult to select xref locations with preview
+      (setq xref-show-xrefs-function #'consult-xref
+            xref-show-definitions-function #'consult-xref)
+
+      ;; Configure other variables and modes in the :config section,
+      ;; after lazily loading the package.
+      :config
+
+      ;; Optionally configure preview. The default value
+      ;; is 'any, such that any key triggers the preview.
+      ;; (setq consult-preview-key 'any)
+      ;; (setq consult-preview-key (kbd "M-."))
+      ;; (setq consult-preview-key (list (kbd "<S-down>") (kbd "<S-up>")))
+      ;; For some commands and buffer sources it is useful to configure the
+      ;; :preview-key on a per-command basis using the `consult-customize' macro.
+      (consult-customize
+       consult-theme
+       :preview-key '(:debounce 0.2 any)
+       consult-ripgrep consult-git-grep consult-grep
+       consult-bookmark consult-recent-file consult-xref
+       consult--source-file consult--source-project-file consult--source-bookmark
+       :preview-key (kbd "M-."))
+
+      ;; Optionally configure the narrowing key.
+      ;; Both < and C-+ work reasonably well.
+      (setq consult-narrow-key "<") ;; (kbd "C-+")
+
+      ;; Optionally make narrowing help available in the minibuffer.
+      ;; You may want to use `embark-prefix-help-command' or which-key instead.
+      ;; (define-key consult-narrow-map (vconcat consult-narrow-key "?") #'consult-narrow-help)
+
+      ;; Optionally configure a function which returns the project root directory.
+      ;; There are multiple reasonable alternatives to chose from.
                         ;;;; 1. project.el (project-roots)
-                  (setq consult-project-root-function
-                        (lambda ()
-                          (when-let (project (project-current))
-                            (car (project-roots project)))))
+      (setq consult-project-root-function
+            (lambda ()
+              (when-let (project (project-current))
+                (car (project-roots project)))))
                         ;;;; 2. projectile.el (projectile-project-root)
-                  ;; (autoload 'projectile-project-root "projectile")
-                  ;; (setq consult-project-root-function #'projectile-project-root)
+      ;; (autoload 'projectile-project-root "projectile")
+      ;; (setq consult-project-root-function #'projectile-project-root)
                         ;;;; 3. vc.el (vc-root-dir)
-                  ;; (setq consult-project-root-function #'vc-root-dir)
+      ;; (setq consult-project-root-function #'vc-root-dir)
                         ;;;; 4. locate-dominating-file
-                  ;; (setq consult-project-root-function (lambda () (locate-dominating-file "." ".git")))
-    
-                  ;; C-x b の consult-buffer に recentf を追加する
-                  ;; https://tam5917.hatenablog.com/entry/2021/04/29/235949
-                  (setq consult--source-file
-                        `(:name     "File"
-                                    :narrow   ?f
-                                    :category file
-                                    :face     consult-file
-                                    :history  file-name-history
-                                    :action   ,#'consult--file-action
-                                    :enabled   ,(lambda () recentf-mode)
-                                    :items ,recentf-list))
-    
-                  )
-                (use-package embark
-                  :straight t
-    
-                  :bind
-                  (("C-." . embark-act)         ;; pick some comfortable binding
-                   ("C-;" . embark-dwim)        ;; good alternative: M-.
-                   ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
-    
-                  :init
-    
-                  ;; Optionally replace the key help with a completing-read interface
-                  (setq prefix-help-command #'embark-prefix-help-command)
-    
-                  :config
-    
-                  ;; Hide the mode line of the Embark live/completions buffers
-                  (add-to-list 'display-buffer-alist
-                               '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
-                                 nil
-                                 (window-parameters (mode-line-format . none)))))
-    
-                ;; Consult users will also want the embark-consult package.
-                (use-package embark-consult
-                  :straight t
-                  :after (embark consult)
-                  :demand t ; only necessary if you have the hook below
-                  ;; if you want to have consult previews as you move around an
-                  ;; auto-updating embark collect buffer
-                  :hook
-                  (embark-collect-mode . consult-preview-at-point-mode))
-    
-    
+      ;; (setq consult-project-root-function (lambda () (locate-dominating-file "." ".git")))
+
+      ;; C-x b の consult-buffer に recentf を追加する
+      ;; https://tam5917.hatenablog.com/entry/2021/04/29/235949
+      (setq consult--source-file
+            `(:name     "File"
+                        :narrow   ?f
+                        :category file
+                        :face     consult-file
+                        :history  file-name-history
+                        :action   ,#'consult--file-action
+                        :enabled   ,(lambda () recentf-mode)
+                        :items ,recentf-list))
+
+      )
+    (use-package embark
+      :straight t
+
+      :bind
+      (("C-." . embark-act)         ;; pick some comfortable binding
+       ("C-;" . embark-dwim)        ;; good alternative: M-.
+       ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
+
+      :init
+
+      ;; Optionally replace the key help with a completing-read interface
+      (setq prefix-help-command #'embark-prefix-help-command)
+
+      :config
+
+      ;; Hide the mode line of the Embark live/completions buffers
+      (add-to-list 'display-buffer-alist
+                   '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+                     nil
+                     (window-parameters (mode-line-format . none)))))
+
+    ;; Consult users will also want the embark-consult package.
+    (use-package embark-consult
+      :straight t
+      :after (embark consult)
+      :demand t ; only necessary if you have the hook below
+      ;; if you want to have consult previews as you move around an
+      ;; auto-updating embark collect buffer
+      :hook
+      (embark-collect-mode . consult-preview-at-point-mode))
+
+
     ;;        (use-package bibtex-actions
     ;;          :bind (("C-c b" . bibtex-actions-insert-citation)
     ;;                 :map minibuffer-local-map
@@ -602,7 +600,6 @@
   
   [[https://emacs.stackexchange.com/questions/26451/agenda-view-for-all-tasks-with-a-project-tag-and-at-a-certain-level][org mode - Agenda view for all tasks with a project tag and at a certain leve...]]
   [[https://emacs.stackexchange.com/questions/41150/top-level-heading-in-the-org-mode-agenda][Top level heading in the `org-mode` agenda - Emacs Stack Exchange]]
-
   
   #+BEGIN_SRC emacs-lisp
     (use-package org
@@ -921,7 +918,6 @@
                                             ;	(setq org-pandoc-options-for-latex-pdf '((pdf-engine . "xelatex")))
                                             ;	)
 
-
     (use-package org-roam
       :straight t
       :init
@@ -1031,210 +1027,209 @@
 
 ** 一般
    #+BEGIN_SRC emacs-lisp
-          (use-package lsp-mode
-            :config
-            (define-key lsp-mode-map (kbd "C-c l") lsp-command-map)
-            ;;(setq lsp-prefer-capf t)
-            ;; .venv, .mypy_cache を watch 対象から外す
-            (dolist (dir '(
-                           "[/\\\\]\\.venv$"
-                           "[/\\\\]\\.mypy_cache$"
-                           "[/\\\\]__pycache__$"
-                           ))
-              (push dir lsp-file-watch-ignored))
+     (use-package lsp-mode
+       :config
+       (define-key lsp-mode-map (kbd "C-c l") lsp-command-map)
+       ;;(setq lsp-prefer-capf t)
+       ;; .venv, .mypy_cache を watch 対象から外す
+       (dolist (dir '(
+                      "[/\\\\]\\.venv$"
+                      "[/\\\\]\\.mypy_cache$"
+                      "[/\\\\]__pycache__$"
+                      ))
+         (push dir lsp-file-watch-ignored))
 
-            ;; lsp-mode の設定はここを参照してください。
-            ;; https://emacs-lsp.github.io/lsp-mode/page/settings/
+       ;; lsp-mode の設定はここを参照してください。
+       ;; https://emacs-lsp.github.io/lsp-mode/page/settings/
 
-            (setq lsp-auto-configure t)
-            (setq lsp-enable-completion-at-point t)
+       (setq lsp-auto-configure t)
+       (setq lsp-enable-completion-at-point t)
 
-            (setq read-process-output-max (* 1024 1024))
-            (setq lsp-idle-delay 0.500)
+       (setq read-process-output-max (* 1024 1024))
+       (setq lsp-idle-delay 0.500)
 
-            ;; クロスリファレンスとの統合を有効化する
-            ;; xref-find-definitions
-            ;; xref-find-references
-            (setq lsp-enable-xref t)
+       ;; クロスリファレンスとの統合を有効化する
+       ;; xref-find-definitions
+       ;; xref-find-references
+       (setq lsp-enable-xref t)
 
-            ;; linter framework として flycheck を使う
-            (setq lsp-diagnostics-provider :flycheck)
+       ;; linter framework として flycheck を使う
+       (setq lsp-diagnostics-provider :flycheck)
 
-            ;; ミニバッファでの関数情報表示
-            (setq lsp-eldoc-enable-hover t)
+       ;; ミニバッファでの関数情報表示
+       (setq lsp-eldoc-enable-hover t)
 
-            ;; nii: ミニバッファでの関数情報をシグニチャだけにする
-            ;; t: ミニバッファでの関数情報で、doc-string 本体を表示する
-            (setq lsp-eldoc-render-all nil)
+       ;; nii: ミニバッファでの関数情報をシグニチャだけにする
+       ;; t: ミニバッファでの関数情報で、doc-string 本体を表示する
+       (setq lsp-eldoc-render-all nil)
 
-            ;; breadcrumb
-            ;; パンくずリストを表示する。
-            ;;(setq lsp-headerline-breadcrumb-enable t)
-            ;;(setq lsp-headerline-breadcrumb-segments '(project file symbols))
+       ;; breadcrumb
+       ;; パンくずリストを表示する。
+       ;;(setq lsp-headerline-breadcrumb-enable t)
+       ;;(setq lsp-headerline-breadcrumb-segments '(project file symbols))
 
-            ;; snippet
-            (setq lsp-enable-snippet t)
+       ;; snippet
+       (setq lsp-enable-snippet t)
 
-            ;;(require 'dap-cpptools)
+       ;;(require 'dap-cpptools)
 
-            ;; フック関数の定義
-            ;; python-mode 用、lsp-mode コンフィグ
-            (defun lsp/python-mode-hook
-              ()
-              (when (fboundp 'company-mode)
-                ;; company をコンフィグする
-                (setq
-                 ;; 1文字で completion 発動させる
-                 company-minimum-prefix-length 1
-                 ;; default is 0.2
-                 company-idle-delay 0.0
-                 )
-                )
-              )
-
-            :commands (lsp lsp-deferred)
-            :hook
-            (lsp-mode . (lambda ()
-                          (let ((lsp-keymap-prefix "C-c l"))
-                            (lsp-enable-which-key-integration))))
-            (python-mode . lsp) ; python-mode で lsp-mode を有効化する
-            (python-mode . lsp/python-mode-hook) ; python-mode 用のフック関数を仕掛ける
+       ;; フック関数の定義
+       ;; python-mode 用、lsp-mode コンフィグ
+       (defun lsp/python-mode-hook
+           ()
+         (when (fboundp 'company-mode)
+           ;; company をコンフィグする
+           (setq
+            ;; 1文字で completion 発動させる
+            company-minimum-prefix-length 1
+            ;; default is 0.2
+            company-idle-delay 0.0
             )
+           )
+         )
 
-          (use-package lsp-ui
-            :after lsp-mode
-            :straight t
-            :config
+       :commands (lsp lsp-deferred)
+       :hook
+       (lsp-mode . (lambda ()
+                     (let ((lsp-keymap-prefix "C-c l"))
+                       (lsp-enable-which-key-integration))))
+       (python-mode . lsp) ; python-mode で lsp-mode を有効化する
+       (python-mode . lsp/python-mode-hook) ; python-mode 用のフック関数を仕掛ける
+       )
 
-            ;; ui-peek を有効化する
-            (setq lsp-ui-peek-enable t)
+     (use-package lsp-ui
+       :after lsp-mode
+       :straight t
+       :config
 
-            ;; 候補が一つでも、常にpeek表示する。
-            (setq lsp-ui-peek-always-show t)
+       ;; ui-peek を有効化する
+       (setq lsp-ui-peek-enable t)
 
-            ;; sideline で flycheck 等の情報を表示する
-            (setq lsp-ui-sideline-show-diagnostics t)
-            ;; sideline で コードアクションを表示する
-            (setq lsp-ui-sideline-show-code-actions t)
-            ;; ホバーで表示されるものを、ホバーの変わりにsidelineで表示する
-            ;;(setq lsp-ui-sideline-show-hover t)
+       ;; 候補が一つでも、常にpeek表示する。
+       (setq lsp-ui-peek-always-show t)
 
-            :bind
-            (:map lsp-ui-mode-map
-                  ;; デフォルトの xref-find-definitions だと、ジャンプはできるが、ui-peek が使えない。
-                  ("M-." . lsp-ui-peek-find-definitions)
+       ;; sideline で flycheck 等の情報を表示する
+       (setq lsp-ui-sideline-show-diagnostics t)
+       ;; sideline で コードアクションを表示する
+       (setq lsp-ui-sideline-show-code-actions t)
+       ;; ホバーで表示されるものを、ホバーの変わりにsidelineで表示する
+       ;;(setq lsp-ui-sideline-show-hover t)
 
-                  ;; デフォルトの xref-find-references だと、ジャンプはできるが、ui-peek が使えない。
-                  ("M-?" . lsp-ui-peek-find-references)
-                  )
-            :hook
-            (lsp-mode . lsp-ui-mode)
-          )
+       :bind
+       (:map lsp-ui-mode-map
+             ;; デフォルトの xref-find-definitions だと、ジャンプはできるが、ui-peek が使えない。
+             ("M-." . lsp-ui-peek-find-definitions)
 
-          ;; タブ
-          (setq-default indent-tabs-mode nil)
-          (setq-default tab-width 4 indent-tabs-mode nil)
+             ;; デフォルトの xref-find-references だと、ジャンプはできるが、ui-peek が使えない。
+             ("M-?" . lsp-ui-peek-find-references)
+             )
+       :hook
+       (lsp-mode . lsp-ui-mode)
+       )
 
-          (use-package lsp-pyright :ensure t)
+     ;; タブ
+     (setq-default indent-tabs-mode nil)
+     (setq-default tab-width 4 indent-tabs-mode nil)
 
-          (use-package dap-mode
-            :after lsp-mode
-            :straight t
-            :commands dap-debug
-            :hook ((python-mode . dap-ui-mode)
-               (python-mode . dap-mode))
-            :config
-            (eval-when-compile
-              (require 'cl))
-            (require 'dap-python)
-            (require 'dap-lldb)
+     (use-package lsp-pyright :ensure t)
 
-            (dap-mode 1)
+     (use-package dap-mode
+       :after lsp-mode
+       :straight t
+       :commands dap-debug
+       :hook ((python-mode . dap-ui-mode)
+              (python-mode . dap-mode))
+       :config
+       (eval-when-compile
+         (require 'cl))
+       (require 'dap-python)
+       (require 'dap-lldb)
 
-            ;; The modes below are optional
+       (dap-mode 1)
 
-            (dap-ui-mode 1)
-            ;; enables mouse hover support
-            (dap-tooltip-mode 1)
-            ;; use tooltips for mouse hover
-            ;; if it is not enabled `dap-mode' will use the minibuffer.
-            (tooltip-mode 1)
-            ;; displays floating panel with debug buttons
-            ;; requies emacs 26+
-            (dap-ui-controls-mode 1)
+       ;; The modes below are optional
 
-
-            (dap-register-debug-template "My App"
-                                         (list :type "python"
-                                               :cwd "~/repos/learning-DAISY-feat-desc"
-                                               :target-module (expand-file-name "~/repos/learning-DAISY-feat-desc/main.py")
-                                               :request "launch"
-                                               :name "My App"))
-
-            ;; Temporal fix
-            (defun dap-python--pyenv-executable-find (command)
-              (with-venv (executable-find "python")))
-            )
-
-          (use-package flycheck
-            :ensure t
-            :diminish flycheck-mode
-            :init
-            (add-hook 'after-init-hook #'global-flycheck-mode)
-            (setq-default flycheck-disabled-checkers '(emacs-lisp-checkdoc)))
-
-          ;; 選択中の括弧の対を強調する
-          (show-paren-mode)
-
-          (use-package smartparens
-            :ensure t
-            :diminish smartparens-mode
-            :config
-            (require 'smartparens-config)
-            (smartparens-global-mode 1))
-
-          (use-package company
-            :ensure t
-            :diminish company-mode
-            :hook (after-init . global-company-mode)
-            :config
-            (setq company-dabbrev-downcase nil)
-            (setq company-idle-delay 0) ; デフォルトは0.5
-            (setq company-minimum-prefix-length 2) ; デフォルトは4
-            (define-key company-active-map (kbd "M-n") nil)
-            (define-key company-active-map (kbd "M-p") nil)
-            (define-key company-active-map (kbd "C-n") 'company-select-next)
-            (define-key company-active-map (kbd "C-p") 'company-select-previous)
-            (define-key company-active-map (kbd "C-h") nil))
+       (dap-ui-mode 1)
+       ;; enables mouse hover support
+       (dap-tooltip-mode 1)
+       ;; use tooltips for mouse hover
+       ;; if it is not enabled `dap-mode' will use the minibuffer.
+       (tooltip-mode 1)
+       ;; displays floating panel with debug buttons
+       ;; requies emacs 26+
+       (dap-ui-controls-mode 1)
 
 
-          (setq gdb-many-windows t)
+       (dap-register-debug-template "My App"
+                                    (list :type "python"
+                                          :cwd "~/repos/learning-DAISY-feat-desc"
+                                          :target-module (expand-file-name "~/repos/learning-DAISY-feat-desc/main.py")
+                                          :request "launch"
+                                          :name "My App"))
 
-          (add-hook 'c-mode-common-hook
-                    '(lambda ()
-                       ;; 色々な設定
-                       (define-key c-mode-base-map "\C-c\C-c" 'comment-region)
-                       (define-key c-mode-base-map "\C-c\M-c" 'uncomment-region)
-                       (define-key c-mode-base-map "\C-cg"       'gdb)
-                       (define-key c-mode-base-map "\C-cc"       'make)
-                       (define-key c-mode-base-map "\C-ce"       'c-macro-expand)
-                       (define-key c-mode-base-map "\C-ct"        'toggle-source)))
+       ;; Temporal fix
+       (defun dap-python--pyenv-executable-find (command)
+         (with-venv (executable-find "python")))
+       )
 
-          (use-package editorconfig
-            :ensure t
-            :diminish editorconfig-mode
-            :config
-            (editorconfig-mode 1))
+     (use-package flycheck
+       :ensure t
+       :diminish flycheck-mode
+       :init
+       (add-hook 'after-init-hook #'global-flycheck-mode)
+       (setq-default flycheck-disabled-checkers '(emacs-lisp-checkdoc)))
 
-          (use-package cmake-mode
-            :straight t)
+     ;; 選択中の括弧の対を強調する
+     (show-paren-mode)
+
+     (use-package smartparens
+       :ensure t
+       :diminish smartparens-mode
+       :config
+       (require 'smartparens-config)
+       (smartparens-global-mode 1))
+
+     (use-package company
+       :ensure t
+       :diminish company-mode
+       :hook (after-init . global-company-mode)
+       :config
+       (setq company-dabbrev-downcase nil)
+       (setq company-idle-delay 0) ; デフォルトは0.5
+       (setq company-minimum-prefix-length 2) ; デフォルトは4
+       (define-key company-active-map (kbd "M-n") nil)
+       (define-key company-active-map (kbd "M-p") nil)
+       (define-key company-active-map (kbd "C-n") 'company-select-next)
+       (define-key company-active-map (kbd "C-p") 'company-select-previous)
+       (define-key company-active-map (kbd "C-h") nil))
+
+
+     (setq gdb-many-windows t)
+
+     (add-hook 'c-mode-common-hook
+               '(lambda ()
+                  ;; 色々な設定
+                  (define-key c-mode-base-map "\C-c\C-c" 'comment-region)
+                  (define-key c-mode-base-map "\C-c\M-c" 'uncomment-region)
+                  (define-key c-mode-base-map "\C-cg"       'gdb)
+                  (define-key c-mode-base-map "\C-cc"       'make)
+                  (define-key c-mode-base-map "\C-ce"       'c-macro-expand)
+                  (define-key c-mode-base-map "\C-ct"        'toggle-source)))
+
+     (use-package editorconfig
+       :ensure t
+       :diminish editorconfig-mode
+       :config
+       (editorconfig-mode 1))
+
+     (use-package cmake-mode
+       :straight t)
    #+END_SRC
 
 **  C/C++
 
 ** Python
-   #+BEGIN_SRC emacs-lisp
-     
+   #+BEGIN_SRC emacs-lisp     
      (use-package python
        :mode ("\\.py" . python-mode)
        :config
@@ -1245,7 +1240,6 @@
 
 * Etc
   #+BEGIN_SRC emacs-lisp
-
     (use-package terraform-mode :straight t)
 
     ;; https://emacs.stackexchange.com/questions/31646/how-to-paste-with-indentより転載
@@ -1493,5 +1487,4 @@
         (condition-case _
             (org-sparse-tree arg)
           (quit (kill-buffer ibuf)))))
-
   #+END_SRC
