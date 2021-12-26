@@ -41,7 +41,7 @@
       :config
       (gcmh-mode 1))
   #+end_src
-  
+
 * Shell / 環境
 
   [[http://pragmaticemacs.com/emacs/pop-up-a-quick-shell-with-shell-pop/][Pop up a quick shell with shell-pop | Pragmatic Emacs]]
@@ -77,6 +77,8 @@
     (let* ((ffl (font-family-list))
            (ffl-utf8 (mapcar (lambda (x) (decode-coding-string x 'utf-8)) ffl)))
       (cond
+       ((member "Cica" ffl)
+        (set-frame-font "Cica 15"))
        ((member "NasuM" ffl)
         (set-frame-font "NasuM 15"))
        ((member "Ricty" ffl)
@@ -114,8 +116,7 @@
       (setq dired-dwim-target t))
 
     (use-package find-dired
-      :custom ((find-ls-option '("-exec ls -ldh {} +" . "-ldh")))
-      )
+      :custom ((find-ls-option '("-exec ls -ldh {} +" . "-ldh"))))
 
     (use-package wdired
       :bind (:map dired-mode-map
@@ -298,7 +299,7 @@
             (invalid-regexp nil))))
       )
     ;;(use-package marginalia
-    ;;  
+    ;;
     ;;  :config
     ;;  (marginalia-mode))
     ;; Enable richer annotations using the Marginalia package
@@ -499,7 +500,7 @@
     ;;            (advice-add #'completing-read-multiple :override #'consult-completing-read-multiple)
     ;;
     ;;
-    ;;            (use-package bibtex-actions-org-cite             
+    ;;            (use-package bibtex-actions-org-cite
     ;;              :bind (("C-c b" . org-cite-insert)
     ;;                     ("M-o" . org-open-at-point)
     ;;                     :map minibuffer-local-map
@@ -596,12 +597,12 @@
       :after treemacs magit
       :ensure t)
   #+end_src
-  
+
 * Org
-  
+
   [[https://emacs.stackexchange.com/questions/26451/agenda-view-for-all-tasks-with-a-project-tag-and-at-a-certain-level][org mode - Agenda view for all tasks with a project tag and at a certain leve...]]
   [[https://emacs.stackexchange.com/questions/41150/top-level-heading-in-the-org-mode-agenda][Top level heading in the `org-mode` agenda - Emacs Stack Exchange]]
-  
+
   #+BEGIN_SRC emacs-lisp
     (use-package org
       :straight t
@@ -672,7 +673,7 @@
       (setq org-agenda-start-on-weekday 0)
       (setq org-agenda-files '("~/myspace/Org/inbox.org"))
 
-      (cl-flet ((org-file-p (x) (s-ends-with-p ".org" x)))        
+      (cl-flet ((org-file-p (x) (s-ends-with-p ".org" x)))
         (let ((files (f-entries "~/myspace/Org/core" #'org-file-p)))
           (dolist (f files nil)
             (add-to-list 'org-agenda-files f))))
@@ -720,7 +721,7 @@
       (setq org-habit-show-habits-only-for-today 1)
       (setq org-agenda-repeating-timestamp-show-all nil))
 
-    (use-package org-contrib         
+    (use-package org-contrib
       :after org
       :ensure t
       :config
@@ -783,7 +784,7 @@
             '((article       . "${author:5} ${title:40} ${journal:10} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}")
               (inbook        . "${author:5} ${title:40} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}")
               (book          . "${author:5} ${title:40} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}")
-              (t             . "${author:5} ${title:40} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}"))))    
+              (t             . "${author:5} ${title:40} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}"))))
 
     ;;(require 'ox-bibtex)
     (use-package ox-latex
@@ -875,8 +876,8 @@
                                     \\usepackage{minted}
                                     \\usepackage{geometry}
                                     \\geometry{left=1cm,right=1cm,top=1cm,bottom=1cm}
-                                    \\usepackage[natbib=true]{biblatex} 
-                                    \\DeclareFieldFormat{apacase}{#1} 
+                                    \\usepackage[natbib=true]{biblatex}
+                                    \\DeclareFieldFormat{apacase}{#1}
                                     \\addbibresource{~/myspace/Bibliography/references.bib}"
                      ("\\section{%s}" . "\\section*{%s}")
                      ("\\subsection{%s}" . "\\subsection*{%s}")
@@ -967,7 +968,7 @@
     ;;                 :branch "main")
     ;;      :hook (org-roam-mode . org-roam-bibtex-mode)
     ;;      :diminish org-roam-bibtex-mode
-    ;;    
+    ;;
     ;;      :bind (:map org-mode-map
     ;;                  (("C-c n a" . orb-note-actions)))
     ;;      :config (org-roam-bibtex-mode 1))
@@ -1016,7 +1017,7 @@
     (use-package expand-region
       :ensure t
       :bind (("C--" . er/expand-region)))
-    
+
     (use-package fix-word
       :straight t
       :bind
@@ -1028,6 +1029,17 @@
 
 ** 一般
    #+BEGIN_SRC emacs-lisp
+     (use-package tree-sitter
+       :straight t
+       :config
+       (require 'tree-sitter)
+       (global-tree-sitter-mode))
+
+     (use-package tree-sitter-langs
+       :straight t
+       :config
+       (require 'tree-sitter-langs))
+
      (use-package lsp-mode
        :config
        (define-key lsp-mode-map (kbd "C-c l") lsp-command-map)
@@ -1230,12 +1242,12 @@
 **  C/C++
 
 ** Python
-   #+BEGIN_SRC emacs-lisp     
+   #+BEGIN_SRC emacs-lisp
      (use-package python
        :mode ("\\.py" . python-mode)
        :config
        (setq python-indent-offset 4))
-     
+
      (use-package with-venv :straight t )
    #+END_SRC
 
@@ -1263,7 +1275,20 @@
       (setq recentf-max-saved-items 2000) ;; 2000ファイルまで履歴保存する
       (setq recentf-auto-cleanup 'never)  ;; 存在しないファイルは消さない
       (setq recentf-exclude '("/recentf" "COMMIT_EDITMSG" "/.?TAGS" "^/sudo:" "/\\.emacs\\.d/games/*-scores" "/\\.emacs\\.d/\\.cask/"))
-      (setq recentf-auto-save-timer (run-with-idle-timer 12000 t 'recentf-save-list)))
+      (setq recentf-auto-save-timer (run-with-idle-timer 12000 t 'recentf-save-list))
+      (recentf-mode))
+
+    ;;; switch-buffer-functions
+    (use-package switch-buffer-functions
+      :defer t
+      :after recentf
+      :preface
+      (defun my-recentf-track-visited-file (_prev _curr)
+        (and buffer-file-name
+             (recentf-add-file buffer-file-name)))
+      :init
+      (add-hook 'switch-buffer-functions #'my-recentf-track-visited-file))
+
 
     (use-package calendar
       :ensure t
@@ -1275,7 +1300,7 @@
             (frm (make-frame)))
         (progn
           (select-frame-set-input-focus frm)
-          (set-frame-position frm (/ (x-display-pixel-width) 3) 0) 
+          (set-frame-position frm (/ (x-display-pixel-width) 3) 0)
           (org-journal-new-entry nil)
           (local-set-key (kbd "C-c C-c") 'delete-frame))))
 
@@ -1426,8 +1451,8 @@
     (defun ks-get-path-of-book (title)
       (let ((books (ks-get-books title)))
         (helm :sources (helm-build-sync-source "books"
-                         :candidates books
-                         :fuzzy-match t)
+                                               :candidates books
+                                               :fuzzy-match t)
               :buffer "*helm books*")))
 
     (defun ks-init-bib-pdf (start end)
