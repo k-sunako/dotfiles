@@ -248,7 +248,7 @@
       (projectile-mode +1)
       (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
       (setq projectile-indexing-method 'alien)
-      (setq projectile-project-search-path '("~/repos"))
+      (setq projectile-project-search-path '("~/repos" "~/myspace/Projects"))
       (projectile-discover-projects-in-search-path))
 
     (use-package migemo
@@ -928,7 +928,7 @@
       (org-roam-directory (file-truename "~/myspace/org-roam"))
       (org-roam-db-location "~/tmp/org-roam")
       (org-roam-dailies-capture-templates '(("d" "default" entry
-                                             "* %<%H:%M>\n%?"
+                                             "\n* %<%H:%M>\n%?"
                                              :if-new (file+head "%<%Y-%m-%d>.org"
                                                                 "#+title: %<%Y-%m-%d>\n"))))
       :bind (("C-c n l" . org-roam-buffer-toggle)
@@ -1010,6 +1010,10 @@
 
     (with-eval-after-load "ox"
       (add-hook 'org-export-before-processing-hook 'remove-org-newlines-at-cjk-text))
+
+    (use-package math-preview :straight t
+      :custom (math-preview-command "/home/snowfox/.nvm/versions/node/v16.13.1/bin/math-preview"))
+
   #+END_SRC
 
 * Utility
@@ -1033,6 +1037,7 @@
        :straight t
        :config
        (require 'tree-sitter)
+       (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode)
        (global-tree-sitter-mode))
 
      (use-package tree-sitter-langs
@@ -1103,6 +1108,7 @@
 
        :commands (lsp lsp-deferred)
        :hook
+       (c++-mode . lsp)
        (lsp-mode . (lambda ()
                      (let ((lsp-keymap-prefix "C-c l"))
                        (lsp-enable-which-key-integration))))
@@ -1513,4 +1519,14 @@
         (condition-case _
             (org-sparse-tree arg)
           (quit (kill-buffer ibuf)))))
+    (defun ks/create-task-dir (prj-name)
+      (interactive "sTask Name: ")
+      (let* ((prefix (ts-format "%Y%m%d%H%M" (ts-now)))
+             (prjdir (s-concat prefix "-" prj-name))
+             (rootdir "~/myspace/Projects/")
+             (prjpath (f-join rootdir prjdir)))
+        (f-mkdir prjpath)
+        (shell-command-to-string (s-concat "git init " prjpath))
+        (projectile-discover-projects-in-search-path)))
+
   #+END_SRC
