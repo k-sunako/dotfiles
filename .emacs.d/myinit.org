@@ -23,6 +23,18 @@
     (use-package dash :ensure t)
   #+end_src
 
+* ユーティリティ
+** Latex スタイルファイルの確認用
+
+#+begin_src emacs-lisp
+  (defun ks-latex-sty-p (sty)
+    (-some--> (executable-find "kpsewhich")
+      (shell-command-to-string (format "%s %s" it sty))
+      (s-trim it)
+      (and (not (string= "" it)) (f-file-p it))))
+#+end_src
+
+
 * 言語
 日本語を設定する.
 
@@ -52,6 +64,9 @@
       :config
       (setq exec-path-from-shell-check-startup-files nil)
       (exec-path-from-shell-initialize))
+
+    (use-package vterm
+      :straight t)
   #+END_SRC
 
 * 見た目
@@ -604,6 +619,8 @@
   [[https://emacs.stackexchange.com/questions/41150/top-level-heading-in-the-org-mode-agenda][Top level heading in the `org-mode` agenda - Emacs Stack Exchange]]
 
   #+BEGIN_SRC emacs-lisp
+    (use-package org-contrib :straight t)
+    (use-package org-drill :straight t)
     (use-package org
       :straight t
       ;;:diminish org-mode
@@ -616,7 +633,7 @@
       :config
       (defun org-confirm-elisp-link-function--no-confirm-my-org-file (prompt)
         "自分が書いたorgファイルの(のディレクトリにある)elispリンクはconfirmなし。
-                    それ以外のディレクトリではconfirmする。"
+                        それ以外のディレクトリではconfirmする。"
         (or (string-match "/myspace/Org/" (or (buffer-file-name) ""))
             (member (buffer-name) '("*trace-output*"))
             (y-or-n-p prompt)))
@@ -677,15 +694,17 @@
         (let ((files (f-entries "~/myspace/Org/core" #'org-file-p)))
           (dolist (f files nil)
             (add-to-list 'org-agenda-files f))))
-      (cl-flet ((org-file-p (x) (s-ends-with-p ".org" x)))
-        (let ((files (f-entries "~/myspace/Org/projects" #'org-file-p)))
-          (dolist (f files nil)
-            (add-to-list 'org-agenda-files f))))
+                                            ;      (cl-flet ((org-file-p (x) (s-ends-with-p ".org" x)))
+                                            ;        (let ((files (f-entries "~/myspace/Org/projects" #'org-file-p)))
+                                            ;          (dolist (f files nil)
+                                            ;            (add-to-list 'org-agenda-files f))))
 
       (setq org-capture-templates `(("t" "Todo [inbox]" entry
                                      (file+headline "~/myspace/Org/inbox.org" "Tasks")
                                      "* TODO %i%?")
-
+                                    ("n" "Note [inbox]" entry
+                                     (file+headline "~/myspace/Org/inbox.org" "Note")
+                                     "* %u\nPath:%F\nLink: %a\nTask: %k\n\n%?")                                    
                                     ("c" "code [inbox]" entry
                                      (file+headline "~/myspace/Org/inbox.org" "Codes")
                                      "* %^{Title}\n%(with-current-buffer (org-capture-get :original-buffer) (browse-at-remote-get-url))\n%?\n#+BEGIN_QUOTE\n%i\n#+END_QUOTE")
@@ -721,11 +740,11 @@
       (setq org-habit-show-habits-only-for-today 1)
       (setq org-agenda-repeating-timestamp-show-all nil))
 
-    (use-package org-contrib
-      :after org
-      :ensure t
-      :config
-      (require 'ox-bibtex))
+    ;;(use-package org-plus-contrib
+    ;;  :straight t
+    ;;  :after org
+    ;;  :config
+    ;;  (require 'ox-bibtex))
 
 
     (use-package org-download
@@ -807,7 +826,7 @@
                :image-input-type "dvi"
                :image-output-type "png"
                :image-size-adjust (1.0 . 1.0)
-               :latex-compiler ("xel atex -shell-escape -interaction nonstopmode -output-directory %o %f")
+               :latex-compiler ("xelatex -shell-escape -interaction nonstopmode -output-directory %o %f")
                :image-converter ("dvipng -D %D -T tight -o %O %f"))
               (dvisvgm :programs ("latex" "dvisvgm")
                        :description "dvi > svg"
@@ -830,6 +849,8 @@
 
       (setq org-latex-compiler "xelatex")
 
+      (when (ks-latex-sty-p "my.sty")
+        (add-to-list 'org-latex-packages-alist '("" "my" t)))
       (setq org-latex-listings 'minted)
       (setq org-latex-minted-options
             '(("style" "friendly")("frame" "lines") ("linenos=true")))
@@ -845,6 +866,25 @@
       (setq org-latex-default-class "koma-jarticle")
 
       (add-to-list 'org-latex-classes
+                   `("beamer"
+                     ,(concat "\\documentclass[unicode,presentation]{beamer}\n"
+                              "[NO-DEFAULT-PACKAGES]\n"
+                              "\\usepackage{amsmath}\n"
+                              "\\usepackage{amssymb}\n"
+                              "\\usepackage{mathrsfs}\n"
+                              "\\usepackage{xunicode}\n"
+                              "\\usepackage{fixltx2e}\n"
+                              "\\usepackage{zxjatype}\n"
+                              "\\usepackage[ipa]{zxjafont}\n"
+                              "\\usepackage{xltxtra}\n"
+                              "\\usepackage{amsthm}\n"
+                              "\\usepackage{geometry}\n"
+                              "\\usepackage{minted}")
+                     ("\\section{%s}" . "\\section*{%s}")
+                     ("\\subsection{%s}" . "\\subsection*{%s}")
+                     ("\\subsubsection{%s}" . "\\subsubsection*{%s}")))
+
+      (add-to-list 'org-latex-classes
                    '("koma-article"
                      "\\documentclass{scrartcl}"
                      ("\\section{%s}" . "\\section*{%s}")
@@ -857,28 +897,28 @@
                    '(
                      "koma-jarticle"
                      "\\documentclass[12pt]{scrartcl}
-                                    [NO-DEFAULT-PACKAGES]
-                                    \\usepackage{amsmath}
-                                    \\usepackage{amssymb}
-                                    \\usepackage{mathrsfs}
-                                    \\usepackage{xunicode}
-                                    \\usepackage{fixltx2e}
-                                    \\usepackage{zxjatype}
-                                    \\usepackage[ipa]{zxjafont}
-                                    \\usepackage{xltxtra}
-                                    \\usepackage{graphicx}
-                                    \\usepackage{longtable}
-                                    \\usepackage{float}
-                                    \\usepackage{wrapfig}
-                                    \\usepackage{soul}
-                                    \\usepackage[xetex]{hyperref}
-                                    \\usepackage{xcolor}
-                                    \\usepackage{minted}
-                                    \\usepackage{geometry}
-                                    \\geometry{left=1cm,right=1cm,top=1cm,bottom=1cm}
-                                    \\usepackage[natbib=true]{biblatex}
-                                    \\DeclareFieldFormat{apacase}{#1}
-                                    \\addbibresource{~/myspace/Bibliography/references.bib}"
+                                [NO-DEFAULT-PACKAGES]
+                                \\usepackage{amsmath}
+                                \\usepackage{amssymb}
+                                \\usepackage{mathrsfs}
+                                \\usepackage{xunicode}
+                                \\usepackage{fixltx2e}
+                                \\usepackage{zxjatype}
+                                \\usepackage[ipa]{zxjafont}
+                                \\usepackage{xltxtra}
+                                \\usepackage{graphicx}
+                                \\usepackage{longtable}
+                                \\usepackage{float}
+                                \\usepackage{wrapfig}
+                                \\usepackage{soul}
+                                \\usepackage[xetex]{hyperref}
+                                \\usepackage{xcolor}
+                                \\usepackage{minted}
+                                \\usepackage{geometry}
+                                \\geometry{left=1cm,right=1cm,top=1cm,bottom=1cm}
+                                \\usepackage[natbib=true]{biblatex}
+                                \\DeclareFieldFormat{apacase}{#1}
+                                \\addbibresource{~/myspace/Bibliography/references.bib}"
                      ("\\section{%s}" . "\\section*{%s}")
                      ("\\subsection{%s}" . "\\subsection*{%s}")
                      ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
@@ -1150,7 +1190,12 @@
      (setq-default indent-tabs-mode nil)
      (setq-default tab-width 4 indent-tabs-mode nil)
 
-     (use-package lsp-pyright :ensure t)
+
+     (use-package lsp-pyright
+       :straight t
+       :hook (python-mode . (lambda ()
+                               (require 'lsp-pyright)
+                               (lsp))))
 
      (use-package dap-mode
        :after lsp-mode
@@ -1246,6 +1291,14 @@
    #+END_SRC
 
 **  C/C++
+
+** Julia
+#+begin_src emacs-lisp
+  (use-package lsp-julia
+    :straight t
+    :config
+    (setq lsp-julia-default-environment "~/.julia/environments/v1.7"))
+#+end_src
 
 ** Python
    #+BEGIN_SRC emacs-lisp
