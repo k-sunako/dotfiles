@@ -639,8 +639,6 @@
             (y-or-n-p prompt)))
       (setq org-confirm-elisp-link-function
             'org-confirm-elisp-link-function--no-confirm-my-org-file)
-      (setq org-confirm-shell-link-function
-            'org-confirm-elisp-link-function--no-confirm-my-org-file)
 
       ;;(add-to-list 'org-file-apps '("\\.pdf\\'" . "atril %s"))
       (add-to-list 'auto-mode-alist
@@ -1071,131 +1069,120 @@
   #+END_SRC
 * プログラミング
 
+** tree-sitter
+ソースコードをハイライトするためのパッケージ.
+
+#+begin_src emacs-lisp
+       (use-package tree-sitter
+         :straight t
+         :config
+         (require 'tree-sitter)
+         (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode)
+         (global-tree-sitter-mode))
+
+       (use-package tree-sitter-langs
+         :straight t
+         :config
+         (require 'tree-sitter-langs))
+#+end_src
+
+** lsp-mode
+
+#+begin_src emacs-lisp
+  (use-package lsp-mode
+    :config
+    ;; .venv, .mypy_cache を watch 対象から外す
+    (dolist (dir '(
+                   "[/\\\\]\\.venv$"
+                   "[/\\\\]\\.mypy_cache$"
+                   "[/\\\\]__pycache__$"
+                   ))
+      (push dir lsp-file-watch-ignored))
+
+    ;; lsp-mode の設定はここを参照してください。
+    ;; https://emacs-lsp.github.io/lsp-mode/page/settings/
+
+    (setq lsp-auto-configure t)
+    (setq lsp-enable-completion-at-point t)
+
+    (setq read-process-output-max (* 1024 1024))
+
+    (setq lsp-idle-delay 0.500)
+
+    ;; クロスリファレンスとの統合を有効化する
+    (setq lsp-enable-xref t)
+
+    ;; linter framework として flycheck を使う
+    (setq lsp-diagnostics-provider :flycheck)
+
+    ;; ミニバッファでの関数情報表示
+    (setq lsp-eldoc-enable-hover t)
+
+    ;; nii: ミニバッファでの関数情報をシグニチャだけにする
+    ;; t: ミニバッファでの関数情報で、doc-string 本体を表示する
+    (setq lsp-eldoc-render-all nil)
+
+    ;; snippet
+    (setq lsp-enable-snippet t)
+
+    ;; フック関数の定義
+    ;; python-mode 用、lsp-mode コンフィグ
+    (defun lsp/python-mode-hook ()
+      (when (fboundp 'company-mode)
+        (setq company-minimum-prefix-length 1 ; 1文字で completion 発動させる
+              company-idle-delay 0.0))) ; default is 0.2
+
+    :commands (lsp lsp-deferred)
+    :hook
+    ;;(c++-mode . lsp)
+    (lsp-mode . (lambda ()
+                  (let ((lsp-keymap-prefix "C-c l"))
+                    (lsp-enable-which-key-integration))))
+    ;;(python-mode . lsp) ; python-mode で lsp-mode を有効化する
+    ;;(python-mode . lsp/python-mode-hook) ; python-mode 用のフック関数を仕掛ける
+    )
+
+  (use-package lsp-ui
+    :after lsp-mode
+    :straight t
+    :config
+
+    ;; ui-peek を有効化する
+    (setq lsp-ui-peek-enable t)
+
+    ;; 候補が一つでも、常にpeek表示する。
+    (setq lsp-ui-peek-always-show t)
+
+    ;; sideline で flycheck 等の情報を表示する
+    (setq lsp-ui-sideline-show-diagnostics t)
+    ;; sideline で コードアクションを表示する
+    (setq lsp-ui-sideline-show-code-actions t)
+    ;; ホバーで表示されるものを、ホバーの変わりにsidelineで表示する
+    ;;(setq lsp-ui-sideline-show-hover t)
+
+    :bind
+    (:map lsp-ui-mode-map
+          ;; デフォルトの xref-find-definitions だと、ジャンプはできるが、ui-peek が使えない。
+          ("M-." . lsp-ui-peek-find-definitions)
+
+          ;; デフォルトの xref-find-references だと、ジャンプはできるが、ui-peek が使えない。
+          ("M-?" . lsp-ui-peek-find-references)
+          )
+    :hook
+    (lsp-mode . lsp-ui-mode))
+#+end_src
+
 ** 一般
    #+BEGIN_SRC emacs-lisp
-     (use-package tree-sitter
-       :straight t
-       :config
-       (require 'tree-sitter)
-       (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode)
-       (global-tree-sitter-mode))
-
-     (use-package tree-sitter-langs
-       :straight t
-       :config
-       (require 'tree-sitter-langs))
-
-     (use-package lsp-mode
-       :config
-       (define-key lsp-mode-map (kbd "C-c l") lsp-command-map)
-       ;;(setq lsp-prefer-capf t)
-       ;; .venv, .mypy_cache を watch 対象から外す
-       (dolist (dir '(
-                      "[/\\\\]\\.venv$"
-                      "[/\\\\]\\.mypy_cache$"
-                      "[/\\\\]__pycache__$"
-                      ))
-         (push dir lsp-file-watch-ignored))
-
-       ;; lsp-mode の設定はここを参照してください。
-       ;; https://emacs-lsp.github.io/lsp-mode/page/settings/
-
-       (setq lsp-auto-configure t)
-       (setq lsp-enable-completion-at-point t)
-
-       (setq read-process-output-max (* 1024 1024))
-       (setq lsp-idle-delay 0.500)
-
-       ;; クロスリファレンスとの統合を有効化する
-       ;; xref-find-definitions
-       ;; xref-find-references
-       (setq lsp-enable-xref t)
-
-       ;; linter framework として flycheck を使う
-       (setq lsp-diagnostics-provider :flycheck)
-
-       ;; ミニバッファでの関数情報表示
-       (setq lsp-eldoc-enable-hover t)
-
-       ;; nii: ミニバッファでの関数情報をシグニチャだけにする
-       ;; t: ミニバッファでの関数情報で、doc-string 本体を表示する
-       (setq lsp-eldoc-render-all nil)
-
-       ;; breadcrumb
-       ;; パンくずリストを表示する。
-       ;;(setq lsp-headerline-breadcrumb-enable t)
-       ;;(setq lsp-headerline-breadcrumb-segments '(project file symbols))
-
-       ;; snippet
-       (setq lsp-enable-snippet t)
-
-       ;;(require 'dap-cpptools)
-
-       ;; フック関数の定義
-       ;; python-mode 用、lsp-mode コンフィグ
-       (defun lsp/python-mode-hook
-           ()
-         (when (fboundp 'company-mode)
-           ;; company をコンフィグする
-           (setq
-            ;; 1文字で completion 発動させる
-            company-minimum-prefix-length 1
-            ;; default is 0.2
-            company-idle-delay 0.0
-            )
-           )
-         )
-
-       :commands (lsp lsp-deferred)
-       :hook
-       (c++-mode . lsp)
-       (lsp-mode . (lambda ()
-                     (let ((lsp-keymap-prefix "C-c l"))
-                       (lsp-enable-which-key-integration))))
-       (python-mode . lsp) ; python-mode で lsp-mode を有効化する
-       (python-mode . lsp/python-mode-hook) ; python-mode 用のフック関数を仕掛ける
-       )
-
-     (use-package lsp-ui
-       :after lsp-mode
-       :straight t
-       :config
-
-       ;; ui-peek を有効化する
-       (setq lsp-ui-peek-enable t)
-
-       ;; 候補が一つでも、常にpeek表示する。
-       (setq lsp-ui-peek-always-show t)
-
-       ;; sideline で flycheck 等の情報を表示する
-       (setq lsp-ui-sideline-show-diagnostics t)
-       ;; sideline で コードアクションを表示する
-       (setq lsp-ui-sideline-show-code-actions t)
-       ;; ホバーで表示されるものを、ホバーの変わりにsidelineで表示する
-       ;;(setq lsp-ui-sideline-show-hover t)
-
-       :bind
-       (:map lsp-ui-mode-map
-             ;; デフォルトの xref-find-definitions だと、ジャンプはできるが、ui-peek が使えない。
-             ("M-." . lsp-ui-peek-find-definitions)
-
-             ;; デフォルトの xref-find-references だと、ジャンプはできるが、ui-peek が使えない。
-             ("M-?" . lsp-ui-peek-find-references)
-             )
-       :hook
-       (lsp-mode . lsp-ui-mode)
-       )
-
      ;; タブ
      (setq-default indent-tabs-mode nil)
      (setq-default tab-width 4 indent-tabs-mode nil)
 
-
      (use-package lsp-pyright
        :straight t
        :hook (python-mode . (lambda ()
-                               (require 'lsp-pyright)
-                               (lsp))))
+                              (require 'lsp-pyright)
+                              (lsp))))
 
      (use-package dap-mode
        :after lsp-mode
@@ -1465,8 +1452,8 @@
       :init (setq markdown-command "multimarkdown"))
 
     (use-package org2blog
-      :ensure t
-      :defer t
+      :straight t
+
       :if (file-exists-p "~/myspace/dotfiles-secret/org2blog.el")
       :after org
       :config
