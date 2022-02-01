@@ -1068,6 +1068,22 @@
       ("M-c" . fix-word-capitalize))
   #+END_SRC
 * プログラミング
+** company
+#+begin_src emacs-lisp
+  (use-package company
+    :ensure t
+    :diminish company-mode
+    :hook (after-init . global-company-mode)
+    :config
+    (setq company-dabbrev-downcase nil)
+    (setq company-idle-delay 0) ; デフォルトは0.5
+    (setq company-minimum-prefix-length 2) ; デフォルトは4
+    (define-key company-active-map (kbd "M-n") nil)
+    (define-key company-active-map (kbd "M-p") nil)
+    (define-key company-active-map (kbd "C-n") 'company-select-next)
+    (define-key company-active-map (kbd "C-p") 'company-select-previous)
+    (define-key company-active-map (kbd "C-h") nil))
+#+end_src
 
 ** tree-sitter
 ソースコードをハイライトするためのパッケージ.
@@ -1172,56 +1188,67 @@
     (lsp-mode . lsp-ui-mode))
 #+end_src
 
+** Python
+#+begin_src emacs-lisp
+  (use-package lsp-pyright
+    :straight t
+    :after lsp
+    :hook (python-mode . (lambda ()
+                           (require 'lsp-pyright)
+                           (lsp))))
+
+  (defun ssbb-pyenv-hook ()
+    "Automatically activates pyenv version if .python-version file exists."
+    (f-traverse-upwards
+     (lambda (path)
+       (let ((pyenv-version-path (f-expand ".python-version" path)))
+         (if (f-exists? pyenv-version-path)
+             (pyenv-mode-set (s-trim (f-read-text pyenv-version-path 'utf-8))))))))
+
+  ;; (add-hook 'find-file-hook 'ssbb-pyenv-hook)
+
+  (use-package with-venv :straight t )
+#+end_src
+
+** dap-mode
+#+begin_src emacs-lisp
+  (use-package dap-mode
+    :after lsp-mode
+    :straight t
+    :commands dap-debug
+    :hook ((python-mode . dap-ui-mode)
+           (python-mode . dap-mode))
+    :config
+    (eval-when-compile
+      (require 'cl))
+    (require 'dap-python)
+    (require 'dap-lldb)
+
+    (dap-mode 1)
+
+    ;; The modes below are optional
+    (dap-ui-mode 1)
+    (dap-tooltip-mode 1)
+    (tooltip-mode 1)
+    (dap-ui-controls-mode 1)
+
+    (dap-register-debug-template "My App"
+                                 (list :type "python"
+                                       :cwd "~/repos/learning-DAISY-feat-desc"
+                                       :target-module (expand-file-name "~/repos/learning-DAISY-feat-desc/main.py")
+                                       :request "launch"
+                                       :name "My App"))
+
+    ;; Temporal fix
+    (defun dap-python--pyenv-executable-find (command)
+      (with-venv (executable-find "python"))))
+#+end_src
+
 ** 一般
    #+BEGIN_SRC emacs-lisp
      ;; タブ
      (setq-default indent-tabs-mode nil)
      (setq-default tab-width 4 indent-tabs-mode nil)
-
-     (use-package lsp-pyright
-       :straight t
-       :hook (python-mode . (lambda ()
-                              (require 'lsp-pyright)
-                              (lsp))))
-
-     (use-package dap-mode
-       :after lsp-mode
-       :straight t
-       :commands dap-debug
-       :hook ((python-mode . dap-ui-mode)
-              (python-mode . dap-mode))
-       :config
-       (eval-when-compile
-         (require 'cl))
-       (require 'dap-python)
-       (require 'dap-lldb)
-
-       (dap-mode 1)
-
-       ;; The modes below are optional
-
-       (dap-ui-mode 1)
-       ;; enables mouse hover support
-       (dap-tooltip-mode 1)
-       ;; use tooltips for mouse hover
-       ;; if it is not enabled `dap-mode' will use the minibuffer.
-       (tooltip-mode 1)
-       ;; displays floating panel with debug buttons
-       ;; requies emacs 26+
-       (dap-ui-controls-mode 1)
-
-
-       (dap-register-debug-template "My App"
-                                    (list :type "python"
-                                          :cwd "~/repos/learning-DAISY-feat-desc"
-                                          :target-module (expand-file-name "~/repos/learning-DAISY-feat-desc/main.py")
-                                          :request "launch"
-                                          :name "My App"))
-
-       ;; Temporal fix
-       (defun dap-python--pyenv-executable-find (command)
-         (with-venv (executable-find "python")))
-       )
 
      (use-package flycheck
        :ensure t
@@ -1240,33 +1267,6 @@
        (require 'smartparens-config)
        (smartparens-global-mode 1))
 
-     (use-package company
-       :ensure t
-       :diminish company-mode
-       :hook (after-init . global-company-mode)
-       :config
-       (setq company-dabbrev-downcase nil)
-       (setq company-idle-delay 0) ; デフォルトは0.5
-       (setq company-minimum-prefix-length 2) ; デフォルトは4
-       (define-key company-active-map (kbd "M-n") nil)
-       (define-key company-active-map (kbd "M-p") nil)
-       (define-key company-active-map (kbd "C-n") 'company-select-next)
-       (define-key company-active-map (kbd "C-p") 'company-select-previous)
-       (define-key company-active-map (kbd "C-h") nil))
-
-
-     (setq gdb-many-windows t)
-
-     (add-hook 'c-mode-common-hook
-               '(lambda ()
-                  ;; 色々な設定
-                  (define-key c-mode-base-map "\C-c\C-c" 'comment-region)
-                  (define-key c-mode-base-map "\C-c\M-c" 'uncomment-region)
-                  (define-key c-mode-base-map "\C-cg"       'gdb)
-                  (define-key c-mode-base-map "\C-cc"       'make)
-                  (define-key c-mode-base-map "\C-ce"       'c-macro-expand)
-                  (define-key c-mode-base-map "\C-ct"        'toggle-source)))
-
      (use-package editorconfig
        :ensure t
        :diminish editorconfig-mode
@@ -1283,19 +1283,10 @@
 #+begin_src emacs-lisp
   (use-package lsp-julia
     :straight t
+    :after lsp
     :config
     (setq lsp-julia-default-environment "~/.julia/environments/v1.7"))
 #+end_src
-
-** Python
-   #+BEGIN_SRC emacs-lisp
-     (use-package python
-       :mode ("\\.py" . python-mode)
-       :config
-       (setq python-indent-offset 4))
-
-     (use-package with-venv :straight t )
-   #+END_SRC
 
 * Etc
   #+BEGIN_SRC emacs-lisp
@@ -1340,16 +1331,6 @@
       :ensure t
       :bind (("<f9>" . calendar)))
 
-    (defun ks/capture-journal ()
-      (interactive)
-      (let ((org-journal-find-file #'find-file)
-            (frm (make-frame)))
-        (progn
-          (select-frame-set-input-focus frm)
-          (set-frame-position frm (/ (x-display-pixel-width) 3) 0)
-          (org-journal-new-entry nil)
-          (local-set-key (kbd "C-c C-c") 'delete-frame))))
-
     ;;https://superuser.com/questions/308045/disallow-closing-last-emacs-window-via-window-manager-close-button
     (defadvice handle-delete-frame (around my-handle-delete-frame-advice activate)
       "Ask for confirmation before deleting the last frame"
@@ -1391,7 +1372,6 @@
       :diminish auto-revert-mode
       :config (add-hook 'ediff-prepare-buffer-hook #'show-all))
 
-
     (use-package multiple-cursors
       :ensure t
       :config
@@ -1432,16 +1412,6 @@
       (super-save-mode 1)
       (setq super-save-exclude nil)
       (setq super-save-auto-save-when-idle t))
-
-    (defun ssbb-pyenv-hook ()
-      "Automatically activates pyenv version if .python-version file exists."
-      (f-traverse-upwards
-       (lambda (path)
-         (let ((pyenv-version-path (f-expand ".python-version" path)))
-           (if (f-exists? pyenv-version-path)
-               (pyenv-mode-set (s-trim (f-read-text pyenv-version-path 'utf-8))))))))
-
-    (add-hook 'find-file-hook 'ssbb-pyenv-hook)
 
     (use-package markdown-mode
       :ensure t
