@@ -1222,6 +1222,8 @@ IMEは ~DDSKK~ を利用する.
 #+end_src
 
 ** dap-mode
+
+
 #+begin_src emacs-lisp
   (use-package dap-mode
     :straight t
@@ -1244,6 +1246,17 @@ IMEは ~DDSKK~ を利用する.
     ;; Temporal fix
     (defun dap-python--pyenv-executable-find (command)
       (with-venv (executable-find "python"))))
+#+end_src
+
+デバッグするプロジェクト毎に下記のように設定する.
+
+#+begin_src elisp :eval never-export
+  (dap-register-debug-template "hello-dap"
+                               (list :type "python"
+                                     :cwd "~/myspace/Projects/202202062114-dap"
+                                     :target-module (expand-file-name "~/myspace/Projects/202202062114-dap/main.py")
+                                     :request "launch"
+                                     :name "hello-dap"))
 #+end_src
 
 ** 一般
