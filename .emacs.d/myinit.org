@@ -36,13 +36,38 @@
 
 
 * 言語
-日本語を設定する.
+基本的な日本語の設定を行う.
 
 #+begin_src emacs-lisp
   (set-language-environment "Japanese")
   (prefer-coding-system 'utf-8)
   (set-default 'buffer-file-coding-system 'utf-8)
+  (setq default-file-name-coding-system 'utf-8)
 #+end_src
+
+コーディングシステムを調整する.
+
+#+begin_src emacs-lisp
+  (prefer-coding-system 'utf-8-unix)
+  (setq default-file-name-coding-system 'utf-8) ;dired用
+#+end_src
+
+IMEは ~DDSKK~ を利用する.
+
+#+BEGIN_SRC emacs-lisp
+  (use-package ddskk
+    :ensure t
+    :no-require t
+    ;;:bind (("C-x C-j" . skk-auto-fill-mode))
+    :config
+    (global-set-key (kbd "C-x C-j") 'skk-auto-fill-mode)
+    (setq default-input-method "japanese-skk")
+
+    ;;https://uwabami.github.io/cc-env/Emacs.html
+    (setq skk-sticky-key ";")
+    (setq skk-large-jisyo "~/myspace/skkdic/SKK-JISYO.my"))
+#+END_SRC
+
 
 * ガーベージコレクタ
 
@@ -68,6 +93,27 @@
     (use-package vterm
       :straight t)
   #+END_SRC
+
+* 終了を制御
+
+再起動用のコマンド ~restart-emacs~ を追加する.
+
+#+begin_src emacs-lisp
+  (use-package restart-emacs
+    :straight t)
+#+end_src
+
+ウィンドウのxボタンで終了しないように設定する.
+
+#+begin_src emacs-lisp
+  ;;https://superuser.com/questions/308045/disallow-closing-last-emacs-window-via-window-manager-close-button
+  (defadvice handle-delete-frame (around my-handle-delete-frame-advice activate)
+    "Ask for confirmation before deleting the last frame"
+    (let ((frame   (posn-window (event-start event)))
+          (numfrs  (length (visible-frame-list))))
+      (when (> numfrs 1)
+        ad-do-it)))
+#+end_src
 
 * 見た目
   メニューバー、ツールバー、スクロールバーは非表示。行の折り返しはしない。
@@ -105,14 +151,7 @@
        ((member "Ricty Diminished" ffl)
         (set-frame-font "Ricty Diminished 12"))
        ))
-
-    ;;(use-package gruvbox-theme
-    ;;  :straight t
-    ;;  :config
-    ;;  (load-theme 'gruvbox-dark-medium t)
-    ;;  (set-face-attribute 'secondary-selection nil
-    ;;                      :weight 'bold :background "#1d2021"))
-
+    
     (use-package nord-theme
       :straight t
       :config
@@ -156,12 +195,6 @@
       :defer t ; don't access `dired-mode-map' until `peep-dired' is loaded
       :bind (:map dired-mode-map
                   ("P" . peep-dired)))
-    (use-package dired-subtree
-      :ensure t
-      :config
-      (bind-keys :map dired-mode-map
-                 ("i" . dired-subtree-insert)
-                 (";" . dired-subtree-remove)))
     (use-package diredfl
       :ensure t
       :config
@@ -187,27 +220,10 @@
           (my-dired-init)
         ;; it's not loaded yet, so add our bindings to the load-hook
         (add-hook 'dired-load-hook 'my-dired-init)))
-
-  #+END_SRC
-
-* IME
-日本語入力はDDSKKを使用する.
-
-  #+BEGIN_SRC emacs-lisp
-    (use-package ddskk
-      :ensure t
-      :no-require t
-      ;:bind (("C-x C-j" . skk-auto-fill-mode))
-      :config
-      (global-set-key (kbd "C-x C-j") 'skk-auto-fill-mode)
-      (setq default-input-method "japanese-skk")
-
-      ;;https://uwabami.github.io/cc-env/Emacs.html
-      (setq skk-sticky-key ";")
-      (setq skk-large-jisyo "~/myspace/skkdic/SKK-JISYO.my"))
   #+END_SRC
 
 * キーバインディング
+
   #+BEGIN_SRC emacs-lisp
     (bind-key "C-x C-c" nil)
     (fset 'yes-or-no-p 'y-or-n-p)
@@ -224,13 +240,6 @@
 
     (use-package hydra
       :ensure t)
-
-  #+END_SRC
-
-* コーディングシステム
-  #+BEGIN_SRC emacs-lisp
-    (prefer-coding-system 'utf-8-unix)
-    (setq default-file-name-coding-system 'utf-8) ;dired用
   #+END_SRC
 
 * バックアップファイル
@@ -278,7 +287,6 @@
       (setq migemo-user-dictionary nil)
       (setq migemo-regex-dictionary nil)
       (setq migemo-coding-system 'utf-8-unix))
-    ;;      (migemo-init))
 
     (use-package selectrum
       :straight t
@@ -311,8 +319,7 @@
         (let ((pattern (migemo-get-pattern component)))
           (condition-case nil
               (progn (string-match-p pattern "") pattern)
-            (invalid-regexp nil))))
-      )
+            (invalid-regexp nil)))))
     ;;(use-package marginalia
     ;;
     ;;  :config
@@ -334,8 +341,8 @@
       (marginalia-mode)
       :config
       (add-to-list 'marginalia-prompt-categories
-                   '("\\<File\\>" . file))
-      )
+                   '("\\<File\\>" . file)))
+
     (use-package consult
       :straight t
       ;; Replace bindings. Lazily loaded due by `use-package'.
@@ -677,13 +684,12 @@
          (emacs-lisp . t)
          (gnuplot . t)
          (latex . t)
-                                            ;(rust . t)
          (shell . t)
          (python . t)
          (dot . t)
          ))
 
-                            ;;; Agenda を現在のウィンドウと入れ替えで表示
+      ;; Agenda を現在のウィンドウと入れ替えで表示
       (setq org-agenda-window-setup 'current-window)
       (setq org-agenda-start-on-weekday 0)
       (setq org-agenda-files '("~/myspace/Org/inbox.org"))
@@ -692,20 +698,19 @@
         (let ((files (f-entries "~/myspace/Org/core" #'org-file-p)))
           (dolist (f files nil)
             (add-to-list 'org-agenda-files f))))
-                                            ;      (cl-flet ((org-file-p (x) (s-ends-with-p ".org" x)))
-                                            ;        (let ((files (f-entries "~/myspace/Org/projects" #'org-file-p)))
-                                            ;          (dolist (f files nil)
-                                            ;            (add-to-list 'org-agenda-files f))))
 
       (setq org-capture-templates `(("t" "Todo [inbox]" entry
                                      (file+headline "~/myspace/Org/inbox.org" "Tasks")
                                      "* TODO %i%?")
                                     ("n" "Note [inbox]" entry
                                      (file+headline "~/myspace/Org/inbox.org" "Note")
-                                     "* %u\nPath:%F\nLink: %a\nTask: %k\n\n%?")                                    
-                                    ("c" "code [inbox]" entry
-                                     (file+headline "~/myspace/Org/inbox.org" "Codes")
-                                     "* %^{Title}\n%(with-current-buffer (org-capture-get :original-buffer) (browse-at-remote-get-url))\n%?\n#+BEGIN_QUOTE\n%i\n#+END_QUOTE")
+                                     "* %u\nPath:%F\nLink: %a\nTask: %k\n\n%?")
+                                    ("q" "Question [inbox]" entry
+                                     (file+headline "~/myspace/Org/inbox.org" "Question")
+                                     "* QUESTION %?")
+                                    ("a" "Anki [drill]" entry
+                                     (file+headline "~/myspace/Projects/202201201927-drill/main.org" "drill")
+                                     "* Card :drill:\n%?\n** Answer\n ")                                                                        
                                     ("r" "reference" plain
                                      (file "~/myspace/Bibliography/references.bib"))
                                     ("p" "Protocol" entry
@@ -716,8 +721,8 @@
                                      "* %? [[%:link][%:description]] \nCaptured On: %U")))
 
       (setq org-todo-keywords '((sequence
-                                 "NEXT(n)" "TODO(t)" "WAITING(w)" "SOMEDAY(s)"
-                                 "|" "DONE(d)" "CANCELLED(c)")))
+                                 "NEXT(n)" "TODO(t)" "WAITING(w)" "SOMEDAY(s)" "READING(r)" "QUESTION" "THINKING"
+                                 "|" "DONE(d)" "CANCELLED(c)" "SOLVED")))
 
       (setq org-agenda-custom-commands
             '(("W" "Completed and/or deferred tasks from previous week"
@@ -738,19 +743,11 @@
       (setq org-habit-show-habits-only-for-today 1)
       (setq org-agenda-repeating-timestamp-show-all nil))
 
-    ;;(use-package org-plus-contrib
-    ;;  :straight t
-    ;;  :after org
-    ;;  :config
-    ;;  (require 'ox-bibtex))
-
-
     (use-package org-download
       :ensure t
       :after org
       :config
-      (setq-default org-download-image-dir "./images")
-      )
+      (setq-default org-download-image-dir "./images"))
 
     (use-package org-ref
       :straight t
@@ -1051,6 +1048,19 @@
 
     (use-package math-preview :straight t
       :custom (math-preview-command "/home/snowfox/.nvm/versions/node/v16.13.1/bin/math-preview"))
+    (use-package org-super-agenda
+      :straight t
+      :config
+      (org-super-agenda-mode 1)
+      (setq org-super-agenda-groups
+            '((:name "Easy" :effort< "0:15")
+              (:name "Important" :priority "A")
+              (:name "Habit" :habit t)
+              (:todo "READING" :order 7 :deadline future)
+              (:todo "QUESTION" :order 8 :deadline future)
+              (:todo "WAITING" :order 9 :deadline future)
+              (:todo ("SOMEDAY") :order 10 :deadline future)
+              (:priority<= "B" :order 1))))
 
   #+END_SRC
 
@@ -1067,6 +1077,7 @@
       ("M-l" . fix-word-downcase)
       ("M-c" . fix-word-capitalize))
   #+END_SRC
+
 * プログラミング
 ** company
 #+begin_src emacs-lisp
@@ -1213,14 +1224,11 @@
 ** dap-mode
 #+begin_src emacs-lisp
   (use-package dap-mode
-    :after lsp-mode
     :straight t
-    :commands dap-debug
-    :hook ((python-mode . dap-ui-mode)
-           (python-mode . dap-mode))
     :config
-    (eval-when-compile
-      (require 'cl))
+
+    ;(eval-when-compile
+    ;  (require 'cl))
     (require 'dap-python)
     (require 'dap-lldb)
 
@@ -1228,16 +1236,10 @@
 
     ;; The modes below are optional
     (dap-ui-mode 1)
+    (dap-ui-many-windows-mode 1)
     (dap-tooltip-mode 1)
     (tooltip-mode 1)
     (dap-ui-controls-mode 1)
-
-    (dap-register-debug-template "My App"
-                                 (list :type "python"
-                                       :cwd "~/repos/learning-DAISY-feat-desc"
-                                       :target-module (expand-file-name "~/repos/learning-DAISY-feat-desc/main.py")
-                                       :request "launch"
-                                       :name "My App"))
 
     ;; Temporal fix
     (defun dap-python--pyenv-executable-find (command)
@@ -1280,6 +1282,7 @@
 **  C/C++
 
 ** Julia
+
 #+begin_src emacs-lisp
   (use-package lsp-julia
     :straight t
@@ -1288,21 +1291,24 @@
     (setq lsp-julia-default-environment "~/.julia/environments/v1.7"))
 #+end_src
 
+* Magit
+
+#+begin_src emacs-lisp
+  (use-package magit
+    :ensure t
+    :bind (("<f3>" . magit-status))
+    :diminish auto-revert-mode
+    :config (add-hook 'ediff-prepare-buffer-hook #'show-all))
+
+  (add-to-list 'process-coding-system-alist '("git" utf-8 . utf-8))
+  (add-hook 'git-commit-mode-hook
+            '(lambda ()
+               (set-buffer-file-coding-system 'utf-8)))
+#+end_src
+
 * Etc
   #+BEGIN_SRC emacs-lisp
     (use-package terraform-mode :straight t)
-
-    ;; https://emacs.stackexchange.com/questions/31646/how-to-paste-with-indentより転載
-    (defun yank-with-indent-2 ()
-      (let ((indent
-             (buffer-substring-no-properties (line-beginning-position) (line-end-position))))
-        (message indent)
-        (yank)
-        (narrow-to-region (mark t) (point))
-        (pop-to-mark-command)
-        (replace-string "\n" (concat "\n" indent))
-        (widen)))
-
 
     (setq large-file-warning-threshold nil)
 
@@ -1314,30 +1320,6 @@
       (setq recentf-exclude '("/recentf" "COMMIT_EDITMSG" "/.?TAGS" "^/sudo:" "/\\.emacs\\.d/games/*-scores" "/\\.emacs\\.d/\\.cask/"))
       (setq recentf-auto-save-timer (run-with-idle-timer 12000 t 'recentf-save-list))
       (recentf-mode))
-
-    ;;; switch-buffer-functions
-    (use-package switch-buffer-functions
-      :defer t
-      :after recentf
-      :preface
-      (defun my-recentf-track-visited-file (_prev _curr)
-        (and buffer-file-name
-             (recentf-add-file buffer-file-name)))
-      :init
-      (add-hook 'switch-buffer-functions #'my-recentf-track-visited-file))
-
-
-    (use-package calendar
-      :ensure t
-      :bind (("<f9>" . calendar)))
-
-    ;;https://superuser.com/questions/308045/disallow-closing-last-emacs-window-via-window-manager-close-button
-    (defadvice handle-delete-frame (around my-handle-delete-frame-advice activate)
-      "Ask for confirmation before deleting the last frame"
-      (let ((frame   (posn-window (event-start event)))
-            (numfrs  (length (visible-frame-list))))
-        (when (> numfrs 1)
-          ad-do-it)))
 
     ;;===============================================================
     ;; Packages
@@ -1366,12 +1348,6 @@
       (add-hook 'pdf-view-mode-hook (lambda() (pdf-tools-enable-minor-modes)))
       (setq-default pdf-view-display-size 'fit-page))
 
-    (use-package magit
-      :ensure t
-      :bind (("<f3>" . magit-status))
-      :diminish auto-revert-mode
-      :config (add-hook 'ediff-prepare-buffer-hook #'show-all))
-
     (use-package multiple-cursors
       :ensure t
       :config
@@ -1399,9 +1375,6 @@
       (add-to-list 'warning-suppress-types '(yasnippet backquote-change))
       (yas-global-mode 1))
 
-    (use-package restart-emacs
-      :ensure t)
-
     (use-package auto-save-buffers-enhanced
       :ensure t)
 
@@ -1413,17 +1386,8 @@
       (setq super-save-exclude nil)
       (setq super-save-auto-save-when-idle t))
 
-    (use-package markdown-mode
-      :ensure t
-      :commands (markdown-mode gfm-mode)
-      :mode (("README\\.md\\'" . gfm-mode)
-             ("\\.md\\'" . markdown-mode)
-             ("\\.markdown\\'" . markdown-mode))
-      :init (setq markdown-command "multimarkdown"))
-
     (use-package org2blog
       :straight t
-
       :if (file-exists-p "~/myspace/dotfiles-secret/org2blog.el")
       :after org
       :config
@@ -1483,52 +1447,8 @@
     (defun join-lines () (interactive)
            (setq fill-column 100000)
            (fill-paragraph nil)
-           (setq fill-column 78)
-           )
+           (setq fill-column 78))
 
-    (defun my-toggle-bar ()
-      "メニューバーとツールバーの表示を切り替える関数"
-      (lexical-let ((vis 1))
-        #'(lambda  ()
-            (interactive)
-            (progn
-              (setq vis (- vis))
-              (tool-bar-mode vis)
-              (menu-bar-mode vis)))))
-    ;;(global-set-key (kbd "<f6>") (my-toggle-bar))
-
-    (setq default-file-name-coding-system 'utf-8)
-
-    (add-to-list 'process-coding-system-alist '("git" utf-8 . utf-8))
-    (add-hook 'git-commit-mode-hook
-              '(lambda ()
-                 (set-buffer-file-coding-system 'utf-8)))
-
-    (defun isbn-to-bibtex-lead-jp (isbn)
-      "Search lead.to for ISBN bibtex entry.
-                     You have to copy the entry if it is on the page to your bibtex
-                     file."
-      (interactive "sISBN: ")
-      (browse-url
-       (format
-        "http://lead.to/amazon/jp/?key=%s+&si=all&op=bt&bn=&so=sa&ht=jp"
-        isbn)))
-
-
-    (defun ks-create-report (report-path)
-      (interactive "snew report: ")
-      (let* ((filename (s-concat (ts-format "%Y%m%d" (ts-now)) "-" report-path ".org"))
-             (fullpath (f-join "~/myspace/Report" filename)))
-        (find-file fullpath)
-        (insert "rep2")
-        (yas-expand)))
-
-    (defun org-sparse-tree-indirect-buffer (arg)
-      (interactive "P")
-      (let ((ibuf (switch-to-buffer (org-get-indirect-buffer))))
-        (condition-case _
-            (org-sparse-tree arg)
-          (quit (kill-buffer ibuf)))))
     (defun ks/create-task-dir (prj-name)
       (interactive "sTask Name: ")
       (let* ((prefix (ts-format "%Y%m%d%H%M" (ts-now)))
