@@ -1472,4 +1472,7 @@ IMEは ~DDSKK~ を利用する.
         (shell-command-to-string (s-concat "git init " prjpath))
         (projectile-discover-projects-in-search-path)))
 
+    (defun ks/search-roam ()
+      (interactive)
+      (consult-ripgrep "~/myspace/org-roam"))
   #+END_SRC
