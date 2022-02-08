@@ -282,7 +282,12 @@ IMEは ~DDSKK~ を利用する.
       (setq migemo-options '("-q" "--emacs"))
 
       ;; Set your installed path
-      (setq migemo-dictionary "/usr/share/migemo/utf-8/migemo-dict")
+      ;; (setq migemo-dictionary "/usr/share/migemo/utf-8/migemo-dict")
+      (let ((candidates '("/usr/share/migemo/utf-8/migemo-dict")))
+        (-some--> candidates
+          (-filter #'f-file? it)
+          (car it)
+          (setq migemo-dictionary it)))
 
       (setq migemo-user-dictionary nil)
       (setq migemo-regex-dictionary nil)
@@ -1222,16 +1227,15 @@ IMEは ~DDSKK~ を利用する.
 #+end_src
 
 ** dap-mode
-
-
 #+begin_src emacs-lisp
   (use-package dap-mode
     :straight t
     :config
 
-    ;(eval-when-compile
-    ;  (require 'cl))
+    ;;(eval-when-compile
+    ;;(require 'cl))
     (require 'dap-python)
+    (require 'dap-cpptools)
     (require 'dap-lldb)
 
     (dap-mode 1)
