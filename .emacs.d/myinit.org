@@ -68,6 +68,19 @@ IMEは ~DDSKK~ を利用する.
     (setq skk-large-jisyo "~/myspace/skkdic/SKK-JISYO.my"))
 #+END_SRC
 
+Google翻訳をemacsで使えるように.
+
+#+begin_src emacs-lisp
+  (use-package google-translate
+    :straight t
+    :config
+    (require 'google-translate)
+    (defun google-translate--search-tkk () "Search TKK." (list 430675 2721866130))
+    (setq google-translate-backend-method 'curl)
+    (require 'google-translate-smooth-ui)
+    (setq google-translate-translation-directions-alist
+        '(("en" . "ja"))))
+#+end_src
 
 * ガーベージコレクタ
 
