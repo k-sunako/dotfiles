@@ -1188,7 +1188,6 @@ Google翻訳をemacsで使えるように.
     )
 
   (use-package lsp-ui
-    :after lsp-mode
     :straight t
     :config
 
@@ -1221,7 +1220,6 @@ Google翻訳をemacsで使えるように.
 #+begin_src emacs-lisp
   (use-package lsp-pyright
     :straight t
-    :after lsp
     :hook (python-mode . (lambda ()
                            (require 'lsp-pyright)
                            (lsp))))
@@ -1316,7 +1314,6 @@ Google翻訳をemacsで使えるように.
 #+begin_src emacs-lisp
   (use-package lsp-julia
     :straight t
-    :after lsp
     :config
     (setq lsp-julia-default-environment "~/.julia/environments/v1.7"))
 #+end_src
