@@ -1074,11 +1074,13 @@ Google翻訳をemacsで使えるように.
             '((:name "Easy" :effort< "0:15")
               (:name "Important" :priority "A")
               (:name "Habit" :habit t)
+              (:priority<= "B" :order 1)
               (:todo "READING" :order 7 :deadline future)
               (:todo "QUESTION" :order 8 :deadline future)
               (:todo "WAITING" :order 9 :deadline future)
-              (:todo ("SOMEDAY") :order 10 :deadline future)
-              (:priority<= "B" :order 1))))
+
+              (:order 2 :deadline future)
+              )))
 
   #+END_SRC
 
