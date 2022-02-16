@@ -859,7 +859,7 @@ Google翻訳をemacsで使えるように.
 
       (setq org-latex-create-formula-image-program 'imagemagick)
 
-
+      (setq org-preview-latex-image-directory (expand-file-name "~/tmp/ltximg/"))
       (setq org-latex-compiler "xelatex")
 
       (when (ks-latex-sty-p "my.sty")
