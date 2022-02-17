@@ -640,9 +640,6 @@ Google翻訳をemacsで使えるように.
 
 * Org
 
-  [[https://emacs.stackexchange.com/questions/26451/agenda-view-for-all-tasks-with-a-project-tag-and-at-a-certain-level][org mode - Agenda view for all tasks with a project tag and at a certain leve...]]
-  [[https://emacs.stackexchange.com/questions/41150/top-level-heading-in-the-org-mode-agenda][Top level heading in the `org-mode` agenda - Emacs Stack Exchange]]
-
   #+BEGIN_SRC emacs-lisp
     (use-package org-contrib :straight t)
     (use-package org-drill :straight t)
@@ -880,19 +877,9 @@ Google翻訳をemacsで使えるように.
 
       (add-to-list 'org-latex-classes
                    `("beamer"
-                     ,(concat "\\documentclass[unicode,presentation]{beamer}\n"
-                              "[NO-DEFAULT-PACKAGES]\n"
-                              "\\usepackage{amsmath}\n"
-                              "\\usepackage{amssymb}\n"
-                              "\\usepackage{mathrsfs}\n"
-                              "\\usepackage{xunicode}\n"
-                              "\\usepackage{fixltx2e}\n"
-                              "\\usepackage{zxjatype}\n"
-                              "\\usepackage[ipa]{zxjafont}\n"
-                              "\\usepackage{xltxtra}\n"
-                              "\\usepackage{amsthm}\n"
-                              "\\usepackage{geometry}\n"
-                              "\\usepackage{minted}")
+                     ,(s-join "\n" '("\\documentclass[unicode,presentation]{beamer}"
+                                     "\\usepackage{org-ex-beamer}"
+                                     "[NO-DEFAULT-PACKAGES]"))
                      ("\\section{%s}" . "\\section*{%s}")
                      ("\\subsection{%s}" . "\\subsection*{%s}")
                      ("\\subsubsection{%s}" . "\\subsubsection*{%s}")))
@@ -907,31 +894,10 @@ Google翻訳をemacsで使えるように.
                      ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
 
       (add-to-list 'org-latex-classes
-                   '(
-                     "koma-jarticle"
-                     "\\documentclass[12pt]{scrartcl}
-                                [NO-DEFAULT-PACKAGES]
-                                \\usepackage{amsmath}
-                                \\usepackage{amssymb}
-                                \\usepackage{mathrsfs}
-                                \\usepackage{xunicode}
-                                \\usepackage{fixltx2e}
-                                \\usepackage{zxjatype}
-                                \\usepackage[ipa]{zxjafont}
-                                \\usepackage{xltxtra}
-                                \\usepackage{graphicx}
-                                \\usepackage{longtable}
-                                \\usepackage{float}
-                                \\usepackage{wrapfig}
-                                \\usepackage{soul}
-                                \\usepackage[xetex]{hyperref}
-                                \\usepackage{xcolor}
-                                \\usepackage{minted}
-                                \\usepackage{geometry}
-                                \\geometry{left=1cm,right=1cm,top=1cm,bottom=1cm}
-                                \\usepackage[natbib=true]{biblatex}
-                                \\DeclareFieldFormat{apacase}{#1}
-                                \\addbibresource{~/myspace/Bibliography/references.bib}"
+                   `("koma-jarticle"
+                     ,(s-join "\n" '("\\documentclass[12pt]{scrartcl}"
+                                     "\\usepackage{org-ex-koma-jarticle}"
+                                     "[NO-DEFAULT-PACKAGES]"))
                      ("\\section{%s}" . "\\section*{%s}")
                      ("\\subsection{%s}" . "\\subsection*{%s}")
                      ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
@@ -959,19 +925,6 @@ Google翻訳をemacsで使えるように.
                      ("\\section{%s}" . "\\section*{%s}")
                      ("\\subsection{%s}" . "\\subsection*{%s}")
                      ("\\paragraph{%s}" . "\\paragraph*{%s}"))))
-
-
-                                            ;     (use-package ox-pandoc
-                                            ;	:ensure t
-                                            ;	:config
-                                            ;	;; default options for all output formats
-                                            ;	(setq org-pandoc-options '((standalone . t)))
-                                            ;	;; cancel above settings only for 'docx' format
-                                            ;	(setq org-pandoc-options-for-docx '((standalone . nil)))
-                                            ;	;; special settings for beamer-pdf and latex-pdf exporters
-                                            ;	(setq org-pandoc-options-for-beamer-pdf '((pdf-engine . "xelatex")))
-                                            ;	(setq org-pandoc-options-for-latex-pdf '((pdf-engine . "xelatex")))
-                                            ;	)
 
     (use-package org-roam
       :straight t
@@ -1083,6 +1036,9 @@ Google翻訳をemacsで使えるように.
               )))
 
   #+END_SRC
+
+  [[https://emacs.stackexchange.com/questions/26451/agenda-view-for-all-tasks-with-a-project-tag-and-at-a-certain-level][org mode - Agenda view for all tasks with a project tag and at a certain leve...]]
+  [[https://emacs.stackexchange.com/questions/41150/top-level-heading-in-the-org-mode-agenda][Top level heading in the `org-mode` agenda - Emacs Stack Exchange]]
 
 * Utility
   #+BEGIN_SRC emacs-lisp
