@@ -292,7 +292,7 @@ Google翻訳をemacsで使えるように.
       :ensure t
       :config
       (setq migemo-command "cmigemo")
-      (setq migemo-options '("-q" "--emacs"))
+      (setq migemo-options '("-q" "--emacs" "--nonewline"))
 
       ;; Set your installed path
       ;; (setq migemo-dictionary "/usr/share/migemo/utf-8/migemo-dict")
@@ -966,18 +966,6 @@ Google翻訳をemacsで使えるように.
             org-roam-ui-update-on-save t
             org-roam-ui-open-on-start t))
 
-    ;;    (use-package org-roam-bibtex
-    ;;      :after org-roam
-    ;;      :straight (org-roam-bibtex
-    ;;                 :type git :host github
-    ;;                 :repo "org-roam/org-roam-bibtex"
-    ;;                 :branch "main")
-    ;;      :hook (org-roam-mode . org-roam-bibtex-mode)
-    ;;      :diminish org-roam-bibtex-mode
-    ;;
-    ;;      :bind (:map org-mode-map
-    ;;                  (("C-c n a" . orb-note-actions)))
-    ;;      :config (org-roam-bibtex-mode 1))
     (use-package org-roam-bibtex
       :after org-roam
       :straight (org-roam-bibtex
@@ -1403,7 +1391,7 @@ Google翻訳をemacsで使えるように.
     (defun ks-get-books (title)
       (let ((len (/ (length title) 2)))
         (s-lines (shell-command-to-string
-                  (s-lex-format "find ~/Dropbox/Book | agrep -E ${len} \"${title}\"")))))
+                  (s-lex-format "find ~/myspace/Book | agrep -E ${len} \"${title}\"")))))
 
     (defun ks-get-bibtex-title (bibkey)
       (let* ((key bibkey)
