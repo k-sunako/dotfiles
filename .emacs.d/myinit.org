@@ -1116,6 +1116,8 @@ Google翻訳をemacsで使えるように.
     ;; snippet
     (setq lsp-enable-snippet t)
 
+    (setq lsp-log-io nil) 
+
     ;; フック関数の定義
     ;; python-mode 用、lsp-mode コンフィグ
     (defun lsp/python-mode-hook ()
