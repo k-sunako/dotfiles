@@ -642,7 +642,12 @@ Google翻訳をemacsで使えるように.
 
   #+BEGIN_SRC emacs-lisp
     (use-package org-contrib :straight t)
-    (use-package org-drill :straight t)
+
+    (use-package org-drill
+      :straight t
+      :config
+      (setq org-drill-learn-fraction 0.4))
+
     (use-package org
       :straight t
       ;;:diminish org-mode
