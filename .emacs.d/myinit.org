@@ -296,7 +296,8 @@ Google翻訳をemacsで使えるように.
 
       ;; Set your installed path
       ;; (setq migemo-dictionary "/usr/share/migemo/utf-8/migemo-dict")
-      (let ((candidates '("/usr/share/migemo/utf-8/migemo-dict")))
+      ;;(let ((candidates '("/usr/share/migemo/utf-8/migemo-dict")))
+      (let ((candidates '("/home/snowfox/Dropbox/skkdic/utf-8.d/migemo-dict")))
         (-some--> candidates
           (-filter #'f-file? it)
           (car it)
@@ -488,6 +489,17 @@ Google翻訳をemacsで使えるように.
                         :enabled   ,(lambda () recentf-mode)
                         :items ,recentf-list))
 
+      ;; Consult-ripgrep の Migemo 対応
+      (defvar consult--migemo-regexp "")
+      (defun consult--migemo-regexp-compiler (input type)
+        (setq consult--migemo-regexp
+              (mapcar #'migemo-get-pattern (consult--split-escaped input)))
+        (cons (mapcar (lambda (x) (consult--convert-regexp x type))
+                      consult--migemo-regexp)
+              (lambda (str)
+                (consult--highlight-regexps consult--migemo-regexp str))))
+      (setq consult--regexp-compiler #'consult--migemo-regexp-compiler)
+  
       )
 
     (use-package embark
@@ -713,11 +725,6 @@ Google翻訳をemacsで使えるように.
       (setq org-agenda-window-setup 'current-window)
       (setq org-agenda-start-on-weekday 0)
       (setq org-agenda-files '("~/myspace/Org/inbox.org"))
-
-      (cl-flet ((org-file-p (x) (s-ends-with-p ".org" x)))
-        (let ((files (f-entries "~/myspace/Org/core" #'org-file-p)))
-          (dolist (f files nil)
-            (add-to-list 'org-agenda-files f))))
 
       (setq org-capture-templates `(("t" "Todo [inbox]" entry
                                      (file+headline "~/myspace/Org/inbox.org" "Tasks")
