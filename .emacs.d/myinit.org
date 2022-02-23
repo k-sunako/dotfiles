@@ -403,7 +403,7 @@ Google翻訳をemacsで使えるように.
              ("M-s k" . consult-keep-lines)
              ("M-s u" . consult-focus-lines)
              ;; Isearch integration
-             ("C-s" . consult-line)
+             ("C-s" . ks/consult-line)
              ("M-s e" . consult-isearch)
              :map isearch-mode-map
              ("M-e" . consult-isearch)                 ;; orig. isearch-edit-string
@@ -417,6 +417,15 @@ Google翻訳をemacsで使えるように.
 
       ;; The :init configuration is always executed (Not lazy)
       :init
+      ;; consult-line のリージョン対応
+      (defun ks/consult-line (&optional beg end)
+        "Consult-line uses things-at-point if set C-u prefix."
+        (interactive "r")
+        (if (region-active-p)
+            (let ((reg (buffer-substring-no-properties beg end)))
+              (deactivate-mark)
+              (consult-line reg))
+          (consult-line)))
 
       ;; Optionally configure the register formatting. This improves the register
       ;; preview for `consult-register', `consult-register-load',
