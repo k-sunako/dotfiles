@@ -418,11 +418,11 @@ Google翻訳をemacsで使えるように.
       ;; The :init configuration is always executed (Not lazy)
       :init
       ;; consult-line のリージョン対応
-      (defun ks/consult-line (&optional beg end)
+      (defun ks/consult-line ()
         "Consult-line uses things-at-point if set C-u prefix."
-        (interactive "r")
+        (interactive)
         (if (region-active-p)
-            (let ((reg (buffer-substring-no-properties beg end)))
+            (let ((reg (buffer-substring-no-properties (region-beginning) (region-end))))
               (deactivate-mark)
               (consult-line reg))
           (consult-line)))
@@ -734,9 +734,32 @@ Google翻訳をemacsで使えるように.
       (setq org-agenda-window-setup 'current-window)
       (setq org-agenda-start-on-weekday 0)
       (setq org-agenda-files '("~/myspace/Org/inbox.org"))
+      (defun ks/select-file-for-task ()
+        (let ((fpath (completing-read "file: " (-map #'list org-agenda-files) nil t )))
+
+          (set-buffer (org-capture-target-buffer fpath))
+          (unless (derived-mode-p 'org-mode)
+            (org-display-warning
+             (format "Capture requirement: switching buffer %S to Org mode"
+                     (current-buffer)))
+            (org-mode))
+          (org-capture-put-target-region-and-position)
+          (widen)
+          (goto-char (point-min))
+          (if (re-search-forward (format org-complex-heading-regexp-format
+                                         (regexp-quote "Tasks"))
+                                 nil t)
+              (beginning-of-line)
+            (goto-char (point-max))
+            (unless (bolp) (insert "\n"))
+            (insert "* " "Tasks" "\n")
+            (beginning-of-line 0))))
 
       (setq org-capture-templates `(("t" "Todo [inbox]" entry
                                      (file+headline "~/myspace/Org/inbox.org" "Tasks")
+                                     "* TODO %i%?")
+                                    ("T" "Todo " entry
+                                     (function ks/select-file-for-task)
                                      "* TODO %i%?")
                                     ("n" "Note [inbox]" entry
                                      (file+headline "~/myspace/Org/inbox.org" "Note")
