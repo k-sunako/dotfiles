@@ -734,6 +734,15 @@ Google翻訳をemacsで使えるように.
       (setq org-agenda-window-setup 'current-window)
       (setq org-agenda-start-on-weekday 0)
       (setq org-agenda-files '("~/myspace/Org/inbox.org"))
+      ;; リフィルをアジェンダ内で行えるように
+      (setq org-refile-targets
+            '((nil :maxlevel . 1)
+              (org-agenda-files :maxlevel . 1))) 
+      ;; リフィルの移動先の表示を調整
+      (setq org-refile-use-outline-path 'buffer-name)
+      (setq org-outline-path-complete-in-steps nil)
+      (setq org-refile-allow-creating-parent-nodes 'confirm)
+  
       (defun ks/select-file-for-task ()
         (let ((fpath (completing-read "file: " (-map #'list org-agenda-files) nil t )))
 
