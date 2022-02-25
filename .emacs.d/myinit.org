@@ -132,6 +132,9 @@ Google翻訳をemacsで使えるように.
   メニューバー、ツールバー、スクロールバーは非表示。行の折り返しはしない。
 
   #+BEGIN_SRC emacs-lisp
+    ;; Don't pop up UI dialogs when prompting
+    (setq use-dialog-box nil)
+
     (menu-bar-mode -1)
     (scroll-bar-mode -1)
     (tool-bar-mode -1)
@@ -164,7 +167,7 @@ Google翻訳をemacsで使えるように.
        ((member "Ricty Diminished" ffl)
         (set-frame-font "Ricty Diminished 12"))
        ))
-    
+
     (use-package nord-theme
       :straight t
       :config
@@ -254,6 +257,15 @@ Google翻訳をemacsで使えるように.
     (use-package hydra
       :ensure t)
   #+END_SRC
+
+* オートリバート
+#+begin_src emacs-lisp
+  ;; Revert buffers when the underlying file has changed
+  (global-auto-revert-mode 1)
+
+  ;; Revert Dired and other buffers
+  (setq global-auto-revert-non-file-buffers t)
+#+end_src
 
 * バックアップファイル
   バックアップファイルは作らない。
@@ -1339,6 +1351,8 @@ Google翻訳をemacsで使えるように.
     (use-package terraform-mode :straight t)
 
     (setq large-file-warning-threshold nil)
+
+    (save-place-mode 1)
 
     (use-package recentf
       :ensure t
