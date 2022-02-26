@@ -754,6 +754,25 @@ Google翻訳をemacsで使えるように.
       (setq org-refile-use-outline-path 'buffer-name)
       (setq org-outline-path-complete-in-steps nil)
       (setq org-refile-allow-creating-parent-nodes 'confirm)
+
+      ;; クロックレポートのカスタム
+      (defun ks/org-clock-report-filename (filepath)
+        (let* ((bn (f-filename filepath))
+              (dn (f-dirname filepath))
+              (pdn (f-filename dn)))
+          (s-concat  (f-dirname filepath) "/" bn "-" pdn)))
+
+      (defun ks/org-clocktable-formatter (ipos tables params)
+        (org-clocktable-write-default
+         ipos
+         (-map (lambda (x) (cons (ks/org-clock-report-filename (car x)) (cdr x))) tables)
+         params))
+
+      (defun ks/org-clock-report ()
+        (interactive)
+        (let ((org-clock-clocktable-formatter 'ks/org-clocktable-formatter))
+          (org-clock-report)))
+
   
       (defun ks/select-file-for-task ()
         (let ((fpath (completing-read "file: " (-map #'list org-agenda-files) nil t )))
