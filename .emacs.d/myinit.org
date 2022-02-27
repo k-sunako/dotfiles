@@ -293,6 +293,7 @@ Google翻訳をemacsで使えるように.
 
     (use-package projectile
       :ensure t
+      :diminish projectile-mode
       :config
       (projectile-mode +1)
       (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
@@ -683,7 +684,7 @@ Google翻訳をemacsで使えるように.
 
     (use-package org
       :straight t
-      ;;:diminish org-mode
+      :diminish org-indent-mode
       :hook ((org-mode . org-indent-mode)
              (org-capture-mode . skk-mode))
       :bind (("C-c c" . org-capture)
@@ -773,7 +774,7 @@ Google翻訳をemacsで使えるように.
         (let ((org-clock-clocktable-formatter 'ks/org-clocktable-formatter))
           (org-clock-report)))
 
-  
+
       (defun ks/select-file-for-task ()
         (let ((fpath (completing-read "file: " (-map #'list org-agenda-files) nil t )))
 
@@ -1248,6 +1249,12 @@ Google翻訳をemacsで使えるように.
     (lsp-mode . lsp-ui-mode))
 #+end_src
 
+** EList
+#+begin_src emacs-lisp
+  (use-package eldoc
+    :diminish eldoc-mode)
+#+end_src
+
 ** Python
 #+begin_src emacs-lisp
   (use-package lsp-pyright
@@ -1353,10 +1360,11 @@ Google翻訳をemacsで使えるように.
 * Magit
 
 #+begin_src emacs-lisp
+  (setq vc-handled-backends nil) 
   (use-package magit
     :ensure t
     :bind (("<f3>" . magit-status))
-    :diminish auto-revert-mode
+    :diminish auto-revert-mode 
     :config (add-hook 'ediff-prepare-buffer-hook #'show-all))
 
   (add-to-list 'process-coding-system-alist '("git" utf-8 . utf-8))
@@ -1432,6 +1440,7 @@ Google翻訳をemacsで使えるように.
 
     (use-package yasnippet
       :ensure t
+      :diminish yas-minor-mode
       :config
       (add-to-list 'warning-suppress-types '(yasnippet backquote-change))
       (yas-global-mode 1))
