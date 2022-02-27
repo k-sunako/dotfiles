@@ -309,7 +309,7 @@ Google翻訳をemacsで使えるように.
       ;; Set your installed path
       ;; (setq migemo-dictionary "/usr/share/migemo/utf-8/migemo-dict")
       ;;(let ((candidates '("/usr/share/migemo/utf-8/migemo-dict")))
-      (let ((candidates '("/home/snowfox/Dropbox/skkdic/utf-8.d/migemo-dict")))
+      (let ((candidates `(,(f-canonical "~/myspace/skkdic/utf-8.d/migemo-dict"))))
         (-some--> candidates
           (-filter #'f-file? it)
           (car it)
@@ -520,7 +520,7 @@ Google翻訳をemacsで使えるように.
               (lambda (str)
                 (consult--highlight-regexps consult--migemo-regexp str))))
       (setq consult--regexp-compiler #'consult--migemo-regexp-compiler)
-  
+
       )
 
     (use-package embark
