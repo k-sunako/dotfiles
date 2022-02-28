@@ -701,13 +701,12 @@ Google翻訳をemacsで使えるように.
       (setq org-confirm-elisp-link-function
             'org-confirm-elisp-link-function--no-confirm-my-org-file)
 
-      ;;(add-to-list 'org-file-apps '("\\.pdf\\'" . "atril %s"))
       (add-to-list 'auto-mode-alist
                    '("\\.pdf\\'" . pdf-view-mode))
 
       (setq org-src-fontify-natively t)
       (setq org-confirm-babel-evaluate nil)
-                                            ;(setq org-src-window-setup 'other-window)
+
       (setq org-src-window-setup 'current-window)
       (setq org-link-file-path-type 'relative)
 
@@ -774,7 +773,6 @@ Google翻訳をemacsで使えるように.
         (let ((org-clock-clocktable-formatter 'ks/org-clocktable-formatter))
           (org-clock-report)))
 
-
       (defun ks/select-file-for-task ()
         (let ((fpath (completing-read "file: " (-map #'list org-agenda-files) nil t )))
 
@@ -824,20 +822,6 @@ Google翻訳をemacsで使えるように.
                                  "NEXT(n)" "TODO(t)" "WAITING(w)" "SOMEDAY(s)" "READING(r)" "QUESTION" "THINKING"
                                  "|" "DONE(d)" "CANCELLED(c)" "SOLVED")))
 
-      (setq org-agenda-custom-commands
-            '(("W" "Completed and/or deferred tasks from previous week"
-               ((todo "" ((org-agenda-span 7)
-                          (org-agenda-start-day "-7d")
-                          (org-agenda-entry-types '(:timestamp))
-                          (org-agenda-show-log t)))))
-              ("h" "Habits" tags-todo "STYLE=\"habit\""
-               ((org-agenda-overriding-header "Habits")
-                (org-agenda-sorting-strategy
-                 '(todo-state-down effort-up category-keep))))
-              ("p" "master projects" tags-todo "LEVEL>0/TODO=\"TODO\"")
-              ("N" "Todo: Next" tags-todo "TODO=\"NEXT\"")
-              ))
-
       (setq org-format-latex-options (plist-put org-format-latex-options :scale 2.0))
 
       (setq org-habit-show-habits-only-for-today 1)
@@ -874,25 +858,6 @@ Google翻訳をemacsで使えるように.
             bibtex-completion-notes-path my-ref-helm-bibtex-notes)
 
       (setq helm-migemo-mode t)
-      ;;      (setq helm-source-bibtex
-      ;;            (helm-build-sync-source "BibTeX entries"
-      ;;              :header-name (lambda (name)
-      ;;                             (format "%s%s: " name (if helm-bibtex-local-bib " (local)" "")))
-      ;;              :candidates 'helm-bibtex-candidates
-      ;;              :migemo t
-      ;;              :filtered-candidate-transformer 'helm-bibtex-candidates-formatter
-      ;;              :action (helm-make-actions
-      ;;                       "Open PDF, URL or DOI"       'helm-bibtex-open-any
-      ;;                       "Open URL or DOI in browser" 'helm-bibtex-open-url-or-doi
-      ;;                       "Insert citation"            'helm-bibtex-insert-citation
-      ;;                       "Insert reference"           'helm-bibtex-insert-reference
-      ;;                       "Insert BibTeX key"          'helm-bibtex-insert-key
-      ;;                       "Insert BibTeX entry"        'helm-bibtex-insert-bibtex
-      ;;                       "Attach PDF to email"        'helm-bibtex-add-PDF-attachment
-      ;;                       "Edit notes"                 'helm-bibtex-edit-notes
-      ;;                       "Show entry"                 'helm-bibtex-show-entry
-      ;;                       "Add PDF to library"         'helm-bibtex-add-pdf-to-library)))
-
 
       (setq bibtex-completion-display-formats
             '((article       . "${author:5} ${title:40} ${journal:10} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}")
@@ -900,7 +865,7 @@ Google翻訳をemacsで使えるように.
               (book          . "${author:5} ${title:40} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}")
               (t             . "${author:5} ${title:40} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}"))))
 
-    ;;(require 'ox-bibtex)
+
     (use-package ox-latex
       :config
       (require 'ox-latex)
