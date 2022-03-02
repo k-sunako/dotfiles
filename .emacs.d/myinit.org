@@ -456,6 +456,17 @@ Google翻訳をemacsで使えるように.
       ;; Use Consult to select xref locations with preview
       (setq xref-show-xrefs-function #'consult-xref
             xref-show-definitions-function #'consult-xref)
+      ;; Consult-ripgrep の Migemo 対応
+      (defvar consult--migemo-regexp "")
+      (defun consult--migemo-regexp-compiler (input type)
+        (setq consult--migemo-regexp
+              (mapcar #'migemo-get-pattern (consult--split-escaped input)))
+        (cons (mapcar (lambda (x) (consult--convert-regexp x type))
+                      consult--migemo-regexp)
+              (lambda (str)
+                (consult--highlight-regexps consult--migemo-regexp str))))
+      (setq consult--regexp-compiler #'consult--migemo-regexp-compiler)
+
 
       ;; Configure other variables and modes in the :config section,
       ;; after lazily loading the package.
@@ -510,17 +521,6 @@ Google翻訳をemacsで使えるように.
                         :action   ,#'consult--file-action
                         :enabled   ,(lambda () recentf-mode)
                         :items ,recentf-list))
-
-      ;; Consult-ripgrep の Migemo 対応
-      (defvar consult--migemo-regexp "")
-      (defun consult--migemo-regexp-compiler (input type)
-        (setq consult--migemo-regexp
-              (mapcar #'migemo-get-pattern (consult--split-escaped input)))
-        (cons (mapcar (lambda (x) (consult--convert-regexp x type))
-                      consult--migemo-regexp)
-              (lambda (str)
-                (consult--highlight-regexps consult--migemo-regexp str))))
-      (setq consult--regexp-compiler #'consult--migemo-regexp-compiler)
 
       )
 
@@ -680,7 +680,7 @@ Google翻訳をemacsで使えるように.
     (use-package org-drill
       :straight t
       :config
-      (setq org-drill-learn-fraction 0.4))
+      (setq org-drill-learn-fraction 0.3))
 
     (use-package org
       :straight t
