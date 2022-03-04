@@ -9,7 +9,7 @@
 ~myinit.org~ の挙動を確認するときは ~t~ を設定.
 
   #+begin_src emacs-lisp
-    (setq debug-on-error nil)
+    (setq debug-on-error t)
   #+end_src
 
 * ライブラリ
@@ -86,6 +86,29 @@ IMEは ~DDSKK~ を利用する.
     (setq skk-sticky-key ";")
     (setq skk-large-jisyo "~/myspace/skkdic/SKK-JISYO.my"))
 #+END_SRC
+
+ローマ字で日本語検索が可能とするために、 ~migemo~ を導入する。
+
+#+begin_src emacs-lisp
+  (use-package migemo
+    :ensure t
+    :config
+    (setq migemo-command "cmigemo")
+    (setq migemo-options '("-q" "--emacs" "--nonewline"))
+
+    ;; Set your installed path
+    ;; (setq migemo-dictionary "/usr/share/migemo/utf-8/migemo-dict")
+    ;;(let ((candidates '("/usr/share/migemo/utf-8/migemo-dict")))
+    (let ((candidates `(,(f-canonical "~/myspace/skkdic/utf-8.d/migemo-dict"))))
+      (-some--> candidates
+        (-filter #'f-file? it)
+        (car it)
+        (setq migemo-dictionary it)))
+
+    (setq migemo-user-dictionary nil)
+    (setq migemo-regex-dictionary nil)
+    (setq migemo-coding-system 'utf-8-unix))
+#+end_src
 
 Google翻訳をemacsで使えるように.
 
@@ -351,25 +374,6 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
       (setq projectile-project-search-path '("~/repos" "~/myspace/Projects"))
       (projectile-discover-projects-in-search-path))
 
-    (use-package migemo
-      :ensure t
-      :config
-      (setq migemo-command "cmigemo")
-      (setq migemo-options '("-q" "--emacs" "--nonewline"))
-
-      ;; Set your installed path
-      ;; (setq migemo-dictionary "/usr/share/migemo/utf-8/migemo-dict")
-      ;;(let ((candidates '("/usr/share/migemo/utf-8/migemo-dict")))
-      (let ((candidates `(,(f-canonical "~/myspace/skkdic/utf-8.d/migemo-dict"))))
-        (-some--> candidates
-          (-filter #'f-file? it)
-          (car it)
-          (setq migemo-dictionary it)))
-
-      (setq migemo-user-dictionary nil)
-      (setq migemo-regex-dictionary nil)
-      (setq migemo-coding-system 'utf-8-unix))
-
     (use-package selectrum
       :straight t
       :config
@@ -604,39 +608,6 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
       ;; auto-updating embark collect buffer
       :hook
       (embark-collect-mode . consult-preview-at-point-mode))
-
-
-    ;;        (use-package bibtex-actions
-    ;;          :bind (("C-c b" . bibtex-actions-insert-citation)
-    ;;                 :map minibuffer-local-map
-    ;;                 ("M-b" . bibtex-actions-insert-preset))
-    ;;          :after embark
-    ;;          :config
-    ;;          ;; Make the 'bibtex-actions' bindings and targets available to `embark'.
-    ;;          (add-to-list 'embark-target-finders 'bibtex-actions-citation-key-at-point)
-    ;;          (add-to-list 'embark-keymap-alist '(bibtex . bibtex-actions-map))
-    ;;          (add-to-list 'embark-keymap-alist '(citation-key . bibtex-actions-buffer-map))
-    ;;          ;; Make sure to set this to ensure 'bibtex-actions-open-link' command works correctly.
-    ;;          (bibtex-completion-additional-search-fields '(doi url))
-    ;;          (bibtex-completion-bibliography '("~/myspace/Bibliography/references.bib")))
-    ;;
-    ;;            ;; use consult-completing-read for enhanced interface
-    ;;            (advice-add #'completing-read-multiple :override #'consult-completing-read-multiple)
-    ;;
-    ;;
-    ;;            (use-package bibtex-actions-org-cite
-    ;;              :bind (("C-c b" . org-cite-insert)
-    ;;                     ("M-o" . org-open-at-point)
-    ;;                     :map minibuffer-local-map
-    ;;                     ("M-b" . bibtex-actions-insert-preset))
-    ;;              :after (embark org oc bibtex-actions)
-    ;;              :config
-    ;;              ;; make sure to set this to ensure open commands work correctly
-    ;;              (bibtex-completion-additional-search-fields '(doi url))
-    ;;              (bibtex-completion-bibliography '("~/myspace/Bibliography/references.bib"))
-    ;;              (org-cite-global-bibliography '("~/myspace/Bibliography/references.bib")))
-    ;;
-    ;;    (setq bibtex-actions-at-point-function 'embark-act)
   #+END_SRC
 
 * treemacs
@@ -725,7 +696,7 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
 * Org
 
   #+BEGIN_SRC emacs-lisp
-    (use-package org-contrib :straight t)
+    ;;(use-package org-contrib :straight t)
 
     (use-package org-drill
       :straight t
@@ -754,21 +725,32 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
       (add-to-list 'auto-mode-alist
                    '("\\.pdf\\'" . pdf-view-mode))
 
+      (require 'org-habit)
+      (require 'org-protocol)
+
+      (setq org-link-file-path-type 'relative)
+      (setf (alist-get 'file org-link-frame-setup) 'find-file)
+
       (setq org-src-fontify-natively t)
       (setq org-confirm-babel-evaluate nil)
-
       (setq org-src-window-setup 'current-window)
-      (setq org-link-file-path-type 'relative)
 
       (require 'ob-emacs-lisp)
       (require 'ob-haskell)
       (require 'ob-gnuplot)
-      (require 'org-habit)
-      (require 'org-protocol)
+      ;; active Babel languages
+      (org-babel-do-load-languages
+       'org-babel-load-languages
+       '((haskell . t)
+         (emacs-lisp . t)
+         (gnuplot . t)
+         (latex . t)
+         (shell . t)
+         (python . t)
+         (dot . t)))
 
       (setq org-log-done t)
 
-      (setf (alist-get 'file org-link-frame-setup) 'find-file)
 
       (setf org-html-mathjax-options
             '((path "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML")
@@ -780,17 +762,6 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
       (setf org-html-mathjax-template
             "<script type=\"text/javascript\" src=\"%PATH\"></script>")
 
-      ;; active Babel languages
-      (org-babel-do-load-languages
-       'org-babel-load-languages
-       '((haskell . t)
-         (emacs-lisp . t)
-         (gnuplot . t)
-         (latex . t)
-         (shell . t)
-         (python . t)
-         (dot . t)
-         ))
 
       ;; Agenda を現在のウィンドウと入れ替えで表示
       (setq org-agenda-window-setup 'current-window)
@@ -1181,6 +1152,7 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
 
 #+begin_src emacs-lisp
   (use-package lsp-mode
+    :straight `(:pre-build ,(setenv "LSP_USE_PLISTS" "true"))
     :config
     ;; .venv, .mypy_cache を watch 対象から外す
     (dolist (dir '(
