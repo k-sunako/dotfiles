@@ -512,7 +512,7 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
             xref-show-definitions-function #'consult-xref)
       ;; Consult-ripgrep の Migemo 対応
       (defvar consult--migemo-regexp "")
-      (defun consult--migemo-regexp-compiler (input type)
+      (defun consult--migemo-regexp-compiler (input type ignore-case)
         (setq consult--migemo-regexp
               (mapcar #'migemo-get-pattern (consult--split-escaped input)))
         (cons (mapcar (lambda (x) (consult--convert-regexp x type))
