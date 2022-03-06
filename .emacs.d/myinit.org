@@ -886,6 +886,16 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
               (book          . "${author:5} ${title:40} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}")
               (t             . "${author:5} ${title:40} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}"))))
 
+    (defun ks/book2urlprm (book)
+      (s-join "+" (-map #'url-hexify-string (s-split " " book))))
+
+    (defun ks/lead2amazon-of-book ()
+      (interactive)
+      (let* ((query "https://lead.to/amazon/jp/?key=XXX&si=al&bn=&la=ja&op=bt&so=re#first")
+             (book (completing-read "Select Book: " (-map #'f-base (f-files "~/myspace/Book"))))
+             (search-word (read-string "Query: " book))
+             (shr-inhibit-images t))
+        (eww (s-replace "XXX" (ks/book2urlprm search-word) query))))
 
     (use-package ox-latex
       :config
@@ -1014,6 +1024,7 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
              ("C-c n i" . org-roam-node-insert)
              ("C-c n c" . org-roam-capture)
              ("<f6>" . org-roam-dailies-goto-today)
+             ("S-<f6>" . org-roam-dailies-goto-yesterday)
              ;; Dailies
              ("C-c n j" . org-roam-dailies-capture-today))
       :init
