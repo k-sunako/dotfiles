@@ -9,7 +9,7 @@
 ~myinit.org~ の挙動を確認するときは ~t~ を設定.
 
   #+begin_src emacs-lisp
-    (setq debug-on-error t)
+    (setq debug-on-error nil)
   #+end_src
 
 * ライブラリ
@@ -611,8 +611,7 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
   #+END_SRC
 
 * treemacs
-
-  #+begin_src emacs-lisp
+  #+begin_src emacs-lisp :noweb yes
     (use-package treemacs
       :ensure t
       :defer t
@@ -620,9 +619,11 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
       (with-eval-after-load 'winum
         (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
       :config
+
+      <<sb-treemacs-collapse-dirs>>
+
       (progn
-        (setq treemacs-collapse-dirs                 (if treemacs-python-executable 3 0)
-              treemacs-deferred-git-apply-delay      0.5
+        (setq treemacs-deferred-git-apply-delay      0.5
               treemacs-directory-name-transformer    #'identity
               treemacs-display-in-side-window        t
               treemacs-eldoc-display                 t
@@ -692,6 +693,21 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
       :after treemacs magit
       :ensure t)
   #+end_src
+
+  #+RESULTS:
+
+** Treemacsの折り畳み設定
+ディレクトリのみを含むディレクトリを折り畳むかを設定。
+分かりずらいが、下記のような構成を *dir1/dir2/dir3* のような表示になる
++ dir1
+  + dir2
+    + dir3
+#+NAME: sb-treemacs-collapse-dirs
+#+begin_src emacs-lisp :tangle no
+  (setq treemacs-collapse-dirs (if treemacs-python-executable 3 0))
+#+end_src
+
+
 
 * Org
 
