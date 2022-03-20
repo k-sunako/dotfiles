@@ -82,7 +82,12 @@ IMEは ~DDSKK~ を利用する.
     (global-set-key (kbd "C-x C-j") 'skk-auto-fill-mode)
     (setq default-input-method "japanese-skk")
 
-    ;;https://uwabami.github.io/cc-env/Emacs.html
+    ;; カーソルの色の変更
+    (setq skk-use-color-cursor t)
+    (setq skk-cursor-hiragana-color "#d33682")
+    (setq skk-cursor-latin-color "#4271ae")
+
+    ;; https://uwabami.github.io/cc-env/Emacs.html
     (setq skk-sticky-key ";")
     (setq skk-large-jisyo "~/myspace/skkdic/SKK-JISYO.my"))
 #+END_SRC
