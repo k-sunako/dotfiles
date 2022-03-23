@@ -79,7 +79,7 @@ IMEは ~DDSKK~ を利用する.
     :no-require t
     ;;:bind (("C-x C-j" . skk-auto-fill-mode))
     :config
-    (global-set-key (kbd "C-x C-j") 'skk-auto-fill-mode)
+    (global-set-key (kbd "C-x C-j") 'skk-mode)
     (setq default-input-method "japanese-skk")
 
     ;; カーソルの色の変更
