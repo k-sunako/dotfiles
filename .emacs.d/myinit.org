@@ -821,7 +821,15 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
       ;; Agenda を現在のウィンドウと入れ替えで表示
       (setq org-agenda-window-setup 'current-window)
       (setq org-agenda-start-on-weekday 0)
-      (setq org-agenda-files '("~/myspace/Org/inbox.org"))
+      (setq org-agenda-tags-column 80)
+      (setq org-agenda-prefix-format
+            '((agenda . " %i %-12:c%?-12t%b")
+              (timeline . "  % s")
+              (todo . " %i %-12:c")
+              (tags . " %i %-12:c")
+              (search . " %i %-12:c")))  
+      (setq org-agenda-files '("~/myspace/Org/inbox.org" "~/myspace/Org/habits/habits.org"))
+  
       ;; リフィルをアジェンダ内で行えるように
       (setq org-refile-targets
             '((nil :maxlevel . 1)
@@ -946,6 +954,7 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
 
 #+begin_src emacs-lisp
   (use-package org-super-agenda
+    :if nil
     :straight t
     :config
     (org-super-agenda-mode 1)
