@@ -1140,6 +1140,20 @@ org-mode の latex エクスポートの設定.
     (setq org-drill-learn-fraction 0.3))
 #+end_src
 
+** org-fc
+
+#+begin_src emacs-lisp
+  (use-package org-fc
+    :straight
+    (org-fc
+     :type git :repo "https://git.sr.ht/~l3kn/org-fc"
+     :files (:defaults "awk" "demo.org"))
+    :custom
+    (org-fc-directories '("~/myspace/org-roam/"))
+    :config
+    (require 'org-fc-hydra))
+#+end_src
+
 ** org-roam
 #+begin_src emacs-lisp
   (use-package org-roam
