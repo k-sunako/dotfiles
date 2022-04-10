@@ -829,7 +829,7 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
               (tags . " %i %-12:c")
               (search . " %i %-12:c")))  
       (setq org-agenda-files '("~/myspace/Org/inbox.org" "~/myspace/Org/habits/habits.org"))
-  
+
       ;; リフィルをアジェンダ内で行えるように
       (setq org-refile-targets
             '((nil :maxlevel . 1)
@@ -877,6 +877,15 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
             (unless (bolp) (insert "\n"))
             (insert "* " "Tasks" "\n")
             (beginning-of-line 0))))
+ 
+      (defun ks/add-clock ()
+        (interactive)
+        (save-excursion
+          (let ((str-ts (with-temp-buffer (org-time-stamp-inactive t)))
+                (end-ts (with-temp-buffer (org-time-stamp-inactive t))))
+            (org-clock-find-position t)
+            (insert (s-lex-format "CLOCK: ${str-ts}--${end-ts} =>  0:00"))
+            (org-clock-update-time-maybe))))
 
       (setq org-capture-templates `(("t" "Todo [inbox]" entry
                                      (file+headline "~/myspace/Org/inbox.org" "Tasks")
@@ -1352,23 +1361,32 @@ org-mode の latex エクスポートの設定.
 
 ** Python
 #+begin_src emacs-lisp
-  (use-package lsp-pyright
-    :straight t
-    :hook (python-mode . (lambda ()
-                           (require 'lsp-pyright)
-                           (lsp))))
+  (use-package lsp-mode
+    :config
+    (lsp-register-custom-settings
+     '(("pyls.plugins.pyls_mypy.enabled" t t)
+       ("pyls.plugins.pyls_mypy.live_mode" nil t)
+       ("pyls.plugins.pyls_black.enabled" t t)
+       ("pyls.plugins.pyls_isort.enabled" t t)))
+    :hook
+    ((python-mode . lsp)))
+  ;;  (use-package lsp-pyright
+  ;;    :straight t
+  ;;    :hook (python-mode . (lambda ()
+  ;;                           (require 'lsp-pyright)
+  ;;                           (lsp))))
 
-  (defun ssbb-pyenv-hook ()
-    "Automatically activates pyenv version if .python-version file exists."
-    (f-traverse-upwards
-     (lambda (path)
-       (let ((pyenv-version-path (f-expand ".python-version" path)))
-         (if (f-exists? pyenv-version-path)
-             (pyenv-mode-set (s-trim (f-read-text pyenv-version-path 'utf-8))))))))
+    (defun ssbb-pyenv-hook ()
+      "Automatically activates pyenv version if .python-version file exists."
+      (f-traverse-upwards
+       (lambda (path)
+         (let ((pyenv-version-path (f-expand ".python-version" path)))
+           (if (f-exists? pyenv-version-path)
+               (pyenv-mode-set (s-trim (f-read-text pyenv-version-path 'utf-8))))))))
 
-  ;; (add-hook 'find-file-hook 'ssbb-pyenv-hook)
+    ;; (add-hook 'find-file-hook 'ssbb-pyenv-hook)
 
-  (use-package with-venv :straight t )
+    (use-package with-venv :straight t )
 #+end_src
 
 ** dap-mode
