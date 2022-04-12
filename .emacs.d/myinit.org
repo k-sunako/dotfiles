@@ -877,14 +877,15 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
             (unless (bolp) (insert "\n"))
             (insert "* " "Tasks" "\n")
             (beginning-of-line 0))))
- 
+
       (defun ks/add-clock ()
         (interactive)
         (save-excursion
           (let ((str-ts (with-temp-buffer (org-time-stamp-inactive t)))
                 (end-ts (with-temp-buffer (org-time-stamp-inactive t))))
-            (org-clock-find-position t)
-            (insert (s-lex-format "CLOCK: ${str-ts}--${end-ts} =>  0:00"))
+            (org-clock-find-position nil)
+            (insert (s-lex-format "CLOCK: ${str-ts}--${end-ts} =>  0:00\n"))
+            (forward-line -1)
             (org-clock-update-time-maybe))))
 
       (setq org-capture-templates `(("t" "Todo [inbox]" entry
@@ -1161,6 +1162,25 @@ org-mode の latex エクスポートの設定.
     (org-fc-directories '("~/myspace/org-roam/"))
     :config
     (require 'org-fc-hydra))
+#+end_src
+
+#+begin_src emacs-lisp
+  (defun org-fc-type-ir-init ()
+    "Mark headline as card of the normal type."
+    (interactive)
+    (org-fc--init-card "ir")
+    (org-fc-review-data-update '("front")))
+
+  (defun org-fc-type-ir-setup (_position)
+    "Prepare a normal card for review."
+    (interactive)
+    (org-show-entry))
+
+  (org-fc-register-type
+   'ir
+   'org-fc-type-ir-setup
+   'org-fc-noop
+   'org-fc-noop)
 #+end_src
 
 ** org-roam
