@@ -1508,6 +1508,7 @@ org-mode の latex エクスポートの設定.
 
 * Etc
   #+BEGIN_SRC emacs-lisp
+    (use-package define-word :straight t)
     (use-package terraform-mode :straight t)
 
     (setq large-file-warning-threshold nil)
