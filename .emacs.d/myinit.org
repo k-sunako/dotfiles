@@ -923,8 +923,7 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
 
     (use-package org-superstar
       :straight t
-      :config
-      (org-superstar-mode 1))
+      :hook ((org-mode . (lambda () (org-superstar-mode 1)))))
 
     (use-package org-download
       :ensure t
