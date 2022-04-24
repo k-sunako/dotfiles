@@ -79,8 +79,8 @@ IMEは ~DDSKK~ を利用する.
     :no-require t
     ;;:bind (("C-x C-j" . skk-auto-fill-mode))
     :init
-    (setq skk-use-azik t)
-    (setq skk-azik-keyboard-type 'us101)
+    ;(setq skk-use-azik t)
+    ;(setq skk-azik-keyboard-type 'us101)
     :config
     (global-set-key (kbd "C-x C-j") 'skk-mode)
     (setq default-input-method "japanese-skk")
