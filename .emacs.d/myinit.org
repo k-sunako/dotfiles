@@ -823,8 +823,10 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
       (setq org-agenda-window-setup 'current-window)
       (setq org-agenda-start-on-weekday 0)
       (setq org-agenda-tags-column 80)
+      ;; CANCELLED などのタグは一週間分のみ表示
+      (setq org-scheduled-past-days 7)
       (setq org-agenda-prefix-format
-            '((agenda . " %i %-12:c%?-12t%b")
+            '((agenda . " %i %-12:c%?-12t%-6e% s")
               (timeline . "  % s")
               (todo . " %i %-12:c")
               (tags . " %i %-12:c")
