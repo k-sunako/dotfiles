@@ -926,8 +926,11 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
 
     (use-package org-wild-notifier
       :straight t
-      :config (org-wild-notifier-mode 1))
-  
+      :config
+      (org-wild-notifier-mode 1)
+      (setq alert-default-style 'libnotify)
+      (setq org-wild-notifier-alert-time '(10 15 20 30)))
+
     (use-package org-superstar
       :straight t
       :hook ((org-mode . (lambda () (org-superstar-mode 1)))))
