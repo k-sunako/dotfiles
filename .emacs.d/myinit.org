@@ -1341,22 +1341,11 @@ org-mode の latex エクスポートの設定.
 
     (setq lsp-log-io nil)
 
-    ;; フック関数の定義
-    ;; python-mode 用、lsp-mode コンフィグ
-    (defun lsp/python-mode-hook ()
-      (when (fboundp 'company-mode)
-        (setq company-minimum-prefix-length 1 ; 1文字で completion 発動させる
-              company-idle-delay 0.0))) ; default is 0.2
-
     :commands (lsp lsp-deferred)
     :hook
-    ;;(c++-mode . lsp)
     (lsp-mode . (lambda ()
                   (let ((lsp-keymap-prefix "C-c l"))
-                    (lsp-enable-which-key-integration))))
-    ;;(python-mode . lsp) ; python-mode で lsp-mode を有効化する
-    ;;(python-mode . lsp/python-mode-hook) ; python-mode 用のフック関数を仕掛ける
-    )
+                    (lsp-enable-which-key-integration)))))
 
   (use-package lsp-ui
     :straight t
