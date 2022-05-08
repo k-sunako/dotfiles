@@ -841,6 +841,10 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
       (setq org-refile-use-outline-path 'buffer-name)
       (setq org-outline-path-complete-in-steps nil)
       (setq org-refile-allow-creating-parent-nodes 'confirm)
+  
+      (setq org-tag-persistent-alist '(("@home") ("@cafe") ("@ipx")
+                                       ("art_ai") ("art_prg") ("art_pyt") ("art_lsp") ("art_dev") ("art_ems")
+                                       ("thr_fun")("thr_prb") ("thr_num") ("thr_cry")))
 
       ;; クロックレポートのカスタム
       (defun ks/org-clock-report-filename (filepath)
@@ -916,8 +920,7 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
                                      "* %? [[%:link][%:description]] \nCaptured On: %U")))
 
       (setq org-todo-keywords '((sequence
-                                 "NEXT(n)" "TODO(t)" "WAITING(w)" "SOMEDAY(s)" "READING(r)" "QUESTION" "THINKING"
-                                 "|" "DONE(d)" "CANCELLED(c)" "SOLVED")))
+                                 "NEXT(n)" "TODO(t)" "WAITING(w)" "SOMEDAY(s)" "|" "DONE(d)" "CANCELLED(c)" )))
 
       (setq org-format-latex-options (plist-put org-format-latex-options :scale 2.0))
 
@@ -1384,13 +1387,10 @@ org-mode の latex エクスポートの設定.
 
 ** Python
 #+begin_src emacs-lisp
+
+  (use-package pipenv :straight t
+    :hook (python-mode . pipenv-mode))
   (use-package lsp-mode
-    :config
-    (lsp-register-custom-settings
-     '(("pyls.plugins.pyls_mypy.enabled" t t)
-       ("pyls.plugins.pyls_mypy.live_mode" nil t)
-       ("pyls.plugins.pyls_black.enabled" t t)
-       ("pyls.plugins.pyls_isort.enabled" t t)))
     :hook
     ((python-mode . lsp)))
   ;;  (use-package lsp-pyright
