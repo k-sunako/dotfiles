@@ -389,7 +389,6 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
   バックアップファイルは作らない。
 
   #+BEGIN_SRC emacs-lisp
-    (setq vc-follow-symlinks t)
     ;;; *.~ とかのバックアップファイルを作らない
     (setq make-backup-files nil)
     ;;; .#* とかのバックアップファイルを作らない
@@ -1479,6 +1478,7 @@ org-mode の latex エクスポートの設定.
 
 #+begin_src emacs-lisp
   (setq vc-handled-backends nil)
+  (setq vc-follow-symlinks t)
   (use-package magit
     :ensure t
     :bind (("<f3>" . magit-status))
