@@ -840,7 +840,7 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
       (setq org-refile-use-outline-path 'buffer-name)
       (setq org-outline-path-complete-in-steps nil)
       (setq org-refile-allow-creating-parent-nodes 'confirm)
-  
+
       (setq org-tag-persistent-alist '(("@home") ("@cafe") ("@ipx")
                                        ("art_ai") ("art_prg") ("art_pyt") ("art_lsp") ("art_dev") ("art_ems")
                                        ("thr_fun")("thr_prb") ("thr_num") ("thr_cry")))
@@ -971,6 +971,32 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
 
     (with-eval-after-load "ox"
       (add-hook 'org-export-before-processing-hook 'remove-org-newlines-at-cjk-text))
+
+
+
+    (require 'ox-publish)
+    (setq org-html-html5-fancy t
+          org-html-doctype "html5")
+    (setq org-html-validation-link nil            ;; Don't show validation link
+          org-html-head-include-scripts nil       ;; Use our own scripts
+          org-html-head-include-default-style nil ;; Use our own styles
+          org-html-head "<link rel=\"stylesheet\" href=\"https://cdn.simplecss.org/simple.min.css\" /> <script src=\"https://tikzjax.com/v1/tikzjax.js\"></script>")
+    (setq org-publish-project-alist
+          `(("pages"
+             :base-directory "~/myspace/k-sunako.org/org/"
+             :base-extension "org"
+             :recursive t
+             :publishing-directory "~/myspace/k-sunako.org/html/"
+             :publishing-function org-html-publish-to-html)
+
+            ("static"
+             :base-directory "~/myspace/k-sunako.org/org/"
+             :base-extension "css\\|txt\\|jpg\\|gif\\|png"
+             :recursive t
+             :publishing-directory  "~/myspace/k-sunako.org/html"
+             :publishing-function org-publish-attachment)
+
+            ("k-sunako.org" :components ("pages" "static"))))
 
   #+END_SRC
 
