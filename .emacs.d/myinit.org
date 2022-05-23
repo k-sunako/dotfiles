@@ -949,7 +949,7 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
       :config
       (setq
        ;; The WM can handle splits
-       org-noter-notes-window-location 'other-frame
+       org-noter-notes-window-location 'horizontal-split
        ;; Please stop opening frames
        org-noter-always-create-frame nil
        ;; I want to see the whole file
@@ -1126,7 +1126,13 @@ org-mode の latex エクスポートの設定.
           '((article  . "${author:5} ${title:40} ${journal:10} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}")
             (inbook   . "${author:5} ${title:40} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}")
             (book     . "${author:5} ${title:40} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}")
-            (t        . "${author:5} ${title:40} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}"))))
+            (t        . "${author:5} ${title:40} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}")))
+
+    (with-eval-after-load 'ox
+      (defun my/org-ref-process-buffer--html (backend)
+        (when (org-export-derived-backend-p backend 'html)
+          (org-ref-process-buffer 'html)))
+      (add-to-list 'org-export-before-parsing-hook #'my/org-ref-process-buffer--html)))
 
   (defun ks/book2urlprm (book)
     (s-join "+" (-map #'url-hexify-string (s-split " " book))))
@@ -1528,7 +1534,7 @@ org-mode の latex エクスポートの設定.
     (use-package htmlize :ensure t)
 
     (use-package pdf-tools
-      :ensure t
+      :straight t
 
       :mode (("\\.pdf?\\'" . pdf-view-mode))
       :config
