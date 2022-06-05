@@ -758,6 +758,7 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
   #+BEGIN_SRC emacs-lisp
     ;;(use-package org-contrib :straight t)
 
+    (use-package gnuplot :straight t)
     (use-package org
       :straight t
       :diminish org-indent-mode
