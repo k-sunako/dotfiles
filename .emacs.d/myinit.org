@@ -941,6 +941,7 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
       :ensure t
       :after org
       :config
+      (setq org-download-method 'directory)
       (setq-default org-download-image-dir "./images"))
 
     (use-package org-noter
@@ -1189,7 +1190,7 @@ org-mode の latex エクスポートの設定.
      :type git :repo "https://git.sr.ht/~l3kn/org-fc"
      :files (:defaults "awk" "demo.org"))
     :custom
-    (org-fc-directories '("~/myspace/org-roam/"))
+    (org-fc-directories '("~/myspace/org-roam/" "~/myspace/k-sunako.org/org"))
     :config
     (require 'org-fc-hydra))
 #+end_src
