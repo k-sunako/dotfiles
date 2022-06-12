@@ -843,6 +843,7 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
       (setq org-refile-allow-creating-parent-nodes 'confirm)
 
       (setq org-tag-persistent-alist '(("@home") ("@cafe") ("@ipx")
+                                       ("act_learn") ("act_exercise")
                                        ("art_ai") ("art_prg") ("art_pyt") ("art_lsp") ("art_dev") ("art_ems")
                                        ("thr_fun")("thr_prb") ("thr_num") ("thr_cry")))
 
