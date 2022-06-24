@@ -36,6 +36,7 @@
 (require 'diminish)
 (require 'bind-key)
 
+(setq straight-vc-git-default-clone-depth 1)
 (defvar bootstrap-version)
 (let ((bootstrap-file
        (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
