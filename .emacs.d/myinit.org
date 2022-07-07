@@ -844,7 +844,7 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
       (setq org-outline-path-complete-in-steps nil)
       (setq org-refile-allow-creating-parent-nodes 'confirm)
 
-      (setq org-tag-persistent-alist '(("@home") ("@cafe") ("@ipx")
+      (setq org-tag-persistent-alist '(("@home") ("@cafe") ("@ipx") ("@train")
                                        ("act_learn") ("act_exercise")
                                        ("art_ai") ("art_prg") ("art_pyt") ("art_lsp") ("art_dev") ("art_ems")
                                        ("thr_fun")("thr_prb") ("thr_num") ("thr_cry")))
@@ -1123,6 +1123,38 @@ org-mode の latex エクスポートの設定.
                    ("\\paragraph{%s}" . "\\paragraph*{%s}"))))
 
 #+end_src
+** org-transclusion
+
+#+begin_src emacs-lisp
+    (setq org-id-link-to-org-use-id t)
+    (use-package org-transclusion
+      :straight t
+      :after org
+      :bind (("<f12>" . org-transclusion-add)
+             ("C-n t" . org-transclusion-mode)))
+#+end_src
+** citar
+
+#+begin_src emacs-lisp
+  ;;; citeproc をインストール、これがCSLの処理系
+  (use-package citeproc :straight t)
+
+  (use-package citar
+    :straight (citar :type git :host github :repo "emacs-citar/citar" :includes (citar-org))
+    :bind (("C-c b" . citar-insert-citation)
+           :map minibuffer-local-map
+           ("M-b" . citar-insert-preset))
+    :custom
+    (org-cite-insert-processor 'citar)
+    (org-cite-follow-processor 'citar)
+    (org-cite-activate-processor 'citar)
+    (citar-citeproc-csl-styles-dir "~/repos/styles")
+    (citar-bibliography '("~/myspace/Bibliography/references.bib")))
+
+    (setq citar-open-note-functions '(orb-citar-edit-note))
+    ;(setq citar-create-note-function 'citar-org-format-note-default)
+    (setq citar-create-note-function (lambda (key entry) nil))
+#+end_src
 
 ** org-ref
 参考文献を管理するパッケージ.
@@ -1160,11 +1192,12 @@ org-mode の latex エクスポートの設定.
             (book     . "${author:5} ${title:40} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}")
             (t        . "${author:5} ${title:40} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}")))
 
-    (with-eval-after-load 'ox
-      (defun my/org-ref-process-buffer--html (backend)
-        (when (org-export-derived-backend-p backend 'html)
-          (org-ref-process-buffer 'html)))
-      (add-to-list 'org-export-before-parsing-hook #'my/org-ref-process-buffer--html)))
+  ;  (with-eval-after-load 'ox
+  ;    (defun my/org-ref-process-buffer--html (backend)
+  ;      (when (org-export-derived-backend-p backend 'html)
+  ;        (org-ref-process-buffer 'html)))
+  ;    (add-to-list 'org-export-before-parsing-hook #'my/org-ref-process-buffer--html))
+    )
 
   (defun ks/book2urlprm (book)
     (s-join "+" (-map #'url-hexify-string (s-split " " book))))
