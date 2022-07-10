@@ -39,7 +39,7 @@ Common Lisp の関数/マクロを実装したライブラリ
 ファイルシステムを扱うライブラリ
 
 #+begin_src emacs-lisp
-  (use-package f :straight t)
+  (use-package f :straight '(:files ("*.el*")))
 #+end_src
 
 * ユーティリティ
@@ -405,353 +405,260 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
 * 補完 / 絞り込み
 
   #+BEGIN_SRC emacs-lisp
-    (use-package ace-window
-      :bind (("C-t". ace-window)))
+        (use-package ace-window
+          :bind (("C-t". ace-window)))
 
-    (use-package projectile
-      :ensure t
-      :diminish projectile-mode
-      :config
-      (projectile-mode +1)
-      (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
-      (setq projectile-indexing-method 'alien)
-      (setq projectile-project-search-path '("~/repos" "~/myspace/Projects"))
-      (projectile-discover-projects-in-search-path))
+        (use-package projectile
+          :ensure t
+          :diminish projectile-mode
+          :config
+          (projectile-mode +1)
+          (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
+          (setq projectile-indexing-method 'alien)
+          (setq projectile-project-search-path '("~/repos" "~/myspace/Projects"))
+          (projectile-discover-projects-in-search-path))
 
-    (use-package selectrum
-      :straight t
-      :config
-      (selectrum-mode +1))
+        (use-package selectrum
+          :straight t
+          :config
+          (selectrum-mode +1))
 
-    ;; Migemoを有効にする
-    ;; https://github.com/yamatakau08/.emacs.d/blob/master/.orderless.el
-    (use-package orderless
-      :straight t
+        ;; Migemoを有効にする
+        ;; https://github.com/yamatakau08/.emacs.d/blob/master/.orderless.el
+        (use-package orderless
+          :straight t
 
-      :init
-      (setq
-       completion-styles '(orderless partial-completion basic)
-       completion-category-defaults nil
-       ;completion-category-overrides '((file (styles . (partial-completion)))))
-       completion-category-overrides nil)
+          :init
+          (setq
+           completion-styles '(orderless partial-completion basic)
+           completion-category-defaults nil
+           ;completion-category-overrides '((file (styles . (partial-completion)))))
+           completion-category-overrides nil)
 
-      :after migemo
+          :after migemo
 
-      :custom
-      ;(completion-styles '(orderless))
-      (orderless-matching-styles '(orderless-literal orderless-regexp orderless-migemo))
+          :custom
+          ;(completion-styles '(orderless))
+          (orderless-matching-styles '(orderless-literal orderless-regexp orderless-migemo))
 
-      :config
-      ;; supported emacs-jp slack
-      ;;(setq orderless-matching-styles '(orderless-migemo))
-      ;;(setq orderless-matching-styles '(orderless-literal orderless-regexp orderless-migemo)) ; move to :custom block
-      (defalias 'orderless-migemo #'migemo-get-pattern)
+          :config
+          ;; supported emacs-jp slack
+          ;;(setq orderless-matching-styles '(orderless-migemo))
+          ;;(setq orderless-matching-styles '(orderless-literal orderless-regexp orderless-migemo)) ; move to :custom block
+          (defalias 'orderless-migemo #'migemo-get-pattern)
 
-      (defun orderless-migemo (component)
-        (let ((pattern (migemo-get-pattern component)))
-          (condition-case nil
-              (progn (string-match-p pattern "") pattern)
-            (invalid-regexp nil)))))
-    ;;(use-package marginalia
-    ;;
-    ;;  :config
-    ;;  (marginalia-mode))
-    ;; Enable richer annotations using the Marginalia package
-    (use-package marginalia
-      :straight t
+          (defun orderless-migemo (component)
+            (let ((pattern (migemo-get-pattern component)))
+              (condition-case nil
+                  (progn (string-match-p pattern "") pattern)
+                (invalid-regexp nil)))))
+        ;;(use-package marginalia
+        ;;
+        ;;  :config
+        ;;  (marginalia-mode))
+        ;; Enable richer annotations using the Marginalia package
+        (use-package marginalia
+          :straight t
 
-      ;; Either bind `marginalia-cycle` globally or only in the minibuffer
-      :bind (("M-A" . marginalia-cycle)
-             :map minibuffer-local-map
-             ("M-A" . marginalia-cycle))
+          ;; Either bind `marginalia-cycle` globally or only in the minibuffer
+          :bind (("M-A" . marginalia-cycle)
+                 :map minibuffer-local-map
+                 ("M-A" . marginalia-cycle))
 
-      ;; The :init configuration is always executed (Not lazy!)
-      :init
+          ;; The :init configuration is always executed (Not lazy!)
+          :init
 
-      ;; Must be in the :init section of use-package such that the mode gets
-      ;; enabled right away. Note that this forces loading the package.
-      (marginalia-mode)
-      :config
-      (add-to-list 'marginalia-prompt-categories
-                   '("\\<File\\>" . file)))
+          ;; Must be in the :init section of use-package such that the mode gets
+          ;; enabled right away. Note that this forces loading the package.
+          (marginalia-mode)
+          :config
+          (add-to-list 'marginalia-prompt-categories
+                       '("\\<File\\>" . file)))
 
-    (use-package consult
-      :straight t
-      ;; Replace bindings. Lazily loaded due by `use-package'.
-      :bind (;; C-c bindings (mode-specific-map)
-             ("C-c h" . consult-history)
-             ("C-c m" . consult-mode-command)
-             ("C-c b" . consult-bookmark)
-             ("C-c k" . consult-kmacro)
-             ;; C-x bindings (ctl-x-map)
-             ("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
-             ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
-             ("C-x 4 b" . consult-buffer-other-window) ;; orig. switch-to-buffer-other-window
-             ("C-x 5 b" . consult-buffer-other-frame)  ;; orig. switch-to-buffer-other-frame
-             ;; Custom M-# bindings for fast register access
-             ("M-#" . consult-register-load)
-             ("M-'" . consult-register-store)          ;; orig. abbrev-prefix-mark (unrelated)
-             ("C-M-#" . consult-register)
-             ;; Other custom bindings
-             ("M-y" . consult-yank-pop)                ;; orig. yank-pop
-             ("<help> a" . consult-apropos)            ;; orig. apropos-command
-             ;; M-g bindings (goto-map)
-             ("M-g e" . consult-compile-error)
-             ("M-g f" . consult-flymake)               ;; Alternative: consult-flycheck
-             ("M-g g" . consult-goto-line)             ;; orig. goto-line
-             ("M-g M-g" . consult-goto-line)           ;; orig. goto-line
-             ("M-g o" . consult-outline)               ;; Alternative: consult-org-heading
-             ("M-g m" . consult-mark)
-             ("M-g k" . consult-global-mark)
-             ("M-g i" . consult-imenu)
-             ("M-g I" . consult-project-imenu)
-             ;; M-s bindings (search-map)
-             ("M-s f" . consult-find)
-             ("M-s L" . consult-locate)
-             ("M-s g" . consult-grep)
-             ("M-s G" . consult-git-grep)
-             ("M-s r" . consult-ripgrep)
-             ("M-s l" . consult-line)
-             ("M-s m" . consult-multi-occur)
-             ("M-s k" . consult-keep-lines)
-             ("M-s u" . consult-focus-lines)
-             ;; Isearch integration
-             ("C-s" . ks/consult-line)
-             ("M-s e" . consult-isearch)
-             :map isearch-mode-map
-             ("M-e" . consult-isearch)                 ;; orig. isearch-edit-string
-             ("M-s e" . consult-isearch)               ;; orig. isearch-edit-string
-             ("M-s l" . consult-line))                 ;; needed by consult-line to detect isearch
+        (use-package consult
+          :straight t
+          ;; Replace bindings. Lazily loaded due by `use-package'.
+          :bind (;; C-c bindings (mode-specific-map)
+                 ("C-c h" . consult-history)
+                 ("C-c m" . consult-mode-command)
+                 ("C-c b" . consult-bookmark)
+                 ("C-c k" . consult-kmacro)
+                 ;; C-x bindings (ctl-x-map)
+                 ("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
+                 ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
+                 ("C-x 4 b" . consult-buffer-other-window) ;; orig. switch-to-buffer-other-window
+                 ("C-x 5 b" . consult-buffer-other-frame)  ;; orig. switch-to-buffer-other-frame
+                 ;; Custom M-# bindings for fast register access
+                 ("M-#" . consult-register-load)
+                 ("M-'" . consult-register-store)          ;; orig. abbrev-prefix-mark (unrelated)
+                 ("C-M-#" . consult-register)
+                 ;; Other custom bindings
+                 ("M-y" . consult-yank-pop)                ;; orig. yank-pop
+                 ("<help> a" . consult-apropos)            ;; orig. apropos-command
+                 ;; M-g bindings (goto-map)
+                 ("M-g e" . consult-compile-error)
+                 ("M-g f" . consult-flymake)               ;; Alternative: consult-flycheck
+                 ("M-g g" . consult-goto-line)             ;; orig. goto-line
+                 ("M-g M-g" . consult-goto-line)           ;; orig. goto-line
+                 ("M-g o" . consult-outline)               ;; Alternative: consult-org-heading
+                 ("M-g m" . consult-mark)
+                 ("M-g k" . consult-global-mark)
+                 ("M-g i" . consult-imenu)
+                 ("M-g I" . consult-project-imenu)
+                 ;; M-s bindings (search-map)
+                 ("M-s f" . consult-find)
+                 ("M-s L" . consult-locate)
+                 ("M-s g" . consult-grep)
+                 ("M-s G" . consult-git-grep)
+                 ("M-s r" . consult-ripgrep)
+                 ("M-s l" . consult-line)
+                 ("M-s m" . consult-multi-occur)
+                 ("M-s k" . consult-keep-lines)
+                 ("M-s u" . consult-focus-lines)
+                 ;; Isearch integration
+                 ("C-s" . ks/consult-line)
+                 ("M-s e" . consult-isearch)
+                 :map isearch-mode-map
+                 ("M-e" . consult-isearch)                 ;; orig. isearch-edit-string
+                 ("M-s e" . consult-isearch)               ;; orig. isearch-edit-string
+                 ("M-s l" . consult-line))                 ;; needed by consult-line to detect isearch
 
-      ;; Enable automatic preview at point in the *Completions* buffer.
-      ;; This is relevant when you use the default completion UI,
-      ;; and not necessary for Vertico, Selectrum, etc.
-      :hook (completion-list-mode . consult-preview-at-point-mode)
+          ;; Enable automatic preview at point in the *Completions* buffer.
+          ;; This is relevant when you use the default completion UI,
+          ;; and not necessary for Vertico, Selectrum, etc.
+          :hook (completion-list-mode . consult-preview-at-point-mode)
 
-      ;; The :init configuration is always executed (Not lazy)
-      :init
-      ;; consult-line のリージョン対応
-      (defun ks/consult-line ()
-        "Consult-line uses things-at-point if set C-u prefix."
-        (interactive)
-        (if (region-active-p)
-            (let ((reg (buffer-substring-no-properties (region-beginning) (region-end))))
-              (deactivate-mark)
-              (consult-line reg))
-          (consult-line)))
+          ;; The :init configuration is always executed (Not lazy)
+          :init
+          ;; consult-line のリージョン対応
+          (defun ks/consult-line ()
+            "Consult-line uses things-at-point if set C-u prefix."
+            (interactive)
+            (if (region-active-p)
+                (let ((reg (buffer-substring-no-properties (region-beginning) (region-end))))
+                  (deactivate-mark)
+                  (consult-line reg))
+              (consult-line)))
 
-      ;; Optionally configure the register formatting. This improves the register
-      ;; preview for `consult-register', `consult-register-load',
-      ;; `consult-register-store' and the Emacs built-ins.
-      (setq register-preview-delay 0
-            register-preview-function #'consult-register-format)
+          ;; Optionally configure the register formatting. This improves the register
+          ;; preview for `consult-register', `consult-register-load',
+          ;; `consult-register-store' and the Emacs built-ins.
+          (setq register-preview-delay 0
+                register-preview-function #'consult-register-format)
 
-      ;; Optionally tweak the register preview window.
-      ;; This adds thin lines, sorting and hides the mode line of the window.
-      (advice-add #'register-preview :override #'consult-register-window)
+          ;; Optionally tweak the register preview window.
+          ;; This adds thin lines, sorting and hides the mode line of the window.
+          (advice-add #'register-preview :override #'consult-register-window)
 
-      ;; Optionally replace `completing-read-multiple' with an enhanced version.
-      (advice-add #'completing-read-multiple :override #'consult-completing-read-multiple)
+          ;; Optionally replace `completing-read-multiple' with an enhanced version.
+          ;;(advice-add #'completing-read-multiple :override #'consult-completing-read-multiple)
 
-      ;; Use Consult to select xref locations with preview
-      (setq xref-show-xrefs-function #'consult-xref
-            xref-show-definitions-function #'consult-xref)
-      ;; Consult-ripgrep の Migemo 対応
-      (defvar consult--migemo-regexp "")
-      (defun consult--migemo-regexp-compiler (input type ignore-case)
-        (setq consult--migemo-regexp
-              (mapcar #'migemo-get-pattern (consult--split-escaped input)))
-        (cons (mapcar (lambda (x) (consult--convert-regexp x type))
-                      consult--migemo-regexp)
-              (lambda (str)
-                (consult--highlight-regexps consult--migemo-regexp str))))
-      (setq consult--regexp-compiler #'consult--migemo-regexp-compiler)
+          ;; Use Consult to select xref locations with preview
+          (setq xref-show-xrefs-function #'consult-xref
+                xref-show-definitions-function #'consult-xref)
+          ;; Consult-ripgrep の Migemo 対応
+          (defvar consult--migemo-regexp "")
+          (defun consult--migemo-regexp-compiler (input type ignore-case)
+            (setq consult--migemo-regexp
+                  (mapcar #'migemo-get-pattern (consult--split-escaped input)))
+            (cons (mapcar (lambda (x) (consult--convert-regexp x type))
+                          consult--migemo-regexp)
+                  (lambda (str)
+                    (consult--highlight-regexps consult--migemo-regexp str))))
+          (setq consult--regexp-compiler #'consult--migemo-regexp-compiler)
 
 
-      ;; Configure other variables and modes in the :config section,
-      ;; after lazily loading the package.
-      :config
+          ;; Configure other variables and modes in the :config section,
+          ;; after lazily loading the package.
+          :config
 
-      ;; Optionally configure preview. The default value
-      ;; is 'any, such that any key triggers the preview.
-      ;; (setq consult-preview-key 'any)
-      ;; (setq consult-preview-key (kbd "M-."))
-      ;; (setq consult-preview-key (list (kbd "<S-down>") (kbd "<S-up>")))
-      ;; For some commands and buffer sources it is useful to configure the
-      ;; :preview-key on a per-command basis using the `consult-customize' macro.
-      (consult-customize
-       consult-theme
-       :preview-key '(:debounce 0.2 any)
-       consult-ripgrep consult-git-grep consult-grep
-       consult-bookmark consult-recent-file consult-xref
-       consult--source-file consult--source-project-file consult--source-bookmark
-       :preview-key (kbd "M-."))
+          ;; Optionally configure preview. The default value
+          ;; is 'any, such that any key triggers the preview.
+          ;; (setq consult-preview-key 'any)
+          ;; (setq consult-preview-key (kbd "M-."))
+          ;; (setq consult-preview-key (list (kbd "<S-down>") (kbd "<S-up>")))
+          ;; For some commands and buffer sources it is useful to configure the
+          ;; :preview-key on a per-command basis using the `consult-customize' macro.
+          (consult-customize
+           consult-theme :preview-key '(:debounce 0.2 any)
+    ;;       consult-ripgrep consult-git-grep consult-grep
+    ;;       consult-bookmark consult-recent-file consult-xref
+    ;;       consult--source-file consult--source-project-file consult--source-bookmark
 
-      ;; Optionally configure the narrowing key.
-      ;; Both < and C-+ work reasonably well.
-      (setq consult-narrow-key "<") ;; (kbd "C-+")
+           consult-ripgrep consult-git-grep consult-grep
+           consult-bookmark consult-recent-file consult-xref
+           consult--source-bookmark consult--source-recent-file
+           consult--source-project-recent-file       
+           :preview-key (kbd "M-."))
 
-      ;; Optionally make narrowing help available in the minibuffer.
-      ;; You may want to use `embark-prefix-help-command' or which-key instead.
-      ;; (define-key consult-narrow-map (vconcat consult-narrow-key "?") #'consult-narrow-help)
+          ;; Optionally configure the narrowing key.
+          ;; Both < and C-+ work reasonably well.
+          (setq consult-narrow-key "<") ;; (kbd "C-+")
 
-      ;; Optionally configure a function which returns the project root directory.
-      ;; There are multiple reasonable alternatives to chose from.
-                        ;;;; 1. project.el (project-roots)
-      (setq consult-project-root-function
-            (lambda ()
-              (when-let (project (project-current))
-                (car (project-roots project)))))
-                        ;;;; 2. projectile.el (projectile-project-root)
-      ;; (autoload 'projectile-project-root "projectile")
-      ;; (setq consult-project-root-function #'projectile-project-root)
-                        ;;;; 3. vc.el (vc-root-dir)
-      ;; (setq consult-project-root-function #'vc-root-dir)
-                        ;;;; 4. locate-dominating-file
-      ;; (setq consult-project-root-function (lambda () (locate-dominating-file "." ".git")))
+          ;; Optionally make narrowing help available in the minibuffer.
+          ;; You may want to use `embark-prefix-help-command' or which-key instead.
+          ;; (define-key consult-narrow-map (vconcat consult-narrow-key "?") #'consult-narrow-help)
 
-      ;; C-x b の consult-buffer に recentf を追加する
-      ;; https://tam5917.hatenablog.com/entry/2021/04/29/235949
-      (setq consult--source-file
-            `(:name     "File"
-                        :narrow   ?f
-                        :category file
-                        :face     consult-file
-                        :history  file-name-history
-                        :action   ,#'consult--file-action
-                        :enabled   ,(lambda () recentf-mode)
-                        :items ,recentf-list))
+          ;; Optionally configure a function which returns the project root directory.
+          ;; There are multiple reasonable alternatives to chose from.
+                            ;;;; 1. project.el (project-roots)
+          (setq consult-project-root-function
+                (lambda ()
+                  (when-let (project (project-current))
+                    (car (project-roots project)))))
+                            ;;;; 2. projectile.el (projectile-project-root)
+          ;; (autoload 'projectile-project-root "projectile")
+          ;; (setq consult-project-root-function #'projectile-project-root)
+                            ;;;; 3. vc.el (vc-root-dir)
+          ;; (setq consult-project-root-function #'vc-root-dir)
+                            ;;;; 4. locate-dominating-file
+          ;; (setq consult-project-root-function (lambda () (locate-dominating-file "." ".git")))
 
-      )
+          ;; C-x b の consult-buffer に recentf を追加する
+          ;; https://tam5917.hatenablog.com/entry/2021/04/29/235949
+          (setq consult--source-file
+                `(:name     "File"
+                            :narrow   ?f
+                            :category file
+                            :face     consult-file
+                            :history  file-name-history
+                            :action   ,#'consult--file-action
+                            :enabled   ,(lambda () recentf-mode)
+                            :items ,recentf-list))
 
-    (use-package embark
-      :straight t
+          )
 
-      :bind
-      (("C-." . embark-act)         ;; pick some comfortable binding
-       ("C-;" . embark-dwim)        ;; good alternative: M-.
-       ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
+        (use-package embark
+          :straight t
 
-      :init
+          :bind
+          (("C-." . embark-act)         ;; pick some comfortable binding
+           ("C-;" . embark-dwim)        ;; good alternative: M-.
+           ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
 
-      ;; Optionally replace the key help with a completing-read interface
-      (setq prefix-help-command #'embark-prefix-help-command)
+          :init
 
-      :config
+          ;; Optionally replace the key help with a completing-read interface
+          (setq prefix-help-command #'embark-prefix-help-command)
 
-      ;; Hide the mode line of the Embark live/completions buffers
-      (add-to-list 'display-buffer-alist
-                   '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
-                     nil
-                     (window-parameters (mode-line-format . none)))))
+          :config
 
-    ;; Consult users will also want the embark-consult package.
-    (use-package embark-consult
-      :straight t
-      :after (embark consult)
-      :demand t ; only necessary if you have the hook below
-      ;; if you want to have consult previews as you move around an
-      ;; auto-updating embark collect buffer
-      :hook
-      (embark-collect-mode . consult-preview-at-point-mode))
+          ;; Hide the mode line of the Embark live/completions buffers
+          (add-to-list 'display-buffer-alist
+                       '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+                         nil
+                         (window-parameters (mode-line-format . none)))))
+
+        ;; Consult users will also want the embark-consult package.
+        (use-package embark-consult
+          :straight t
+          :after (embark consult)
+          :demand t ; only necessary if you have the hook below
+          ;; if you want to have consult previews as you move around an
+          ;; auto-updating embark collect buffer
+          :hook
+          (embark-collect-mode . consult-preview-at-point-mode))
   #+END_SRC
-
-* treemacs
-  #+begin_src emacs-lisp :noweb yes
-    (use-package treemacs
-      :ensure t
-      :defer t
-      :init
-      (with-eval-after-load 'winum
-        (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
-      :config
-
-      <<sb-treemacs-collapse-dirs>>
-
-      (progn
-        (setq treemacs-deferred-git-apply-delay      0.5
-              treemacs-directory-name-transformer    #'identity
-              treemacs-display-in-side-window        t
-              treemacs-eldoc-display                 t
-              treemacs-file-event-delay              5000
-              treemacs-file-extension-regex          treemacs-last-period-regex-value
-              treemacs-file-follow-delay             0.2
-              treemacs-file-name-transformer         #'identity
-              treemacs-follow-after-init             t
-              treemacs-git-command-pipe              ""
-              treemacs-goto-tag-strategy             'refetch-index
-              treemacs-indentation                   2
-              treemacs-indentation-string            " "
-              treemacs-is-never-other-window         nil
-              treemacs-max-git-entries               5000
-              treemacs-missing-project-action        'ask
-              treemacs-move-forward-on-expand        nil
-              treemacs-no-png-images                 nil
-              treemacs-no-delete-other-windows       t
-              treemacs-project-follow-cleanup        nil
-              treemacs-persist-file                  (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
-              treemacs-position                      'left
-              treemacs-recenter-distance             0.1
-              treemacs-recenter-after-file-follow    nil
-              treemacs-recenter-after-tag-follow     nil
-              treemacs-recenter-after-project-jump   'always
-              treemacs-recenter-after-project-expand 'on-distance
-              treemacs-show-cursor                   nil
-              treemacs-show-hidden-files             t
-              treemacs-silent-filewatch              nil
-              treemacs-silent-refresh                nil
-              treemacs-sorting                       'alphabetic-asc
-              treemacs-space-between-root-nodes      t
-              treemacs-tag-follow-cleanup            t
-              treemacs-tag-follow-delay              1.5
-              treemacs-user-mode-line-format         nil
-              treemacs-user-header-line-format       nil
-              treemacs-width                         20
-              treemacs-workspace-switch-cleanup      nil)
-
-        ;; The default width and height of the icons is 22 pixels. If you are
-        ;; using a Hi-DPI display, uncomment this to double the icon size.
-        ;;(treemacs-resize-icons 44)
-
-        (treemacs-follow-mode t)
-        (treemacs-filewatch-mode t)
-        (treemacs-fringe-indicator-mode t)
-        (pcase (cons (not (null (executable-find "git")))
-                     (not (null treemacs-python-executable)))
-          (`(t . t)
-           (treemacs-git-mode 'deferred))
-          (`(t . _)
-           (treemacs-git-mode 'simple))))
-      :bind
-      (:map global-map
-            ("M-0"       . treemacs-select-window)
-            ("C-x t 1"   . treemacs-delete-other-windows)
-            ("<f7>"   . treemacs)
-            ("C-x t B"   . treemacs-bookmark)
-            ("C-x t C-t" . treemacs-find-file)
-            ("C-x t M-t" . treemacs-find-tag)))
-
-    (use-package treemacs-projectile
-      :after treemacs projectile
-      :ensure t)
-
-    (use-package treemacs-magit
-      :after treemacs magit
-      :ensure t)
-  #+end_src
-
-  #+RESULTS:
-
-** Treemacsの折り畳み設定
-ディレクトリのみを含むディレクトリを折り畳むかを設定。
-分かりずらいが、下記のような構成を *dir1/dir2/dir3* のような表示になる
-+ dir1
-  + dir2
-    + dir3
-#+NAME: sb-treemacs-collapse-dirs
-#+begin_src emacs-lisp :tangle no
-  (setq treemacs-collapse-dirs (if treemacs-python-executable 3 0))
-#+end_src
 
 
 
@@ -939,7 +846,7 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
 
     (use-package org-superstar
       :straight t
-      :hook ((org-mode . (lambda () (org-superstar-mode 1)))))
+      :hook ((org-mode . (lambda () (org-superstar-mode 0)))))
 
     (use-package org-download
       :ensure t
@@ -1130,94 +1037,41 @@ org-mode の latex エクスポートの設定.
     (use-package org-transclusion
       :straight t
       :after org
-      :bind (("<f12>" . org-transclusion-add)
-             ("C-n t" . org-transclusion-mode)))
+      :bind (("<f12>" . org-transclusion-add)))
+             ;("C-n t" . org-transclusion-mode)))
 #+end_src
 ** citar
 
 #+begin_src emacs-lisp
-  ;;; citeproc をインストール、これがCSLの処理系
-  (use-package citeproc :straight t)
+      ;;; citeproc をインストール、これがCSLの処理系
+    (use-package citeproc :straight t)
 
-  (use-package citar
-    :straight (citar :type git :host github :repo "emacs-citar/citar" :includes (citar-org))
-    :bind (("C-c b" . citar-insert-citation)
-           :map minibuffer-local-map
-           ("M-b" . citar-insert-preset))
-    :custom
-    (org-cite-insert-processor 'citar)
-    (org-cite-follow-processor 'citar)
-    (org-cite-activate-processor 'citar)
-    (citar-citeproc-csl-styles-dir "~/repos/styles")
-    (citar-bibliography '("~/myspace/Bibliography/references.bib")))
+    (use-package citar
+      :straight (citar :type git :host github :repo "emacs-citar/citar" :includes (citar-org))
+      :bind (("C-c b" . citar-insert-citation)
+             :map minibuffer-local-map
+             ("M-b" . citar-insert-preset))
+      :custom
+      (org-cite-insert-processor 'citar)
+      (org-cite-follow-processor 'citar)
+      (org-cite-activate-processor 'citar)
+      (citar-citeproc-csl-styles-dir "~/repos/styles")
+      (citar-bibliography '("~/myspace/Bibliography/references.bib")))
 
-    (setq citar-open-note-functions '(orb-citar-edit-note))
-    ;(setq citar-create-note-function 'citar-org-format-note-default)
-    (setq citar-create-note-function (lambda (key entry) nil))
+      ;(setq citar-open-note-functions '(orb-citar-edit-note))
+      ;(setq citar-create-note-function 'citar-org-format-note-default)
+      ;(setq citar-create-note-function (lambda (key entry) nil))
+    (use-package citar-org-roam
+      :straight (citar-org-roam :type git :host github :repo "emacs-citar/citar-org-roam")
+      :config
+      (citar-org-roam-mode 1))
+  (use-package citar-embark
+    :after citar embark
+    :no-require
+    :config (citar-embark-mode 1))
+  
 #+end_src
 
-** org-ref
-参考文献を管理するパッケージ.
-
-#+begin_src emacs-lisp
-  (use-package org-ref
-    :straight t
-    :ensure t
-    :after org
-    :custom
-    (org-ref-bib-html "")
-    (helm-migemo-mode t)
-    :config
-    (setq my-ref-bib  "~/myspace/Bibliography/references.bib")
-    (setq my-ref-note "~/myspace/Bibliography/notes.org")
-    (setq my-ref-pdfs "~/myspace/Bibliography/bibtex-pdfs/")
-    (setq my-ref-helm-bibtex-notes "~/myspace/Bibliography/helm-bibtex-notes/")
-
-    (setq reftex-default-bibliography '(my-ref-bib))
-    ;; ノート、bib ファイル、PDF のディレクトリなどを設定
-    (setq org-ref-bibliography-notes my-ref-note
-          org-ref-default-bibliography `(,my-ref-bib)
-          org-ref-pdf-directory my-ref-pdfs)
-
-    ;; helm-bibtex を使う場合は以下の変数も設定しておく
-    (setq bibtex-completion-bibliography `(,my-ref-bib)
-          bibtex-completion-library-path my-ref-pdfs
-          bibtex-completion-notes-path my-ref-helm-bibtex-notes)
-
-    (setq helm-migemo-mode t)
-
-    (setq bibtex-completion-display-formats
-          '((article  . "${author:5} ${title:40} ${journal:10} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}")
-            (inbook   . "${author:5} ${title:40} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}")
-            (book     . "${author:5} ${title:40} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}")
-            (t        . "${author:5} ${title:40} ${year:4} ${=has-pdf=:1}${=has-note=:1} ${=type=:3}")))
-
-  ;  (with-eval-after-load 'ox
-  ;    (defun my/org-ref-process-buffer--html (backend)
-  ;      (when (org-export-derived-backend-p backend 'html)
-  ;        (org-ref-process-buffer 'html)))
-  ;    (add-to-list 'org-export-before-parsing-hook #'my/org-ref-process-buffer--html))
-    )
-
-  (defun ks/book2urlprm (book)
-    (s-join "+" (-map #'url-hexify-string (s-split " " book))))
-
-  (defun ks/lead2amazon-of-book ()
-    (interactive)
-    (let* ((query "https://lead.to/amazon/jp/?key=XXX&si=al&bn=&la=ja&op=bt&so=re#first")
-           (book (completing-read "Select Book: " (-map #'f-base (f-files "~/myspace/Book"))))
-           (search-word (read-string "Query: " book))
-           (shr-inhibit-images t))
-      (eww (s-replace "XXX" (ks/book2urlprm search-word) query))))
-#+end_src
-
-** org-drill
-#+begin_src emacs-lisp
-  (use-package org-drill
-    :straight t
-    :config
-    (setq org-drill-learn-fraction 0.3))
-#+end_src
 
 ** org-fc
 
@@ -1526,38 +1380,31 @@ org-mode の latex エクスポートの設定.
 #+begin_src emacs-lisp
   (use-package dap-mode
     :straight t
+    ;;:straight (:commit "3c4bb901bbcd4f8f58178075dc2422550a7f2834")
     :config
 
     ;;(eval-when-compile
     ;;(require 'cl))
-    (require 'dap-python)
+    ;(require 'dap-python)
     (require 'dap-cpptools)
-    (require 'dap-lldb)
-
-    (dap-mode 1)
+    ;(require 'dap-lldb)
+    (setq dap-auto-configure-features '(sessions locals))
+    ;(setq dap-auto-configure-features nil)
+    ;(dap-mode 1)
 
     ;; The modes below are optional
-    (dap-ui-mode 1)
-    (dap-ui-many-windows-mode 1)
-    (dap-tooltip-mode 1)
-    (tooltip-mode 1)
-    (dap-ui-controls-mode 1)
-
+    ;(dap-ui-mode 1)
+    ;(dap-ui-many-windows-mode 1)
+    ;(dap-tooltip-mode 1)
+    ;(tooltip-mode 1)
+    ;(dap-ui-controls-mode 1)
+    (add-hook 'dap-stopped-hook
+          (lambda (arg) (call-interactively #'dap-hydra)))
     ;; Temporal fix
     (defun dap-python--pyenv-executable-find (command)
       (with-venv (executable-find "python"))))
 #+end_src
 
-デバッグするプロジェクト毎に下記のように設定する.
-
-#+begin_src elisp :eval never-export
-  (dap-register-debug-template "hello-dap"
-                               (list :type "python"
-                                     :cwd "~/myspace/Projects/202202062114-dap"
-                                     :target-module (expand-file-name "~/myspace/Projects/202202062114-dap/main.py")
-                                     :request "launch"
-                                     :name "hello-dap"))
-#+end_src
 
 ** 一般
    #+BEGIN_SRC emacs-lisp
@@ -1591,17 +1438,6 @@ org-mode の latex エクスポートの設定.
      (use-package cmake-mode
        :straight t)
    #+END_SRC
-
-**  C/C++
-
-** Julia
-
-#+begin_src emacs-lisp
-  (use-package lsp-julia
-    :straight t
-    :config
-    (setq lsp-julia-default-environment "~/.julia/environments/v1.7"))
-#+end_src
 
 * Magit
 
