@@ -1176,6 +1176,14 @@ org-mode の latex エクスポートの設定.
 * プログラミング
 ** corfu
 #+begin_src emacs-lisp
+  (use-package consult-dash
+    :straight (consult-dash :type git :repo "https://codeberg.org/ravi/consult-dash.git")
+    :bind (("M-s d" . consult-dash))
+    :custom  (dash-docs-browser-func 'eww)
+    :config
+    ;; Use the symbol at point as initial search term
+    (consult-customize consult-dash :initial (thing-at-point 'symbol)))
+
   (use-package cape :straight t)
 
   (use-package corfu
@@ -1369,6 +1377,12 @@ org-mode の latex エクスポートの設定.
 #+begin_src emacs-lisp
   (use-package eldoc
     :diminish eldoc-mode)
+#+end_src
+
+** Rust
+M-x lsp-install-server, rust-analyzer
+#+begin_src emacs-lisp
+  (use-package rustic :straight t)
 #+end_src
 
 ** Python
