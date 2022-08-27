@@ -2,7 +2,7 @@
 初期ページとして、ダッシュボード表示する.
 
 #+begin_src emacs-lisp
-  (setq initial-buffer-choice "~/myspace/Org/dashboard.org")
+  (setq initial-buffer-choice "~/myspace/org-roam/20220731064701-master_moc.org")
 #+end_src
 
 * デバッグ用のフラグ
@@ -227,8 +227,8 @@ Google翻訳をemacsで使えるように.
     (tool-bar-mode -1)
 
     ;; 行番号表示(Emacs26以降)
-    (global-display-line-numbers-mode t)
-    (custom-set-variables '(display-line-numbers-width-start t))
+    (global-display-line-numbers-mode nil)
+    ;;(custom-set-variables '(display-line-numbers-width-start t))
 
     (use-package beacon
       :ensure t
@@ -836,7 +836,7 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
 
       (setq org-habit-show-habits-only-for-today 1)
       (setq org-agenda-repeating-timestamp-show-all nil))
-
+    (use-package org-fragtog :straight t)
     (use-package org-wild-notifier
       :straight t
       :config
@@ -1082,10 +1082,13 @@ org-mode の latex エクスポートの設定.
      :type git :repo "https://git.sr.ht/~l3kn/org-fc"
      :files (:defaults "awk" "demo.org"))
     :custom
-    (org-fc-directories '("~/myspace/org-roam/" "~/myspace/k-sunako.org/org"))
+    (org-fc-directories '("~/myspace/flashcards"))
+    (org-fc-review-history-file "~/myspace/flashcards/org-fc-refviews.tsv")
     :config
     (require 'org-fc-hydra))
 #+end_src
+
+
 
 #+begin_src emacs-lisp
   (defun org-fc-type-ir-init ()
@@ -1107,9 +1110,13 @@ org-mode の latex エクスポートの設定.
 #+end_src
 
 ** org-roam
+:PROPERTIES:
+:ID:       3c3ce830-a962-4e46-b257-23fbfd43c91a
+:END:
 #+begin_src emacs-lisp
   (use-package org-roam
-    :straight t
+    :straight (:host github :repo "org-roam/org-roam"
+               :files (:defaults "extensions/*"))  
     :init
     (setq org-roam-v2-ack t)
     :custom
@@ -1302,11 +1309,13 @@ org-mode の latex エクスポートの設定.
 
     ;; Optionally configure the cape-capf-buster.
     (setq-local completion-at-point-functions (list (cape-capf-buster #'lsp-completion-at-point)))
-  
+
     :config
     ;; .venv, .mypy_cache を watch 対象から外す
     (dolist (dir '(
                    "[/\\\\]\\.venv$"
+                   "[/\\\\]\\build\\"
+                   "[/\\\\]\\build$"
                    "[/\\\\]\\.mypy_cache$"
                    "[/\\\\]__pycache__$"
                    ))
@@ -1373,10 +1382,26 @@ org-mode の latex エクスポートの設定.
     (lsp-mode . lsp-ui-mode))
 #+end_src
 
-** EList
+** C++
+
+#+begin_src emacs-lisp
+  ;(use-package modern-cpp-font-lock
+  ;  :straight 
+  ;  :hook (c++-mode . modern-c++-font-lock-mode))
+#+end_src
+
+#+RESULTS:
+
+** ELisp
 #+begin_src emacs-lisp
   (use-package eldoc
     :diminish eldoc-mode)
+#+end_src
+
+** Lisp
+#+begin_src emacs-lisp
+  (load (expand-file-name "~/.roswell/helper.el"))
+  (setq inferior-lisp-program "ros -Q run")
 #+end_src
 
 ** Rust
@@ -1459,7 +1484,7 @@ M-x lsp-install-server, rust-analyzer
   (setq vc-handled-backends nil)
   (setq vc-follow-symlinks t)
   (use-package magit
-    :ensure t
+    :straight t
     :bind (("<f3>" . magit-status))
     :diminish auto-revert-mode
     :config (add-hook 'ediff-prepare-buffer-hook #'show-all))
@@ -1472,171 +1497,229 @@ M-x lsp-install-server, rust-analyzer
 
 * Etc
   #+BEGIN_SRC emacs-lisp
-    (use-package define-word
-      :straight t
-      :bind (("<f8>" . define-word-at-point)))
-    (use-package terraform-mode :straight t)
+      (use-package define-word
+        :straight t
+        :bind (("<f8>" . define-word-at-point)))
+      (use-package terraform-mode :straight t)
 
-    (setq large-file-warning-threshold nil)
+      (setq large-file-warning-threshold nil)
 
-    (save-place-mode 1)
+      (save-place-mode 1)
 
-    (use-package recentf
-      :ensure t
-      :config
-      (setq recentf-max-saved-items 2000) ;; 2000ファイルまで履歴保存する
-      (setq recentf-auto-cleanup 'never)  ;; 存在しないファイルは消さない
-      (setq recentf-exclude '("/recentf" "COMMIT_EDITMSG" "/.?TAGS" "^/sudo:" "/\\.emacs\\.d/games/*-scores" "/\\.emacs\\.d/\\.cask/"))
-      (setq recentf-auto-save-timer (run-with-idle-timer 12000 t 'recentf-save-list))
-      (recentf-mode))
+      (use-package recentf
+        :ensure t
+        :config
+        (setq recentf-max-saved-items 2000) ;; 2000ファイルまで履歴保存する
+        (setq recentf-auto-cleanup 'never)  ;; 存在しないファイルは消さない
+        (setq recentf-exclude '("/recentf" "COMMIT_EDITMSG" "/.?TAGS" "^/sudo:" "/\\.emacs\\.d/games/*-scores" "/\\.emacs\\.d/\\.cask/"))
+        (setq recentf-auto-save-timer (run-with-idle-timer 12000 t 'recentf-save-list))
+        (recentf-mode))
 
-    ;;===============================================================
-    ;; Packages
-    ;;===============================================================
-    (use-package ediff
-      :ensure t
-      :config
-      (setq ediff-diff-program "~/bin/my-diff.sh")
-      ;;(setq ediff-diff-program "ediff")
-      ;; コントロール用のバッファを同一フレーム内に表示
-      (setq ediff-window-setup-function 'ediff-setup-windows-plain)
-      ;; diffのバッファを上下ではなく左右に並べる
-      (setq ediff-split-window-function 'split-window-horizontally))
+      ;;===============================================================
+      ;; Packages
+      ;;===============================================================
+      (use-package ediff
+        :ensure t
+        :config
+        (setq ediff-diff-program "~/bin/my-diff.sh")
+        ;;(setq ediff-diff-program "ediff")
+        ;; コントロール用のバッファを同一フレーム内に表示
+        (setq ediff-window-setup-function 'ediff-setup-windows-plain)
+        ;; diffのバッファを上下ではなく左右に並べる
+        (setq ediff-split-window-function 'split-window-horizontally))
 
-    ;; org-modeのExportでコードを色付きで出力するため
-    (use-package htmlize :ensure t)
+      ;; org-modeのExportでコードを色付きで出力するため
+      (use-package htmlize :ensure t)
 
-    (use-package pdf-tools
-      :straight t
+      (use-package pdf-tools
+        :straight t
 
-      :mode (("\\.pdf?\\'" . pdf-view-mode))
-      :config
-      (pdf-loader-install)
-      (add-hook 'pdf-view-mode-hook (lambda() (linum-mode -1)))
-      (add-hook 'pdf-view-mode-hook (lambda() (display-line-numbers-mode -1)))
-      (add-hook 'pdf-view-mode-hook (lambda() (pdf-tools-enable-minor-modes)))
-      (setq-default pdf-view-display-size 'fit-page))
+        :mode (("\\.pdf?\\'" . pdf-view-mode))
+        :config
+        (pdf-loader-install)
+        (add-hook 'pdf-view-mode-hook (lambda() (linum-mode -1)))
+        (add-hook 'pdf-view-mode-hook (lambda() (display-line-numbers-mode -1)))
+        (add-hook 'pdf-view-mode-hook (lambda() (pdf-tools-enable-minor-modes)))
+        (setq-default pdf-view-display-size 'fit-page))
 
-    (use-package multiple-cursors
-      :ensure t
-      :config
-      (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
-      (global-set-key (kbd "C->") 'mc/mark-next-like-this)
-      (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
-      (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this))
+      (use-package multiple-cursors
+        :ensure t
+        :config
+        (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
+        (global-set-key (kbd "C->") 'mc/mark-next-like-this)
+        (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+        (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this))
 
-    (use-package winner
-      :init
-      (winner-mode 1)
-      (global-set-key (kbd "C-z") 'winner-undo))
+      (use-package winner
+        :init
+        (winner-mode 1)
+        (global-set-key (kbd "C-z") 'winner-undo))
 
-    (use-package elfeed
-      :ensure t
-      :if (file-exists-p "~/myspace/dotfiles-secret/elfeed.el")
-      :init
-      (load "~/myspace/dotfiles-secret/elfeed.el")
-      :config
-      (setq shr-inhibit-images t))
+      (use-package elfeed
+        :ensure t
+        :if (file-exists-p "~/myspace/dotfiles-secret/elfeed.el")
+        :init
+        (load "~/myspace/dotfiles-secret/elfeed.el")
+        :config
+        (setq shr-inhibit-images t))
 
-    (use-package yasnippet
-      :ensure t
-      :diminish yas-minor-mode
-      :config
-      (add-to-list 'warning-suppress-types '(yasnippet backquote-change))
-      (yas-global-mode 1))
+      (use-package yasnippet
+        :ensure t
+        :diminish yas-minor-mode
+        :config
+        (add-to-list 'warning-suppress-types '(yasnippet backquote-change))
+        (yas-global-mode 1))
 
-    (use-package auto-save-buffers-enhanced
-      :ensure t)
+      (use-package auto-save-buffers-enhanced
+        :ensure t)
 
-    (use-package super-save
-      :ensure t
-      :diminish super-save-mode
-      :init
-      (super-save-mode 1)
-      (setq super-save-exclude nil)
-      (setq super-save-auto-save-when-idle t))
+      (use-package super-save
+        :ensure t
+        :diminish super-save-mode
+        :init
+        (super-save-mode 1)
+        (setq super-save-exclude nil)
+        (setq super-save-auto-save-when-idle t))
 
-    (use-package org2blog
-      :straight t
-      :if (file-exists-p "~/myspace/dotfiles-secret/org2blog.el")
-      :after org
-      :config
-      (load "~/myspace/dotfiles-secret/org2blog.el"))
+      (use-package org2blog
+        :straight t
+        :if (file-exists-p "~/myspace/dotfiles-secret/org2blog.el")
+        :after org
+        :config
+        (load "~/myspace/dotfiles-secret/org2blog.el"))
 
-    ;; shellの文字化けを回避
-    (add-hook 'shell-mode-hook
-              (lambda ()
-                (set-buffer-process-coding-system 'utf-8-unix 'utf-8-unix)
-                ))
-    (setq default-process-coding-system '(utf-8 . utf-8))
+      ;; shellの文字化けを回避
+      (add-hook 'shell-mode-hook
+                (lambda ()
+                  (set-buffer-process-coding-system 'utf-8-unix 'utf-8-unix)
+                  ))
+      (setq default-process-coding-system '(utf-8 . utf-8))
 
-    (use-package undo-tree
-      :ensure t
-      :diminish undo-tree-mode
-      :config
-      (global-undo-tree-mode 1))
+      (use-package undo-tree
+        :ensure t
+        :diminish undo-tree-mode
+        :config
+        (global-undo-tree-mode 1))
 
-    ;; My elisp
-    ;;===============================================================
-
-
-    (defun ks/get-hash ()
-      (interactive)
-      (let ((salt "k-sunako")
-            (now (number-to-string (ts-unix (ts-now)))))
-        (insert (s-left 5 (secure-hash 'sha512 (s-concat salt now))))))
-
-    (defun ks-make-bibtex-symbolic-link (bibkey path)
-      (let* ((default-directory my-ref-pdfs)
-             (target (f-relative path)))
-        (shell-command-to-string
-         (s-lex-format "ln -s \"${target}\" ${bibkey}.pdf"))))
-
-    (defun ks-get-books (title)
-      (let ((len (/ (length title) 2)))
-        (s-lines (shell-command-to-string
-                  (s-lex-format "find ~/myspace/Book | agrep -E ${len} \"${title}\"")))))
-
-    (defun ks-get-bibtex-title (bibkey)
-      (let* ((key bibkey)
-             (hs (gethash key (parsebib-collect-entries)))
-             (value (cdr (assoc "title" hs)))
-             (title (s-chop-prefix "{" (s-chop-suffix "}" value)))
-             )
-        title))
-
-    (defun ks-get-path-of-book (title)
-      (let ((books (ks-get-books title)))
-        (helm :sources (helm-build-sync-source "books"
-                                               :candidates books
-                                               :fuzzy-match t)
-              :buffer "*helm books*")))
-
-    (defun ks-init-bib-pdf (start end)
-      (interactive "r")
-      (let* ((bibkey (buffer-substring-no-properties start end))
-             (title (ks-get-bibtex-title bibkey))
-             (path (ks-get-path-of-book title))
-             )
-        (ks-make-bibtex-symbolic-link bibkey path)))
+      ;; My elisp
+      ;;===============================================================
 
 
-    (defun join-lines () (interactive)
-           (setq fill-column 100000)
-           (fill-paragraph nil)
-           (setq fill-column 78))
+      (defun ks/get-hash ()
+        (interactive)
+        (let ((salt "k-sunako")
+              (now (number-to-string (ts-unix (ts-now)))))
+          (insert (s-left 5 (secure-hash 'sha512 (s-concat salt now))))))
 
-    (defun ks/create-task-dir (prj-name)
-      (interactive "sTask Name: ")
-      (let* ((prefix (ts-format "%Y%m%d%H%M" (ts-now)))
-             (prjdir (s-concat prefix "-" prj-name))
-             (rootdir "~/myspace/Projects/")
-             (prjpath (f-join rootdir prjdir)))
-        (f-mkdir prjpath)
-        (shell-command-to-string (s-concat "git init " prjpath))
-        (projectile-discover-projects-in-search-path)))
+      (defun ks-make-bibtex-symbolic-link (bibkey path)
+        (let* ((default-directory my-ref-pdfs)
+               (target (f-relative path)))
+          (shell-command-to-string
+           (s-lex-format "ln -s \"${target}\" ${bibkey}.pdf"))))
 
-    (defun ks/search-roam ()
-      (interactive)
-      (consult-ripgrep "~/myspace/org-roam"))
+      (defun ks-get-books (title)
+        (let ((len (/ (length title) 2)))
+          (s-lines (shell-command-to-string
+                    (s-lex-format "find ~/myspace/Book | agrep -E ${len} \"${title}\"")))))
+
+      (defun ks-get-bibtex-title (bibkey)
+        (let* ((key bibkey)
+               (hs (gethash key (parsebib-collect-entries)))
+               (value (cdr (assoc "title" hs)))
+               (title (s-chop-prefix "{" (s-chop-suffix "}" value)))
+               )
+          title))
+
+      (defun ks-get-path-of-book (title)
+        (let ((books (ks-get-books title)))
+          (helm :sources (helm-build-sync-source "books"
+                                                 :candidates books
+                                                 :fuzzy-match t)
+                :buffer "*helm books*")))
+
+      (defun ks-init-bib-pdf (start end)
+        (interactive "r")
+        (let* ((bibkey (buffer-substring-no-properties start end))
+               (title (ks-get-bibtex-title bibkey))
+               (path (ks-get-path-of-book title))
+               )
+          (ks-make-bibtex-symbolic-link bibkey path)))
+
+
+      (defun join-lines () (interactive)
+             (setq fill-column 100000)
+             (fill-paragraph nil)
+             (setq fill-column 78))
+
+      (defun ks/create-task-dir (prj-name)
+        (interactive "sTask Name: ")
+        (let* ((prefix (ts-format "%Y%m%d%H%M" (ts-now)))
+               (prjdir (s-concat prefix "-" prj-name))
+               (rootdir "~/myspace/Projects/")
+               (prjpath (f-join rootdir prjdir)))
+          (f-mkdir prjpath)
+          (shell-command-to-string (s-concat "git init " prjpath))
+          (projectile-discover-projects-in-search-path)))
+
+      (defun ks/search-roam ()
+        (interactive)
+        (consult-ripgrep "~/myspace/org-roam"))
+
+
+      (defun ks-get-image-size (imgfile)
+        (let* ((cmd (s-lex-format "identify -ping -format '%w,%h' ${imgfile}")))
+          (-map (lambda (c) (string-to-number c)) (s-split "," (shell-command-to-string cmd)))))
+      (defun ks-get-radius (size)
+        (/ (apply 'min size) 8))
+      (defun ks-get-count-of-circles (size radius)
+        (ceiling (/ (apply '* 0.4 size) (* 3.14 radius radius))))
+
+      (defun ks-draw-circle (imgfile radius size)
+        (let* ((w (nth 0 size))
+               (h (nth 1 size))
+               (gridw (/ w radius))
+               (gridh (/ h radius))
+               (rndw (* 1.2 radius (mod (random) gridw)))
+               (rndh (* 1.2 radius (mod (random) gridh)))
+               (ref_p (+ radius rndw))
+               (cmd_circle1 (s-lex-format "circle ${rndw},${rndh} ${ref_p},${rndh}")))
+          (shell-command-to-string (s-lex-format "convert ${imgfile} -draw '${cmd_circle1}' ${imgfile}"))))
+
+
+    (defun ks-get-draw-circle-cmd (imgfile radius size)
+      (let* ((w (nth 0 size))
+             (h (nth 1 size))
+             (gridw (/ w radius))
+             (gridh (/ h radius))
+             (rndw (* 1.2 radius (mod (random) gridw)))
+             (rndh (* 1.2 radius (mod (random) gridh)))
+             (ref_p (+ radius rndw))
+             (cmd (s-lex-format "-draw \"circle ${rndw},${rndh} ${ref_p},${rndh}\" ")))
+        cmd))
+
+    (defun ks-make-flashcard (imgfile)
+      (interactive "f")
+      (let ((backimg (f-join "./backimages" (f-filename imgfile)))
+            (frontimg (f-join "./frontimages" (f-filename imgfile))))
+        (if (not (f-exists-p backimg))
+            (progn 
+              (f-copy imgfile backimg)
+              (f-copy imgfile frontimg)
+              (save-excursion
+                (insert "* x\n\n")
+                ;;(insert "#+ATTR_ORG: :width 800 :height 400\n")
+                (insert (s-lex-format "[[file:${frontimg}]]\n"))
+                (insert "** Back\n\n")
+                ;;(insert "#+ATTR_ORG: :width 800 :height 400\n")
+                (insert (s-lex-format "[[file:${backimg}]]\n")))
+              (org-fc-type-normal-init)
+              (let* ((size (ks-get-image-size frontimg))
+                     (cmds '())
+                     (radius (ks-get-radius size))
+                     (n (ks-get-count-of-circles size radius)))
+                (dotimes (_ n cmds) (push (ks-get-draw-circle-cmd frontimg radius size) cmds))
+                (message (s-concat "convert " imgfile " " (s-join " " cmds) " " imgfile))
+                (shell-command-to-string (s-concat "convert " frontimg " " (s-join " " cmds) " " frontimg) )))
+          (message "Already Exists."))))
+
   #+END_SRC
