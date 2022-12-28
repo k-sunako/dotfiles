@@ -242,7 +242,7 @@ Google翻訳をemacsで使えるように.
            (ffl-utf8 (mapcar (lambda (x) (decode-coding-string x 'utf-8)) ffl)))
       (cond
        ((member "Cica" ffl)
-        (set-frame-font "Cica 12"))
+        (set-frame-font "Cica 15"))
        ((member "NasuM" ffl)
         (set-frame-font "NasuM 15"))
        ((member "Ricty" ffl)
@@ -440,6 +440,7 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
           :custom
           ;(completion-styles '(orderless))
           (orderless-matching-styles '(orderless-literal orderless-regexp orderless-migemo))
+          ;;(orderless-matching-styles '(orderless-literal orderless-regexp))
 
           :config
           ;; supported emacs-jp slack
@@ -678,6 +679,8 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
              ("<f11>" . org-clock-goto))
 
       :config
+
+      (setq org-export-allow-bind-keywords t)
       (defun org-confirm-elisp-link-function--no-confirm-my-org-file (prompt)
         "自分が書いたorgファイルの(のディレクトリにある)elispリンクはconfirmなし。
                         それ以外のディレクトリではconfirmする。"
@@ -1033,13 +1036,18 @@ org-mode の latex エクスポートの設定.
 ** org-transclusion
 
 #+begin_src emacs-lisp
-    (setq org-id-link-to-org-use-id t)
-    (use-package org-transclusion
-      :straight t
-      :after org
-      :bind (("<f12>" . org-transclusion-add)))
-             ;("C-n t" . org-transclusion-mode)))
+  (setq org-id-link-to-org-use-id t)
+  (use-package org-transclusion
+    :straight t
+    :after org
+    :bind (("<f12>" . org-transclusion-add))
+    :hook (org-mode . org-transclusion-mode))
+           ;("C-n t" . org-transclusion-mode)))
 #+end_src
+
+#+RESULTS:
+: org-transclusion-add
+
 ** citar
 
 #+begin_src emacs-lisp
@@ -1074,6 +1082,7 @@ org-mode の latex エクスポートの設定.
 
 
 ** org-fc
+*** パッケージ
 
 #+begin_src emacs-lisp
   (use-package org-fc
@@ -1088,26 +1097,106 @@ org-mode の latex エクスポートの設定.
     (require 'org-fc-hydra))
 #+end_src
 
-
+*** 独自拡張
+スクリーンショットをそのままフラッシュカードに変換する関数。Waylandの
+~grim~ コマンドを使用している。フラッシュカードは表と裏のあるノーマル
+を使用する。スクリーンショットの画像をグリッド上に複数の部分として、そ
+の部分のある程度を塗り潰して表の質問カードを作成する。
 
 #+begin_src emacs-lisp
-  (defun org-fc-type-ir-init ()
-    "Mark headline as card of the normal type."
+  (defun ks/org-fc-from-screen-shot ()
     (interactive)
-    (org-fc--init-card "ir")
-    (org-fc-review-data-update '("front")))
-
-  (defun org-fc-type-ir-setup (_position)
-    "Prepare a normal card for review."
-    (interactive)
-    (org-show-entry))
-
-  (org-fc-register-type
-   'ir
-   'org-fc-type-ir-setup
-   'org-fc-noop
-   'org-fc-noop)
+    (let* ((d (f-canonical (-first-item org-fc-directories)))
+           (forg (f-join d "flashcard.org"))
+           (fimgbase (s-concat (format-time-string "%Y%m%d%H%M%S" (current-time)) ".png"))
+           (fimg (f-join temporary-file-directory fimgbase))
+           (fback (f-join d "backimages" fimgbase))
+           (ffron (f-join d "frontimages" fimgbase)))
+      (shell-command-to-string (s-lex-format "grim -g \"$(slurp)\" ${fimg}"))
+      (with-current-buffer
+          (find-file-noselect forg)
+        (goto-char (point-max))
+        (insert "\n")
+        (ks-make-flashcard fimg fback ffron))))
 #+end_src
+
+#+RESULTS:
+: ks/org-fc-from-screen-shot
+
+#+begin_src emacs-lisp
+  (defun ks/org-fc-update-all-mask ()
+    (interactive)
+    (let* ((d (f-canonical (-first-item org-fc-directories)))
+           (d_back (f-join d "backimages"))
+           (d_front (f-join d "frontimages"))
+           )
+      (dolist (p_back (f-files d_back))
+        (let ((p_front (f-join d_front (f-filename p_back))))
+          (when (f-exists-p p_front)
+            (f-delete p_front)
+            (f-copy p_back p_front)
+            (ks/mask-image p_front))))))
+
+
+  (defun ks-get-image-size (imgfile)
+    (let* ((cmd (s-lex-format "identify -ping -format '%w,%h' ${imgfile}")))
+      (-map (lambda (c) (string-to-number c)) (s-split "," (shell-command-to-string cmd)))))
+
+  (defun ks-get-draw-rect-cmd (imgfile nrow ncol coord size)
+    (let* ((w (nth 0 size))
+           (h (nth 1 size))
+           (col (nth 0 coord))
+           (row (nth 1 coord))
+           (gridw (/ w ncol))
+           (gridh (/ h nrow))
+           (left (* col gridw))
+           (top (* row gridh))
+           (right (+ left gridw))
+           (bottom (+ top gridh))
+           (cmd (s-lex-format "-draw \"rectangle ${left},${top} ${right},${bottom}\" ")))
+      cmd))
+
+  (defun cartesian-product (l1 l2)
+    (cl-loop for x in l1
+             nconc
+             (cl-loop for y in l2
+                      collect (list x y))))
+
+  (defun ks/choice (lst n)
+    (let (ret)
+      (dotimes (_ n ret)
+        (push (seq-random-elt (seq-difference lst ret)) ret))))
+
+  (defun ks/mask-image (imgfile)
+    (let* ((nrow 12)
+           (ncol 12)
+           (all_coords (cartesian-product (number-sequence 0 (- nrow 1)) (number-sequence 0 (- ncol 1))))
+           (msk_coords (ks/choice all_coords (floor (* 0.5 nrow ncol))))
+           (size (ks-get-image-size imgfile))
+           (cmds '()))
+      (dolist (coord msk_coords cmds) (push (ks-get-draw-rect-cmd imgfile nrow ncol coord size) cmds))
+      (shell-command-to-string (s-concat "convert " imgfile " " (s-join " " cmds) " " imgfile))))
+
+  (defun ks-make-flashcard (imgfile backimg frontimg)
+    (let* ((x))
+      (if (not (f-exists-p backimg))
+          (progn 
+            (f-copy imgfile backimg)
+            (f-copy imgfile frontimg)
+
+            (save-excursion
+              (insert "* x\n\n")
+              (insert (s-lex-format "[[file:${frontimg}]]\n"))
+              (insert "** Back\n\n")
+              (insert (s-lex-format "[[file:${backimg}]]\n")))
+            (org-fc-type-normal-init)
+
+            (ks/mask-image frontimg))
+        (message "Already Exists."))))
+#+end_src
+
+#+RESULTS:
+: ks-make-flashcard
 
 ** org-roam
 :PROPERTIES:
@@ -1165,6 +1254,9 @@ org-mode の latex エクスポートの設定.
     :diminish org-roam-bibtex-mode
     :config
     (org-roam-bibtex-mode 1))
+
+  (use-package consult-recoll
+    :straight t)
 #+end_src
 * Utility
   #+BEGIN_SRC emacs-lisp
@@ -1581,13 +1673,6 @@ M-x lsp-install-server, rust-analyzer
         (setq super-save-exclude nil)
         (setq super-save-auto-save-when-idle t))
 
-      (use-package org2blog
-        :straight t
-        :if (file-exists-p "~/myspace/dotfiles-secret/org2blog.el")
-        :after org
-        :config
-        (load "~/myspace/dotfiles-secret/org2blog.el"))
-
       ;; shellの文字化けを回避
       (add-hook 'shell-mode-hook
                 (lambda ()
@@ -1666,60 +1751,73 @@ M-x lsp-install-server, rust-analyzer
         (consult-ripgrep "~/myspace/org-roam"))
 
 
-      (defun ks-get-image-size (imgfile)
-        (let* ((cmd (s-lex-format "identify -ping -format '%w,%h' ${imgfile}")))
-          (-map (lambda (c) (string-to-number c)) (s-split "," (shell-command-to-string cmd)))))
-      (defun ks-get-radius (size)
-        (/ (apply 'min size) 8))
-      (defun ks-get-count-of-circles (size radius)
-        (ceiling (/ (apply '* 0.4 size) (* 3.14 radius radius))))
-
-      (defun ks-draw-circle (imgfile radius size)
-        (let* ((w (nth 0 size))
-               (h (nth 1 size))
-               (gridw (/ w radius))
-               (gridh (/ h radius))
-               (rndw (* 1.2 radius (mod (random) gridw)))
-               (rndh (* 1.2 radius (mod (random) gridh)))
-               (ref_p (+ radius rndw))
-               (cmd_circle1 (s-lex-format "circle ${rndw},${rndh} ${ref_p},${rndh}")))
-          (shell-command-to-string (s-lex-format "convert ${imgfile} -draw '${cmd_circle1}' ${imgfile}"))))
-
-
-    (defun ks-get-draw-circle-cmd (imgfile radius size)
-      (let* ((w (nth 0 size))
-             (h (nth 1 size))
-             (gridw (/ w radius))
-             (gridh (/ h radius))
-             (rndw (* 1.2 radius (mod (random) gridw)))
-             (rndh (* 1.2 radius (mod (random) gridh)))
-             (ref_p (+ radius rndw))
-             (cmd (s-lex-format "-draw \"circle ${rndw},${rndh} ${ref_p},${rndh}\" ")))
-        cmd))
-
-    (defun ks-make-flashcard (imgfile)
-      (interactive "f")
-      (let ((backimg (f-join "./backimages" (f-filename imgfile)))
-            (frontimg (f-join "./frontimages" (f-filename imgfile))))
-        (if (not (f-exists-p backimg))
-            (progn 
-              (f-copy imgfile backimg)
-              (f-copy imgfile frontimg)
-              (save-excursion
-                (insert "* x\n\n")
-                ;;(insert "#+ATTR_ORG: :width 800 :height 400\n")
-                (insert (s-lex-format "[[file:${frontimg}]]\n"))
-                (insert "** Back\n\n")
-                ;;(insert "#+ATTR_ORG: :width 800 :height 400\n")
-                (insert (s-lex-format "[[file:${backimg}]]\n")))
-              (org-fc-type-normal-init)
-              (let* ((size (ks-get-image-size frontimg))
-                     (cmds '())
-                     (radius (ks-get-radius size))
-                     (n (ks-get-count-of-circles size radius)))
-                (dotimes (_ n cmds) (push (ks-get-draw-circle-cmd frontimg radius size) cmds))
-                (message (s-concat "convert " imgfile " " (s-join " " cmds) " " imgfile))
-                (shell-command-to-string (s-concat "convert " frontimg " " (s-join " " cmds) " " frontimg) )))
-          (message "Already Exists."))))
-
   #+END_SRC
+
+* Org2Blog
+:PROPERTIES:
+:ID:       75e777ad-7154-4cc6-88aa-c0c0305cc6e3
+:END:
+** パッケージ
+
+
+#+begin_src emacs-lisp
+  (use-package org2blog
+    :straight t
+    :if (file-exists-p "~/myspace/dotfiles-secret/org2blog.el")
+    :after org
+    :config
+    (load "~/myspace/dotfiles-secret/org2blog.el"))
+#+end_src
+** 自作関数
+:PROPERTIES:
+:ID:       de5de08b-d7ba-4491-80c2-0fbd99c70f81
+:END:
+
+#+begin_src emacs-lisp
+    (defun ks-post-to-wordpress ()
+      (interactive)
+      (let ((snow (format-time-string (org-time-stamp-format t t) (org-current-time)))
+            (rtitle (org-make-options-regexp (list "title" "TITLE")))
+            (rdate (org-make-options-regexp (list "date" "DATE")))
+            (rblog   (org-make-options-regexp (list "blog" "BLOG")))
+            (rpostid (org-make-options-regexp (list "postid" "POSTID")))
+            (rorb2blog (org-make-options-regexp (list "org2blog" "ORG2BLOG")))
+            line1 line2)
+        (save-excursion
+          (goto-char (point-min))
+          (if (re-search-forward rorb2blog nil t 1)
+              (progn
+                (re-search-forward rdate nil t 1)
+                (replace-match (concat "#+\\1: " snow))
+                (org2blog-buffer-post-publish))
+            (if (re-search-forward rtitle nil t 1)
+                (progn
+                  (insert "\n\n")
+                  ;; TITLEプロパティの下にORG2BLOGプロパティを
+                  (insert "#+ORG2BLOG:\n")
+                  ;; TITLEプロパティの下にDATEプロパティを
+                  (insert (concat "#+DATE: " snow))
+                  ;; 投稿
+                  (org2blog-buffer-post-publish)
+
+                  ;;; ここからファイル上部に記載される BLOG, POSTID を移動する.
+                  (goto-char (point-min))
+
+                  ;; BLOG を退避、削除する.
+                  (re-search-forward rblog nil t 1)
+                  (setq line1 (match-string-no-properties 0))
+                  (delete-region (match-beginning 0) (match-end 0))
+                  (delete-char 1)
+                  ;; POSTID を退避、削除する.
+                  (re-search-forward rpostid nil t 1)
+                  (setq line2 (match-string-no-properties 0))
+                  (delete-region (match-beginning 0) (match-end 0))
+                  (delete-char 1)
+
+                  ;; BLOG, POSTID を追加する.
+                  (re-search-forward rdate nil t 1)
+                  (insert "\n")
+                  (insert line1)
+                  (insert "\n")
+                  (insert line2)))))))
+#+end_src
