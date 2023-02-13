@@ -1,6 +1,10 @@
 \ProvidesPackage{my}[2022/01/29 v1.0]
 \usepackage{amsmath, amsthm, mathrsfs, amssymb, xifthen, xstring, physics, tikz, tikz-cd}
 
+\usepackage{zxjatype}
+\usepackage[ipa]{zxjafont}
+\usepackage{xltxtra}
+
 \DeclareMathOperator{\dom}{dom}
 \DeclareMathOperator{\cod}{cod}
 \DeclareMathOperator{\sign}{sign}
@@ -8,6 +12,13 @@
 \theoremstyle{plain}
 \newtheorem{thm}{Theorem}
 \newtheorem*{thm*}{Theorem}
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}
+\newtheorem*{theorem*}{Theorem}
+
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+\newtheorem*{definition*}{Definition}
 
 \makeatletter
 \newcommand*{\relrelbarsep}{.386ex}

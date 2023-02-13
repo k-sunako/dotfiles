@@ -2,7 +2,7 @@
 初期ページとして、ダッシュボード表示する.
 
 #+begin_src emacs-lisp
-  (setq initial-buffer-choice "~/myspace/org-roam/20220731064701-master_moc.org")
+  (setq initial-buffer-choice "~/myspace/org-roam/20200612132324-index.org")
 #+end_src
 
 * デバッグ用のフラグ
@@ -406,6 +406,7 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
 
   #+BEGIN_SRC emacs-lisp
         (use-package ace-window
+          :straight t
           :bind (("C-t". ace-window)))
 
         (use-package projectile
@@ -446,13 +447,21 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
           ;; supported emacs-jp slack
           ;;(setq orderless-matching-styles '(orderless-migemo))
           ;;(setq orderless-matching-styles '(orderless-literal orderless-regexp orderless-migemo)) ; move to :custom block
-          (defalias 'orderless-migemo #'migemo-get-pattern)
+          ;;(defalias 'orderless-migemo #'migemo-get-pattern)
 
+           (defun orderless-migemo (component)
+             (let ((pattern (migemo-get-pattern component)))
+               ;;(message component)
+               (condition-case nil
+                   (progn (string-match-p pattern "") pattern)
+                 (invalid-regexp nil))))
           (defun orderless-migemo (component)
-            (let ((pattern (migemo-get-pattern component)))
-              (condition-case nil
-                  (progn (string-match-p pattern "") pattern)
-                (invalid-regexp nil)))))
+            (if (>= (length component) 4)
+                (let ((pattern (migemo-get-pattern component)))
+                  (condition-case nil
+                      (progn (string-match-p pattern "") pattern)
+                    (invalid-regexp nil)))
+              component))
         ;;(use-package marginalia
         ;;
         ;;  :config
@@ -680,10 +689,18 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
 
       :config
 
+      ;; C-c C-j 補完
+      (setq org-goto-interface 'outline-path-completion)
+
+      ;; Export 時にEvalをしないように
+      (setq org-babel-default-header-args
+            (-concat '((:eval "nenver-export"))
+                     (--remove (eq :eval (car it)) org-babel-default-header-args)))
+
       (setq org-export-allow-bind-keywords t)
       (defun org-confirm-elisp-link-function--no-confirm-my-org-file (prompt)
         "自分が書いたorgファイルの(のディレクトリにある)elispリンクはconfirmなし。
-                        それ以外のディレクトリではconfirmする。"
+                          それ以外のディレクトリではconfirmする。"
         (or (string-match "/myspace/Org/" (or (buffer-file-name) ""))
             (member (buffer-name) '("*trace-output*"))
             (y-or-n-p prompt)))
@@ -743,7 +760,7 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
               (todo . " %i %-12:c")
               (tags . " %i %-12:c")
               (search . " %i %-12:c")))  
-      (setq org-agenda-files '("~/myspace/Org/inbox.org" "~/myspace/Org/habits/habits.org"))
+      (setq org-agenda-files '("~/myspace/org-roam/20230205085538-inbox.org"))                           "~/myspace/Org/habits/habits.org"))
 
       ;; リフィルをアジェンダ内で行えるように
       (setq org-refile-targets
@@ -762,8 +779,8 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
       ;; クロックレポートのカスタム
       (defun ks/org-clock-report-filename (filepath)
         (let* ((bn (f-filename filepath))
-              (dn (f-dirname filepath))
-              (pdn (f-filename dn)))
+               (dn (f-dirname filepath))
+               (pdn (f-filename dn)))
           (s-concat  (f-dirname filepath) "/" bn "-" pdn)))
 
       (defun ks/org-clocktable-formatter (ipos tables params)
@@ -809,16 +826,16 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
             (org-clock-update-time-maybe))))
 
       (setq org-capture-templates `(("t" "Todo [inbox]" entry
-                                     (file+headline "~/myspace/Org/inbox.org" "Tasks")
+                                     (file "~/myspace/org-roam/20230205085538-inbox.org" )
                                      "* TODO %i%?")
                                     ("T" "Todo " entry
                                      (function ks/select-file-for-task)
                                      "* TODO %i%?")
                                     ("n" "Note [inbox]" entry
-                                     (file+headline "~/myspace/Org/inbox.org" "Note")
+                                     (file "~/myspace/org-roam/20230205085538-inbox.org")
                                      "* %u\nPath:%F\nLink: %a\nTask: %k\n\n%?")
                                     ("q" "Question [inbox]" entry
-                                     (file+headline "~/myspace/Org/inbox.org" "Question")
+                                     (file "~/myspace/org-roam/20230205085538-inbox.org")
                                      "* QUESTION %?")
                                     ("a" "Anki [drill]" entry
                                      (file+headline "~/myspace/Projects/202201201927-drill/main.org" "drill")
@@ -832,13 +849,14 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
                                      (file+headline "~/myspace/Org/inbox.org" "Scraps")
                                      "* %? [[%:link][%:description]] \nCaptured On: %U")))
 
-      (setq org-todo-keywords '((sequence
-                                 "NEXT(n)" "TODO(t)" "WAITING(w)" "SOMEDAY(s)" "|" "DONE(d)" "CANCELLED(c)" )))
+    (setq org-todo-keywords '((sequence
+                               "NEXT(n)" "TODO(t)" "WAITING(w)" "SOMEDAY(s)" "|" "DONE(d)" "CANCELLED(c)" )))
 
-      (setq org-format-latex-options (plist-put org-format-latex-options :scale 2.0))
+    (setq org-format-latex-options (plist-put org-format-latex-options :scale 2.0))
 
-      (setq org-habit-show-habits-only-for-today 1)
-      (setq org-agenda-repeating-timestamp-show-all nil))
+    (setq org-habit-show-habits-only-for-today 1)
+    (setq org-agenda-repeating-timestamp-show-all nil)
+
     (use-package org-fragtog :straight t)
     (use-package org-wild-notifier
       :straight t
@@ -895,23 +913,30 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
     (setq org-html-validation-link nil            ;; Don't show validation link
           org-html-head-include-scripts nil       ;; Use our own scripts
           org-html-head-include-default-style nil ;; Use our own styles
-          org-html-head "<link rel=\"stylesheet\" href=\"https://cdn.simplecss.org/simple.min.css\" /> <script src=\"https://tikzjax.com/v1/tikzjax.js\"></script>")
+          org-html-head "<link rel=\"stylesheet\" href=\"./css/latex.css\" /> <script src=\"https://tikzjax.com/v1/tikzjax.js\"></script>")
     (setq org-publish-project-alist
           `(("pages"
-             :base-directory "~/myspace/k-sunako.org/org/"
+             :base-directory "~/myspace/org-roam/"
              :base-extension "org"
              :recursive t
              :publishing-directory "~/myspace/k-sunako.org/html/"
              :publishing-function org-html-publish-to-html)
 
             ("static"
-             :base-directory "~/myspace/k-sunako.org/org/"
+             :base-directory "~/myspace/org-roam/"
              :base-extension "css\\|txt\\|jpg\\|gif\\|png"
              :recursive t
              :publishing-directory  "~/myspace/k-sunako.org/html"
              :publishing-function org-publish-attachment)
 
             ("k-sunako.org" :components ("pages" "static"))))
+    ;; (org-publish-remove-all-timestamps)
+    (defun ks/publish-wiki ()
+      (interactive)
+      (let ((org-export-use-babel t))
+        (progn
+          (org-id-update-id-locations (directory-files-recursively org-roam-directory ".org$\\|.org.gpg$"))
+          (org-publish-project "k-sunako.org"))))
 
   #+END_SRC
 
@@ -1227,6 +1252,7 @@ org-mode の latex エクスポートの設定.
     :init
     ;;(org-roam-setup)
     (org-roam-db-autosync-mode)
+    (setq org-roam-node-display-template (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
     ;; If using org-roam-protocol
     (require 'org-roam-protocol))
 
