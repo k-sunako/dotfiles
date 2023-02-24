@@ -1,9 +1,9 @@
-(setq gc-cons-threshold most-positive-fixnum)
-(run-with-idle-timer
- 10 nil
- (lambda ()
-   (setq gc-cons-threshold (car (get 'gc-cons-threshold 'standard-value)))
-   (message "gc-cons-threshold restored to %S" gc-cons-threshold)))
+;; (setq gc-cons-threshold most-positive-fixnum)
+;; (run-with-idle-timer
+;;  10 nil
+;;  (lambda ()
+;;    (setq gc-cons-threshold (car (get 'gc-cons-threshold 'standard-value)))
+;;    (message "gc-cons-threshold restored to %S" gc-cons-threshold)))
 
 ;;; Begin initialization
 (setq inhibit-startup-message t)

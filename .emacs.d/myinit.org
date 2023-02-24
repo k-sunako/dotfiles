@@ -405,269 +405,270 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
 * 補完 / 絞り込み
 
   #+BEGIN_SRC emacs-lisp
-	(use-package ace-window
-	  :straight t
-	  :bind (("C-t". ace-window)))
+    (use-package ace-window
+      :straight t
+      :bind (("C-t". ace-window)))
 
-	(use-package projectile
-	  :ensure t
-	  :diminish projectile-mode
-	  :config
-	  (projectile-mode +1)
-	  (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
-	  (setq projectile-indexing-method 'alien)
-	  (setq projectile-project-search-path '("~/repos" "~/myspace/Projects"))
-	  (projectile-discover-projects-in-search-path))
+    (use-package projectile
+      :ensure t
+      :diminish projectile-mode
+      :config
+      (projectile-mode +1)
+      (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
+      (setq projectile-indexing-method 'alien)
+      (setq projectile-project-search-path '("~/repos" "~/myspace/Projects"))
+      (projectile-discover-projects-in-search-path))
 
-	(use-package selectrum
-	  :straight t
-	  :config
-	  (selectrum-mode +1))
+    (use-package selectrum
+      :straight t
+      :config
+      (selectrum-mode +1))
 
-	;; Migemoを有効にする
-	;; https://github.com/yamatakau08/.emacs.d/blob/master/.orderless.el
-	(use-package orderless
-	  :straight t
+    ;; Migemoを有効にする
+    ;; https://github.com/yamatakau08/.emacs.d/blob/master/.orderless.el
+    (use-package orderless
+      :straight t
 
-	  :init
-	  (setq
-	   completion-styles '(orderless partial-completion basic)
-	   completion-category-defaults nil
-	   ;completion-category-overrides '((file (styles . (partial-completion)))))
-	   completion-category-overrides nil)
+      :init
+      (setq
+       completion-styles '(orderless partial-completion basic)
+       completion-category-defaults nil
+       ;completion-category-overrides '((file (styles . (partial-completion)))))
+       completion-category-overrides nil)
 
-	  :after migemo
+      :after migemo
 
-	  :custom
-	  ;(completion-styles '(orderless))
-	  (orderless-matching-styles '(orderless-literal orderless-regexp orderless-migemo))
-	  ;;(orderless-matching-styles '(orderless-literal orderless-regexp))
+      :custom
+      ;;(completion-styles '(orderless))
+      (orderless-matching-styles '(orderless-literal orderless-regexp orderless-migemo))
+      ;;(orderless-matching-styles '(orderless-literal orderless-regexp))
 
-	  :config
-	  ;; supported emacs-jp slack
-	  ;;(setq orderless-matching-styles '(orderless-migemo))
-	  ;;(setq orderless-matching-styles '(orderless-literal orderless-regexp orderless-migemo)) ; move to :custom block
-	  ;;(defalias 'orderless-migemo #'migemo-get-pattern)
+      :config
+      ;; supported emacs-jp slack
+      ;;(setq orderless-matching-styles '(orderless-migemo))
+      ;;(setq orderless-matching-styles '(orderless-literal orderless-regexp orderless-migemo)) ; move to :custom block
+      ;;(defalias 'orderless-migemo #'migemo-get-pattern)
 
-	   (defun orderless-migemo (component)
-	     (let ((pattern (migemo-get-pattern component)))
-	       ;;(message component)
-	       (condition-case nil
-		   (progn (string-match-p pattern "") pattern)
-		 (invalid-regexp nil))))
-	  (defun orderless-migemo (component)
-	    (if (>= (length component) 4)
-		(let ((pattern (migemo-get-pattern component)))
-		  (condition-case nil
-		      (progn (string-match-p pattern "") pattern)
-		    (invalid-regexp nil)))
-	      component)))
-	;;(use-package marginalia
-	;;
-	;;  :config
-	;;  (marginalia-mode))
-	;; Enable richer annotations using the Marginalia package
-	(use-package marginalia
-	  :straight t
+       (defun orderless-migemo (component)
+         (let ((pattern (migemo-get-pattern component)))
+           ;;(message component)
+           (condition-case nil
+           (progn (string-match-p pattern "") pattern)
+           (invalid-regexp nil))))
 
-	  ;; Either bind `marginalia-cycle` globally or only in the minibuffer
-	  :bind (("M-A" . marginalia-cycle)
-		 :map minibuffer-local-map
-		 ("M-A" . marginalia-cycle))
+      (defun orderless-migemo (component)
+        (if (>= (length component) 4)
+            (let ((pattern (migemo-get-pattern component)))
+              (condition-case nil
+                  (progn (string-match-p pattern "") pattern)
+                (invalid-regexp nil)))
+          component)))
+    ;;(use-package marginalia
+    ;;
+    ;;  :config
+    ;;  (marginalia-mode))
+    ;; Enable richer annotations using the Marginalia package
+    (use-package marginalia
+      :straight t
 
-	  ;; The :init configuration is always executed (Not lazy!)
-	  :init
+      ;; Either bind `marginalia-cycle` globally or only in the minibuffer
+      :bind (("M-A" . marginalia-cycle)
+         :map minibuffer-local-map
+         ("M-A" . marginalia-cycle))
 
-	  ;; Must be in the :init section of use-package such that the mode gets
-	  ;; enabled right away. Note that this forces loading the package.
-	  (marginalia-mode)
-	  :config
-	  (add-to-list 'marginalia-prompt-categories
-		       '("\\<File\\>" . file)))
+      ;; The :init configuration is always executed (Not lazy!)
+      :init
 
-	(use-package consult
-	  :straight t
-	  ;; Replace bindings. Lazily loaded due by `use-package'.
-	  :bind (;; C-c bindings (mode-specific-map)
-		 ("C-c h" . consult-history)
-		 ("C-c m" . consult-mode-command)
-		 ("C-c b" . consult-bookmark)
-		 ("C-c k" . consult-kmacro)
-		 ;; C-x bindings (ctl-x-map)
-		 ("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
-		 ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
-		 ("C-x 4 b" . consult-buffer-other-window) ;; orig. switch-to-buffer-other-window
-		 ("C-x 5 b" . consult-buffer-other-frame)  ;; orig. switch-to-buffer-other-frame
-		 ;; Custom M-# bindings for fast register access
-		 ("M-#" . consult-register-load)
-		 ("M-'" . consult-register-store)          ;; orig. abbrev-prefix-mark (unrelated)
-		 ("C-M-#" . consult-register)
-		 ;; Other custom bindings
-		 ("M-y" . consult-yank-pop)                ;; orig. yank-pop
-		 ("<help> a" . consult-apropos)            ;; orig. apropos-command
-		 ;; M-g bindings (goto-map)
-		 ("M-g e" . consult-compile-error)
-		 ("M-g f" . consult-flymake)               ;; Alternative: consult-flycheck
-		 ("M-g g" . consult-goto-line)             ;; orig. goto-line
-		 ("M-g M-g" . consult-goto-line)           ;; orig. goto-line
-		 ("M-g o" . consult-outline)               ;; Alternative: consult-org-heading
-		 ("M-g m" . consult-mark)
-		 ("M-g k" . consult-global-mark)
-		 ("M-g i" . consult-imenu)
-		 ("M-g I" . consult-project-imenu)
-		 ;; M-s bindings (search-map)
-		 ("M-s f" . consult-find)
-		 ("M-s L" . consult-locate)
-		 ("M-s g" . consult-grep)
-		 ("M-s G" . consult-git-grep)
-		 ("M-s r" . consult-ripgrep)
-		 ("M-s l" . consult-line)
-		 ("M-s m" . consult-multi-occur)
-		 ("M-s k" . consult-keep-lines)
-		 ("M-s u" . consult-focus-lines)
-		 ;; Isearch integration
-		 ("C-s" . ks/consult-line)
-		 ("M-s e" . consult-isearch)
-		 :map isearch-mode-map
-		 ("M-e" . consult-isearch)                 ;; orig. isearch-edit-string
-		 ("M-s e" . consult-isearch)               ;; orig. isearch-edit-string
-		 ("M-s l" . consult-line))                 ;; needed by consult-line to detect isearch
+      ;; Must be in the :init section of use-package such that the mode gets
+      ;; enabled right away. Note that this forces loading the package.
+      (marginalia-mode)
+      :config
+      (add-to-list 'marginalia-prompt-categories
+               '("\\<File\\>" . file)))
 
-	  ;; Enable automatic preview at point in the *Completions* buffer.
-	  ;; This is relevant when you use the default completion UI,
-	  ;; and not necessary for Vertico, Selectrum, etc.
-	  :hook (completion-list-mode . consult-preview-at-point-mode)
+    (use-package consult
+      :straight t
+      ;; Replace bindings. Lazily loaded due by `use-package'.
+      :bind (;; C-c bindings (mode-specific-map)
+         ("C-c h" . consult-history)
+         ("C-c m" . consult-mode-command)
+         ("C-c b" . consult-bookmark)
+         ("C-c k" . consult-kmacro)
+         ;; C-x bindings (ctl-x-map)
+         ("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
+         ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
+         ("C-x 4 b" . consult-buffer-other-window) ;; orig. switch-to-buffer-other-window
+         ("C-x 5 b" . consult-buffer-other-frame)  ;; orig. switch-to-buffer-other-frame
+         ;; Custom M-# bindings for fast register access
+         ("M-#" . consult-register-load)
+         ("M-'" . consult-register-store)          ;; orig. abbrev-prefix-mark (unrelated)
+         ("C-M-#" . consult-register)
+         ;; Other custom bindings
+         ("M-y" . consult-yank-pop)                ;; orig. yank-pop
+         ("<help> a" . consult-apropos)            ;; orig. apropos-command
+         ;; M-g bindings (goto-map)
+         ("M-g e" . consult-compile-error)
+         ("M-g f" . consult-flymake)               ;; Alternative: consult-flycheck
+         ("M-g g" . consult-goto-line)             ;; orig. goto-line
+         ("M-g M-g" . consult-goto-line)           ;; orig. goto-line
+         ("M-g o" . consult-outline)               ;; Alternative: consult-org-heading
+         ("M-g m" . consult-mark)
+         ("M-g k" . consult-global-mark)
+         ("M-g i" . consult-imenu)
+         ("M-g I" . consult-project-imenu)
+         ;; M-s bindings (search-map)
+         ("M-s f" . consult-find)
+         ("M-s L" . consult-locate)
+         ("M-s g" . consult-grep)
+         ("M-s G" . consult-git-grep)
+         ("M-s r" . consult-ripgrep)
+         ("M-s l" . consult-line)
+         ("M-s m" . consult-multi-occur)
+         ("M-s k" . consult-keep-lines)
+         ("M-s u" . consult-focus-lines)
+         ;; Isearch integration
+         ("C-s" . ks/consult-line)
+         ("M-s e" . consult-isearch)
+         :map isearch-mode-map
+         ("M-e" . consult-isearch)                 ;; orig. isearch-edit-string
+         ("M-s e" . consult-isearch)               ;; orig. isearch-edit-string
+         ("M-s l" . consult-line))                 ;; needed by consult-line to detect isearch
 
-	  ;; The :init configuration is always executed (Not lazy)
-	  :init
-	  ;; consult-line のリージョン対応
-	  (defun ks/consult-line ()
-	    "Consult-line uses things-at-point if set C-u prefix."
-	    (interactive)
-	    (if (region-active-p)
-		(let ((reg (buffer-substring-no-properties (region-beginning) (region-end))))
-		  (deactivate-mark)
-		  (consult-line reg))
-	      (consult-line)))
+      ;; Enable automatic preview at point in the *Completions* buffer.
+      ;; This is relevant when you use the default completion UI,
+      ;; and not necessary for Vertico, Selectrum, etc.
+      :hook (completion-list-mode . consult-preview-at-point-mode)
 
-	  ;; Optionally configure the register formatting. This improves the register
-	  ;; preview for `consult-register', `consult-register-load',
-	  ;; `consult-register-store' and the Emacs built-ins.
-	  (setq register-preview-delay 0
-		register-preview-function #'consult-register-format)
+      ;; The :init configuration is always executed (Not lazy)
+      :init
+      ;; consult-line のリージョン対応
+      (defun ks/consult-line ()
+        "Consult-line uses things-at-point if set C-u prefix."
+        (interactive)
+        (if (region-active-p)
+        (let ((reg (buffer-substring-no-properties (region-beginning) (region-end))))
+          (deactivate-mark)
+          (consult-line reg))
+          (consult-line)))
 
-	  ;; Optionally tweak the register preview window.
-	  ;; This adds thin lines, sorting and hides the mode line of the window.
-	  (advice-add #'register-preview :override #'consult-register-window)
+      ;; Optionally configure the register formatting. This improves the register
+      ;; preview for `consult-register', `consult-register-load',
+      ;; `consult-register-store' and the Emacs built-ins.
+      (setq register-preview-delay 0
+        register-preview-function #'consult-register-format)
 
-	  ;; Optionally replace `completing-read-multiple' with an enhanced version.
-	  ;;(advice-add #'completing-read-multiple :override #'consult-completing-read-multiple)
+      ;; Optionally tweak the register preview window.
+      ;; This adds thin lines, sorting and hides the mode line of the window.
+      (advice-add #'register-preview :override #'consult-register-window)
 
-	  ;; Use Consult to select xref locations with preview
-	  (setq xref-show-xrefs-function #'consult-xref
-		xref-show-definitions-function #'consult-xref)
-	  ;; Consult-ripgrep の Migemo 対応
-	  (defvar consult--migemo-regexp "")
-	  (defun consult--migemo-regexp-compiler (input type ignore-case)
-	    (setq consult--migemo-regexp
-		  (mapcar #'migemo-get-pattern (consult--split-escaped input)))
-	    (cons (mapcar (lambda (x) (consult--convert-regexp x type))
-			  consult--migemo-regexp)
-		  (lambda (str)
-		    (consult--highlight-regexps consult--migemo-regexp str))))
-	  (setq consult--regexp-compiler #'consult--migemo-regexp-compiler)
+      ;; Optionally replace `completing-read-multiple' with an enhanced version.
+      ;;(advice-add #'completing-read-multiple :override #'consult-completing-read-multiple)
+
+      ;; Use Consult to select xref locations with preview
+      (setq xref-show-xrefs-function #'consult-xref
+        xref-show-definitions-function #'consult-xref)
+      ;; Consult-ripgrep の Migemo 対応
+      (defvar consult--migemo-regexp "")
+      (defun consult--migemo-regexp-compiler (input type ignore-case)
+        (setq consult--migemo-regexp
+          (mapcar #'migemo-get-pattern (consult--split-escaped input)))
+        (cons (mapcar (lambda (x) (consult--convert-regexp x type))
+              consult--migemo-regexp)
+          (lambda (str)
+            (consult--highlight-regexps consult--migemo-regexp str))))
+      (setq consult--regexp-compiler #'consult--migemo-regexp-compiler)
 
 
-	  ;; Configure other variables and modes in the :config section,
-	  ;; after lazily loading the package.
-	  :config
+      ;; Configure other variables and modes in the :config section,
+      ;; after lazily loading the package.
+      :config
 
-	  ;; Optionally configure preview. The default value
-	  ;; is 'any, such that any key triggers the preview.
-	  ;; (setq consult-preview-key 'any)
-	  ;; (setq consult-preview-key (kbd "M-."))
-	  ;; (setq consult-preview-key (list (kbd "<S-down>") (kbd "<S-up>")))
-	  ;; For some commands and buffer sources it is useful to configure the
-	  ;; :preview-key on a per-command basis using the `consult-customize' macro.
-	  (consult-customize
-	   consult-theme :preview-key '(:debounce 0.2 any)
+      ;; Optionally configure preview. The default value
+      ;; is 'any, such that any key triggers the preview.
+      ;; (setq consult-preview-key 'any)
+      ;; (setq consult-preview-key (kbd "M-."))
+      ;; (setq consult-preview-key (list (kbd "<S-down>") (kbd "<S-up>")))
+      ;; For some commands and buffer sources it is useful to configure the
+      ;; :preview-key on a per-command basis using the `consult-customize' macro.
+      (consult-customize
+       consult-theme :preview-key '(:debounce 0.2 any)
     ;;       consult-ripgrep consult-git-grep consult-grep
     ;;       consult-bookmark consult-recent-file consult-xref
     ;;       consult--source-file consult--source-project-file consult--source-bookmark
 
-	   consult-ripgrep consult-git-grep consult-grep
-	   consult-bookmark consult-recent-file consult-xref
-	   consult--source-bookmark consult--source-recent-file
-	   consult--source-project-recent-file       
-	   :preview-key (kbd "M-."))
+       consult-ripgrep consult-git-grep consult-grep
+       consult-bookmark consult-recent-file consult-xref
+       consult--source-bookmark consult--source-recent-file
+       consult--source-project-recent-file       
+       :preview-key (kbd "M-."))
 
-	  ;; Optionally configure the narrowing key.
-	  ;; Both < and C-+ work reasonably well.
-	  (setq consult-narrow-key "<") ;; (kbd "C-+")
+      ;; Optionally configure the narrowing key.
+      ;; Both < and C-+ work reasonably well.
+      (setq consult-narrow-key "<") ;; (kbd "C-+")
 
-	  ;; Optionally make narrowing help available in the minibuffer.
-	  ;; You may want to use `embark-prefix-help-command' or which-key instead.
-	  ;; (define-key consult-narrow-map (vconcat consult-narrow-key "?") #'consult-narrow-help)
+      ;; Optionally make narrowing help available in the minibuffer.
+      ;; You may want to use `embark-prefix-help-command' or which-key instead.
+      ;; (define-key consult-narrow-map (vconcat consult-narrow-key "?") #'consult-narrow-help)
 
-	  ;; Optionally configure a function which returns the project root directory.
-	  ;; There are multiple reasonable alternatives to chose from.
-			    ;;;; 1. project.el (project-roots)
-	  (setq consult-project-root-function
-		(lambda ()
-		  (when-let (project (project-current))
-		    (car (project-roots project)))))
-			    ;;;; 2. projectile.el (projectile-project-root)
-	  ;; (autoload 'projectile-project-root "projectile")
-	  ;; (setq consult-project-root-function #'projectile-project-root)
-			    ;;;; 3. vc.el (vc-root-dir)
-	  ;; (setq consult-project-root-function #'vc-root-dir)
-			    ;;;; 4. locate-dominating-file
-	  ;; (setq consult-project-root-function (lambda () (locate-dominating-file "." ".git")))
+      ;; Optionally configure a function which returns the project root directory.
+      ;; There are multiple reasonable alternatives to chose from.
+                ;;;; 1. project.el (project-roots)
+      (setq consult-project-root-function
+        (lambda ()
+          (when-let (project (project-current))
+            (car (project-roots project)))))
+                ;;;; 2. projectile.el (projectile-project-root)
+      ;; (autoload 'projectile-project-root "projectile")
+      ;; (setq consult-project-root-function #'projectile-project-root)
+                ;;;; 3. vc.el (vc-root-dir)
+      ;; (setq consult-project-root-function #'vc-root-dir)
+                ;;;; 4. locate-dominating-file
+      ;; (setq consult-project-root-function (lambda () (locate-dominating-file "." ".git")))
 
-	  ;; C-x b の consult-buffer に recentf を追加する
-	  ;; https://tam5917.hatenablog.com/entry/2021/04/29/235949
-	  (setq consult--source-file
-		`(:name     "File"
-			    :narrow   ?f
-			    :category file
-			    :face     consult-file
-			    :history  file-name-history
-			    :action   ,#'consult--file-action
-			    :enabled   ,(lambda () recentf-mode)
-			    :items ,recentf-list))
+      ;; C-x b の consult-buffer に recentf を追加する
+      ;; https://tam5917.hatenablog.com/entry/2021/04/29/235949
+      (setq consult--source-file
+        `(:name     "File"
+                :narrow   ?f
+                :category file
+                :face     consult-file
+                :history  file-name-history
+                :action   ,#'consult--file-action
+                :enabled   ,(lambda () recentf-mode)
+                :items ,recentf-list))
 
-	  )
+      )
 
-	(use-package embark
-	  :straight t
+    (use-package embark
+      :straight t
 
-	  :bind
-	  (("C-." . embark-act)         ;; pick some comfortable binding
-	   ("C-;" . embark-dwim)        ;; good alternative: M-.
-	   ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
+      :bind
+      (("C-." . embark-act)         ;; pick some comfortable binding
+       ("C-;" . embark-dwim)        ;; good alternative: M-.
+       ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
 
-	  :init
+      :init
 
-	  ;; Optionally replace the key help with a completing-read interface
-	  (setq prefix-help-command #'embark-prefix-help-command)
+      ;; Optionally replace the key help with a completing-read interface
+      (setq prefix-help-command #'embark-prefix-help-command)
 
-	  :config
+      :config
 
-	  ;; Hide the mode line of the Embark live/completions buffers
-	  (add-to-list 'display-buffer-alist
-		       '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
-			 nil
-			 (window-parameters (mode-line-format . none)))))
+      ;; Hide the mode line of the Embark live/completions buffers
+      (add-to-list 'display-buffer-alist
+               '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+             nil
+             (window-parameters (mode-line-format . none)))))
 
-	;; Consult users will also want the embark-consult package.
-	(use-package embark-consult
-	  :straight t
-	  :after (embark consult)
-	  :demand t ; only necessary if you have the hook below
-	  ;; if you want to have consult previews as you move around an
-	  ;; auto-updating embark collect buffer
-	  :hook
-	  (embark-collect-mode . consult-preview-at-point-mode))
+    ;; Consult users will also want the embark-consult package.
+    (use-package embark-consult
+      :straight t
+      :after (embark consult)
+      :demand t ; only necessary if you have the hook below
+      ;; if you want to have consult previews as you move around an
+      ;; auto-updating embark collect buffer
+      :hook
+      (embark-collect-mode . consult-preview-at-point-mode))
   #+END_SRC
 
 
@@ -678,14 +679,15 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
     ;;(use-package org-contrib :straight t)
 
     (use-package gnuplot :straight t)
+
     (use-package org
       :straight t
       :diminish org-indent-mode
       :hook ((org-mode . org-indent-mode)
-	     (org-capture-mode . skk-mode))
+             (org-capture-mode . skk-mode))
       :bind (("C-c c" . org-capture)
-	     ("C-c a" . org-agenda)
-	     ("<f11>" . org-clock-goto))
+             ("C-c a" . org-agenda)
+             ("<f11>" . org-clock-goto))
 
       :config
 
@@ -694,27 +696,30 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
 
       ;; Export 時にEvalをしないように
       (setq org-babel-default-header-args
-	    (-concat '((:eval "nenver-export"))
-		     (--remove (eq :eval (car it)) org-babel-default-header-args)))
+            (-concat '((:eval "never-export"))
+                     (--remove (eq :eval (car it)) org-babel-default-header-args)))
 
       (setq org-export-allow-bind-keywords t)
       (defun org-confirm-elisp-link-function--no-confirm-my-org-file (prompt)
-	"自分が書いたorgファイルの(のディレクトリにある)elispリンクはconfirmなし。
-			  それ以外のディレクトリではconfirmする。"
-	(or (string-match "/myspace/Org/" (or (buffer-file-name) ""))
-	    (member (buffer-name) '("*trace-output*"))
-	    (y-or-n-p prompt)))
+        "自分が書いたorgファイルの(のディレクトリにある)elispリンクはconfirmなし。
+              それ以外のディレクトリではconfirmする。"
+        (or (string-match "/myspace/Org/" (or (buffer-file-name) ""))
+            (member (buffer-name) '("*trace-output*"))
+            (y-or-n-p prompt)))
       (setq org-confirm-elisp-link-function
-	    'org-confirm-elisp-link-function--no-confirm-my-org-file)
+            'org-confirm-elisp-link-function--no-confirm-my-org-file)
 
       (add-to-list 'auto-mode-alist
-		   '("\\.pdf\\'" . pdf-view-mode))
+                   '("\\.pdf\\'" . pdf-view-mode))
 
       (require 'org-habit)
       (require 'org-protocol)
 
-      (setq org-link-file-path-type 'relative)
+      ;;(setq org-link-file-path-type 'relative)
       (setf (alist-get 'file org-link-frame-setup) 'find-file)
+      ;; default: t
+      (setq org-id-link-to-org-use-id 'create-if-interactive)
+      ;;(setq org-id-link-to-org-use-id t)
 
       (setq org-src-fontify-natively t)
       (setq org-confirm-babel-evaluate nil)
@@ -727,25 +732,25 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
       (org-babel-do-load-languages
        'org-babel-load-languages
        '((haskell . t)
-	 (emacs-lisp . t)
-	 (gnuplot . t)
-	 (latex . t)
-	 (shell . t)
-	 (python . t)
-	 (dot . t)))
+         (emacs-lisp . t)
+         (gnuplot . t)
+         (latex . t)
+         (shell . t)
+         (python . t)
+         (dot . t)))
 
       (setq org-log-done t)
 
 
       (setf org-html-mathjax-options
-	    '((path "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML")
-	      (scale "100")
-	      (align "center")
-	      (indent "2em")
-	      (mathml nil)))
+            '((path "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML")
+              (scale "100")
+              (align "center")
+              (indent "2em")
+              (mathml nil)))
 
       (setf org-html-mathjax-template
-	    "<script type=\"text/javascript\" src=\"%PATH\"></script>")
+            "<script type=\"text/javascript\" src=\"%PATH\"></script>")
 
 
       ;; Agenda を現在のウィンドウと入れ替えで表示
@@ -755,109 +760,108 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
       ;; CANCELLED などのタグは一週間分のみ表示
       (setq org-scheduled-past-days 7)
       (setq org-agenda-prefix-format
-	    '((agenda . " %i %-12:c%?-12t%-6e% s")
-	      (timeline . "  % s")
-	      (todo . " %i %-12:c")
-	      (tags . " %i %-12:c")
-	      (search . " %i %-12:c")))  
+            '((agenda . " %i %-12:c%?-12t%-6e% s")
+              (timeline . "  % s")
+              (todo . " %i %-12:c")
+              (tags . " %i %-12:c")
+              (search . " %i %-12:c")))  
       (setq org-agenda-files '("~/myspace/org-roam/20230205085538-inbox.org"))
 
       ;; リフィルをアジェンダ内で行えるように
       (setq org-refile-targets
-	    '((nil :maxlevel . 1)
-	      (org-agenda-files :maxlevel . 1)))
+            '((nil :maxlevel . 1)
+              (org-agenda-files :maxlevel . 1)))
       ;; リフィルの移動先の表示を調整
       (setq org-refile-use-outline-path 'buffer-name)
       (setq org-outline-path-complete-in-steps nil)
       (setq org-refile-allow-creating-parent-nodes 'confirm)
 
       (setq org-tag-persistent-alist '(("@home") ("@cafe") ("@ipx") ("@train")
-				       ("act_learn") ("act_exercise")
-				       ("art_ai") ("art_prg") ("art_pyt") ("art_lsp") ("art_dev") ("art_ems")
-				       ("thr_fun")("thr_prb") ("thr_num") ("thr_cry")))
+                                       ("act_learn") ("act_exercise")
+                                       ("art_ai") ("art_prg") ("art_pyt") ("art_lsp") ("art_dev") ("art_ems")
+                                       ("thr_fun")("thr_prb") ("thr_num") ("thr_cry")))
 
       ;; クロックレポートのカスタム
       (defun ks/org-clock-report-filename (filepath)
-	(let* ((bn (f-filename filepath))
-	       (dn (f-dirname filepath))
-	       (pdn (f-filename dn)))
-	  (s-concat  (f-dirname filepath) "/" bn "-" pdn)))
+        (let* ((bn (f-filename filepath))
+               (dn (f-dirname filepath))
+               (pdn (f-filename dn)))
+          (s-concat  (f-dirname filepath) "/" bn "-" pdn)))
 
       (defun ks/org-clocktable-formatter (ipos tables params)
-	(org-clocktable-write-default
-	 ipos
-	 (-map (lambda (x) (cons (ks/org-clock-report-filename (car x)) (cdr x))) tables)
-	 params))
+        (org-clocktable-write-default
+         ipos
+         (-map (lambda (x) (cons (ks/org-clock-report-filename (car x)) (cdr x))) tables)
+         params))
 
       (defun ks/org-clock-report ()
-	(interactive)
-	(let ((org-clock-clocktable-formatter 'ks/org-clocktable-formatter))
-	  (org-clock-report)))
+        (interactive)
+        (let ((org-clock-clocktable-formatter 'ks/org-clocktable-formatter))
+          (org-clock-report)))
 
       (defun ks/select-file-for-task ()
-	(let ((fpath (completing-read "file: " (-map #'list org-agenda-files) nil t )))
+        (let ((fpath (completing-read "file: " (-map #'list org-agenda-files) nil t )))
 
-	  (set-buffer (org-capture-target-buffer fpath))
-	  (unless (derived-mode-p 'org-mode)
-	    (org-display-warning
-	     (format "Capture requirement: switching buffer %S to Org mode"
-		     (current-buffer)))
-	    (org-mode))
-	  (org-capture-put-target-region-and-position)
-	  (widen)
-	  (goto-char (point-min))
-	  (if (re-search-forward (format org-complex-heading-regexp-format
-					 (regexp-quote "Tasks"))
-				 nil t)
-	      (beginning-of-line)
-	    (goto-char (point-max))
-	    (unless (bolp) (insert "\n"))
-	    (insert "* " "Tasks" "\n")
-	    (beginning-of-line 0))))
+          (set-buffer (org-capture-target-buffer fpath))
+          (unless (derived-mode-p 'org-mode)
+            (org-display-warning
+             (format "Capture requirement: switching buffer %S to Org mode"
+                     (current-buffer)))
+            (org-mode))
+          (org-capture-put-target-region-and-position)
+          (widen)
+          (goto-char (point-min))
+          (if (re-search-forward (format org-complex-heading-regexp-format
+                                         (regexp-quote "Tasks"))
+                                 nil t)
+              (beginning-of-line)
+            (goto-char (point-max))
+            (unless (bolp) (insert "\n"))
+            (insert "* " "Tasks" "\n")
+            (beginning-of-line 0))))
 
       (defun ks/add-clock ()
-	(interactive)
-	(save-excursion
-	  (let ((str-ts (with-temp-buffer (org-time-stamp-inactive t)))
-		(end-ts (with-temp-buffer (org-time-stamp-inactive t))))
-	    (org-clock-find-position nil)
-	    (insert (s-lex-format "CLOCK: ${str-ts}--${end-ts} =>  0:00\n"))
-	    (forward-line -1)
-	    (org-clock-update-time-maybe))))
+        (interactive)
+        (save-excursion
+          (let ((str-ts (with-temp-buffer (org-time-stamp-inactive t)))
+                (end-ts (with-temp-buffer (org-time-stamp-inactive t))))
+            (org-clock-find-position nil)
+            (insert (s-lex-format "CLOCK: ${str-ts}--${end-ts} =>  0:00\n"))
+            (forward-line -1)
+            (org-clock-update-time-maybe))))
 
       (setq org-capture-templates `(("t" "Todo [inbox]" entry
-				     (file "~/myspace/org-roam/20230205085538-inbox.org" )
-				     "* TODO %i%?")
-				    ("T" "Todo " entry
-				     (function ks/select-file-for-task)
-				     "* TODO %i%?")
-				    ("n" "Note [inbox]" entry
-				     (file "~/myspace/org-roam/20230205085538-inbox.org")
-				     "* %u\nPath:%F\nLink: %a\nTask: %k\n\n%?")
-				    ("q" "Question [inbox]" entry
-				     (file "~/myspace/org-roam/20230205085538-inbox.org")
-				     "* QUESTION %?")
-				    ("a" "Anki [drill]" entry
-				     (file+headline "~/myspace/Projects/202201201927-drill/main.org" "drill")
-				     "* Card :drill:\n%?\n** Answer\n ")
-				    ("r" "reference" plain
-				     (file "~/myspace/Bibliography/references.bib"))
-				    ("p" "Protocol" entry
-				     (file+headline "~/myspace/Org/inbox.org" "Scraps")
-				     "* %^{Title}\nSource: %u, %c\n  \n #+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n\n%?")
-				    ("L" "Protocol Link" entry
-				     (file+headline "~/myspace/Org/inbox.org" "Scraps")
-				     "* %? [[%:link][%:description]] \nCaptured On: %U")))
+                                     (file "~/myspace/org-roam/20230205085538-inbox.org" )
+                                     "* TODO %i%?")
+                                    ("T" "Todo " entry
+                                     (function ks/select-file-for-task)
+                                     "* TODO %i%?")
+                                    ("n" "Note [inbox]" entry
+                                     (file "~/myspace/org-roam/20230205085538-inbox.org")
+                                     "* %u\nPath:%F\nLink: %a\nTask: %k\n\n%?")
+                                    ("q" "Question [inbox]" entry
+                                     (file "~/myspace/org-roam/20230205085538-inbox.org")
+                                     "* QUESTION %?")
+                                    ("a" "Anki [drill]" entry
+                                     (file+headline "~/myspace/Projects/202201201927-drill/main.org" "drill")
+                                     "* Card :drill:\n%?\n** Answer\n ")
+                                    ("r" "reference" plain
+                                     (file "~/myspace/Bibliography/references.bib"))
+                                    ("p" "Protocol" entry
+                                     (file+headline "~/myspace/Org/inbox.org" "Scraps")
+                                     "* %^{Title}\nSource: %u, %c\n  \n #+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n\n%?")
+                                    ("L" "Protocol Link" entry
+                                     (file+headline "~/myspace/Org/inbox.org" "Scraps")
+                                     "* %? [[%:link][%:description]] \nCaptured On: %U")))
 
-    (setq org-todo-keywords '((sequence
-			       "NEXT(n)" "TODO(t)" "WAITING(w)" "SOMEDAY(s)" "|" "DONE(d)" "CANCELLED(c)" )))
+      (setq org-todo-keywords '((sequence
+                                 "NEXT(n)" "TODO(t)" "WAITING(w)" "SOMEDAY(s)" "|" "DONE(d)" "CANCELLED(c)" )))
 
-    (setq org-format-latex-options (plist-put org-format-latex-options :scale 2.0))
+      (setq org-format-latex-options (plist-put org-format-latex-options :scale 2.0))
 
-    (setq org-habit-show-habits-only-for-today 1)
-    (setq org-agenda-repeating-timestamp-show-all nil)
+      (setq org-habit-show-habits-only-for-today 1)
+      (setq org-agenda-repeating-timestamp-show-all nil))
 
-    )
     (use-package org-fragtog :straight t)
     (use-package org-wild-notifier
       :straight t
@@ -898,51 +902,63 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
       (interactive)
       (goto-char (point-min))
       (while (re-search-forward "^\\([^|#*\n].+\\)\\(.\\)\n *\\(.\\)" nil t)
-	(if (and (> (string-to-char (match-string 2)) #x2000)
-		 (> (string-to-char (match-string 3)) #x2000))
-	    (replace-match "\\1\\2\\3"))
-	(goto-char (point-at-bol))))
+        (if (and (> (string-to-char (match-string 2)) #x2000)
+                 (> (string-to-char (match-string 3)) #x2000))
+            (replace-match "\\1\\2\\3"))
+        (goto-char (point-at-bol))))
 
     (with-eval-after-load "ox"
       (add-hook 'org-export-before-processing-hook 'remove-org-newlines-at-cjk-text))
 
 
-
-    (require 'ox-publish)
-    (setq org-html-html5-fancy t
-	  org-html-doctype "html5")
-    (setq org-html-validation-link nil            ;; Don't show validation link
-	  org-html-head-include-scripts nil       ;; Use our own scripts
-	  org-html-head-include-default-style nil ;; Use our own styles
-	  org-html-head "<link rel=\"stylesheet\" href=\"./css/latex.css\" /> <script src=\"https://tikzjax.com/v1/tikzjax.js\"></script>")
-    (setq org-publish-project-alist
-	  `(("pages"
-	     :base-directory "~/myspace/org-roam/"
-	     :base-extension "org"
-	     :recursive t
-	     :publishing-directory "~/myspace/k-sunako.org/html/"
-	     :publishing-function org-html-publish-to-html)
-
-	    ("static"
-	     :base-directory "~/myspace/org-roam/"
-	     :base-extension "css\\|txt\\|jpg\\|gif\\|png"
-	     :recursive t
-	     :publishing-directory  "~/myspace/k-sunako.org/html"
-	     :publishing-function org-publish-attachment)
-
-	    ("k-sunako.org" :components ("pages" "static"))))
-    ;; (org-publish-remove-all-timestamps)
-    (defun ks/publish-wiki ()
-      (interactive)
-      (let ((org-export-use-babel t))
-	(progn
-	  (org-id-update-id-locations (directory-files-recursively org-roam-directory ".org$\\|.org.gpg$"))
-	  (org-publish-project "k-sunako.org"))))
-
   #+END_SRC
 
   [[https://emacs.stackexchange.com/questions/26451/agenda-view-for-all-tasks-with-a-project-tag-and-at-a-certain-level][org mode - Agenda view for all tasks with a project tag and at a certain leve...]]
   [[https://emacs.stackexchange.com/questions/41150/top-level-heading-in-the-org-mode-agenda][Top level heading in the `org-mode` agenda - Emacs Stack Exchange]]
+
+** org-publish
+
+org-roam を html に変換して
+
+#+begin_src emacs-lisp
+  (use-package simple-httpd
+    :straight t
+    :init
+    (httpd-serve-directory "~/tmp/html"))
+
+  (require 'ox-publish)
+  (setq org-html-html5-fancy t
+        org-html-doctype "html5")
+  (setq org-html-validation-link nil            ;; Don't show validation link
+        org-html-head-include-scripts nil       ;; Use our own scripts
+        org-html-head-include-default-style nil ;; Use our own styles
+        org-html-head "<link rel=\"stylesheet\" href=\"./css/latex.css\" /> <script src=\"https://tikzjax.com/v1/tikzjax.js\"></script>")
+  (setq org-publish-project-alist
+        `(("pages"
+           :base-directory (f-canonical "~/myspace/org-roam")
+           :base-extension "org"
+           :recursive t
+           :publishing-directory "~/tmp/html"
+           :publishing-function org-html-publish-to-html)
+
+          ("static"
+           :base-directory (f-canonical "~/myspace/org-roam")
+           :base-extension "css\\|txt\\|jpg\\|gif\\|png"
+           :recursive t
+           :publishing-directory  "~/tmp/html"
+           :publishing-function org-publish-attachment)
+
+          ("k-sunako.org" :components ("pages" "static"))))
+
+  ;; (org-publish-remove-all-timestamps)
+  (defun ks/publish-wiki ()
+    (interactive)
+    (let ((org-export-use-babel t))
+      (progn
+        (org-id-update-id-locations (directory-files-recursively org-roam-directory ".org$\\|.org.gpg$"))
+        (org-publish-project "k-sunako.org"))))
+
+#+end_src
 
 ** ox-latex
 org-mode の latex エクスポートの設定.
@@ -1062,7 +1078,7 @@ org-mode の latex エクスポートの設定.
 ** org-transclusion
 
 #+begin_src emacs-lisp
-  (setq org-id-link-to-org-use-id t)
+  ;;(setq org-id-link-to-org-use-id t)
   (use-package org-transclusion
     :straight t
     :after org
@@ -1070,9 +1086,6 @@ org-mode の latex エクスポートの設定.
     :hook (org-mode . org-transclusion-mode))
            ;("C-n t" . org-transclusion-mode)))
 #+end_src
-
-#+RESULTS:
-: org-transclusion-add
 
 ** citar
 
@@ -1302,90 +1315,114 @@ org-mode の latex エクスポートの設定.
 * プログラミング
 ** corfu
 #+begin_src emacs-lisp
-  (use-package consult-dash
-    :straight (consult-dash :type git :repo "https://codeberg.org/ravi/consult-dash.git")
-    :bind (("M-s d" . consult-dash))
-    :custom  (dash-docs-browser-func 'eww)
-    :config
-    ;; Use the symbol at point as initial search term
-    (consult-customize consult-dash :initial (thing-at-point 'symbol)))
+    (use-package consult-dash
+      :straight (consult-dash :type git :repo "https://codeberg.org/ravi/consult-dash.git")
+      :bind (("M-s d" . consult-dash))
+      :custom  (dash-docs-browser-func 'eww)
+      :config
+      ;; Use the symbol at point as initial search term
+      (consult-customize consult-dash :initial (thing-at-point 'symbol)))
 
-  (use-package cape :straight t)
+    (use-package corfu
+      :straight t
+      :custom
+      (corfu-auto t)                 ;; Enable auto completion
+      (corfu-quit-no-match 'separator)      ;; Never quit, even if there is no match
 
-  (use-package corfu
-    :straight t
-    :custom
-    (corfu-auto t)                 ;; Enable auto completion
-    (corfu-quit-no-match 'separator)      ;; Never quit, even if there is no match
-    :init
-    (global-corfu-mode))
+  ;  :bind
+  ;  (:map corfu-map
+  ;   ("C-n"      . corfu-next)
+  ;   ("C-p"      . corfu-previous)
+  ;   ("S-SPC"    . corfu-insert)
+  ;   ("ESC"      . corfu-reset)
+  ;   ("<S-up>"   . corfu-first)
+  ;   ("<S-down>" . corfu-scroll-down))    
+      :init
+      (global-corfu-mode))
 
-  (use-package cape
-    ;; Bind dedicated completion commands
-    ;; Alternative prefix keys: C-c p, M-p, M-+, ...
-    :bind (("C-c p p" . completion-at-point) ;; capf
-           ("C-c p t" . complete-tag)        ;; etags
-           ("C-c p d" . cape-dabbrev)        ;; or dabbrev-completion
-           ("C-c p h" . cape-history)
-           ("C-c p f" . cape-file)
-           ("C-c p k" . cape-keyword)
-           ("C-c p s" . cape-symbol)
-           ("C-c p a" . cape-abbrev)
-           ("C-c p i" . cape-ispell)
-           ("C-c p l" . cape-line)
-           ("C-c p w" . cape-dict)
-           ("C-c p \\" . cape-tex)
-           ("C-c p _" . cape-tex)
-           ("C-c p ^" . cape-tex)
-           ("C-c p &" . cape-sgml)
-           ("C-c p r" . cape-rfc1345))
-    :init
-    ;; Add `completion-at-point-functions', used by `completion-at-point'.
-    (add-to-list 'completion-at-point-functions #'cape-file)
-    (add-to-list 'completion-at-point-functions #'cape-dabbrev)
-    ;;(add-to-list 'completion-at-point-functions #'cape-history)
-    ;;(add-to-list 'completion-at-point-functions #'cape-keyword)
-    ;;(add-to-list 'completion-at-point-functions #'cape-tex)
-    ;;(add-to-list 'completion-at-point-functions #'cape-sgml)
-    ;;(add-to-list 'completion-at-point-functions #'cape-rfc1345)
-    ;;(add-to-list 'completion-at-point-functions #'cape-abbrev)
-    ;;(add-to-list 'completion-at-point-functions #'cape-ispell)
-    ;;(add-to-list 'completion-at-point-functions #'cape-dict)
-    ;;(add-to-list 'completion-at-point-functions #'cape-symbol)
-    ;;(add-to-list 'completion-at-point-functions #'cape-line)
-    )
+    (use-package cape
+      :straight t
+      ;; Bind dedicated completion commands
+      ;; Alternative prefix keys: C-c p, M-p, M-+, ...
+      :bind (("C-c p p" . completion-at-point) ;; capf
+             ("C-c p t" . complete-tag)        ;; etags
+             ("C-c p d" . cape-dabbrev)        ;; or dabbrev-completion
+             ("C-c p h" . cape-history)
+             ("C-c p f" . cape-file)
+             ("C-c p k" . cape-keyword)
+             ("C-c p s" . cape-symbol)
+             ("C-c p a" . cape-abbrev)
+             ("C-c p i" . cape-ispell)
+             ("C-c p l" . cape-line)
+             ("C-c p w" . cape-dict)
+             ("C-c p \\" . cape-tex)
+             ("C-c p _" . cape-tex)
+             ("C-c p ^" . cape-tex)
+             ("C-c p &" . cape-sgml)
+             ("C-c p r" . cape-rfc1345))
+      :init
+      (when (and (version< emacs-version "29.1") (not (and (fboundp 'pos-bol) (fboundp 'pos-eol))))
+        (defun pos-bol (&optional n)
+          "Return the position at the line beginning."
+          (declare (side-effect-free t))
+          (let ((inhibit-field-text-motion t))
+            (line-beginning-position n)))
+        (defun pos-eol (&optional n)
+          "Return the position at the line end."
+          (declare (side-effect-free t))
+          (let ((inhibit-field-text-motion t))
+            (line-end-position n))))
 
-  ;; A few more useful configurations...
-  (use-package emacs
-    :init
-    ;; TAB cycle if there are only few candidates
-    (setq completion-cycle-threshold 3)
+      (advice-add #'lsp-completion-at-point :around #'cape-wrap-noninterruptible)
 
-    ;; Emacs 28: Hide commands in M-x which do not apply to the current mode.
-    ;; Corfu commands are hidden, since they are not supposed to be used via M-x.
-    ;; (setq read-extended-command-predicate
-    ;;       #'command-completion-default-include-p)
 
-    ;; Enable indentation+completion using the TAB key.
-    ;; `completion-at-point' is often bound to M-TAB.
-    (setq tab-always-indent 'complete))
+    
+      ;; Add `completion-at-point-functions', used by `completion-at-point'.
+      (add-to-list 'completion-at-point-functions #'cape-file)
+      (add-to-list 'completion-at-point-functions #'cape-dabbrev)
+      ;;(add-to-list 'completion-at-point-functions #'cape-history)
+      ;;(add-to-list 'completion-at-point-functions #'cape-keyword)
+      ;;(add-to-list 'completion-at-point-functions #'cape-tex)
+      ;;(add-to-list 'completion-at-point-functions #'cape-sgml)
+      ;;(add-to-list 'completion-at-point-functions #'cape-rfc1345)
+      ;;(add-to-list 'completion-at-point-functions #'cape-abbrev)
+      ;;(add-to-list 'completion-at-point-functions #'cape-ispell)
+      ;;(add-to-list 'completion-at-point-functions #'cape-dict)
+      ;;(add-to-list 'completion-at-point-functions #'cape-symbol)
+      ;;(add-to-list 'completion-at-point-functions #'cape-line)
+      )
 
-  (use-package kind-icon
-    :straight t
-    :after corfu
-    :custom
-    (kind-icon-default-face 'corfu-default) ; to compute blended backgrounds correctly
-    :config
-    (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
+    ;; A few more useful configurations...
+    (use-package emacs
+      :init
+      ;; TAB cycle if there are only few candidates
+      (setq completion-cycle-threshold 3)
 
-  ;; Use Dabbrev with Corfu!
-  (use-package dabbrev
-    ;; Swap M-/ and C-M-/
-    :bind (("M-/" . dabbrev-completion)
-           ("C-M-/" . dabbrev-expand))
-    ;; Other useful Dabbrev configurations.
-    :custom
-    (dabbrev-ignored-buffer-regexps '("\\.\\(?:pdf\\|jpe?g\\|png\\)\\'")))
+      ;; Emacs 28: Hide commands in M-x which do not apply to the current mode.
+      ;; Corfu commands are hidden, since they are not supposed to be used via M-x.
+      ;; (setq read-extended-command-predicate
+      ;;       #'command-completion-default-include-p)
+
+      ;; Enable indentation+completion using the TAB key.
+      ;; `completion-at-point' is often bound to M-TAB.
+      (setq tab-always-indent 'complete))
+
+    (use-package kind-icon
+      :straight t
+      :after corfu
+      :custom
+      (kind-icon-default-face 'corfu-default) ; to compute blended backgrounds correctly
+      :config
+      (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
+
+    ;; Use Dabbrev with Corfu!
+    (use-package dabbrev
+      ;; Swap M-/ and C-M-/
+      :bind (("M-/" . dabbrev-completion)
+             ("C-M-/" . dabbrev-expand))
+      ;; Other useful Dabbrev configurations.
+      :custom
+      (dabbrev-ignored-buffer-regexps '("\\.\\(?:pdf\\|jpe?g\\|png\\)\\'")))
 #+end_src
 
 ** tree-sitter
@@ -1408,97 +1445,100 @@ org-mode の latex エクスポートの設定.
 ** lsp-mode
 
 #+begin_src emacs-lisp
-  (use-package lsp-mode
-    :straight `(:pre-build ,(setenv "LSP_USE_PLISTS" "true"))
-    :custom
-    (lsp-completion-provider :none) ;; we use Corfu!
-    :init
-  ;  (defun my/lsp-mode-setup-completion ()
-  ;    (setf (alist-get 'styles (alist-get 'lsp-capf completion-category-defaults))
-  ;          '(orderless))) ;; Configure flex
-    (defun my/orderless-dispatch-flex-first (_pattern index _total)
-      (and (eq index 0) 'orderless-flex))
+    (use-package lsp-mode
+      ;;:straight `(:pre-build ,(setenv "LSP_USE_PLISTS" "true"))
+      :straight t
+      :custom
+      (lsp-completion-provider :none) ;; we use Corfu!
+      :init
+    ;  (defun my/lsp-mode-setup-completion ()
+    ;    (setf (alist-get 'styles (alist-get 'lsp-capf completion-category-defaults))
+    ;          '(orderless))) ;; Configure flex
+      (defun my/orderless-dispatch-flex-first (_pattern index _total)
+        (and (eq index 0) 'orderless-flex))
 
-    (defun my/lsp-mode-setup-completion ()
-      (setf (alist-get 'styles (alist-get 'lsp-capf completion-category-defaults))
-            '(orderless)))
+      (defun my/lsp-mode-setup-completion ()
+        (setf (alist-get 'styles (alist-get 'lsp-capf completion-category-defaults))
+              '(orderless)))
 
-    ;; Optionally configure the first word as flex filtered.
-    (add-hook 'orderless-style-dispatchers #'my/orderless-dispatch-flex-first nil 'local)
+      ;; Optionally configure the first word as flex filtered.
+      (add-hook 'orderless-style-dispatchers #'my/orderless-dispatch-flex-first nil 'local)
 
-    ;; Optionally configure the cape-capf-buster.
-    (setq-local completion-at-point-functions (list (cape-capf-buster #'lsp-completion-at-point)))
+      ;; Optionally configure the cape-capf-buster.
+      (setq-local completion-at-point-functions (list (cape-capf-buster #'lsp-completion-at-point)))
 
-    :config
-    ;; .venv, .mypy_cache を watch 対象から外す
-    (dolist (dir '(
-                   "[/\\\\]\\.venv$"
-                   "[/\\\\]\\build\\"
-                   "[/\\\\]\\build$"
-                   "[/\\\\]\\.mypy_cache$"
-                   "[/\\\\]__pycache__$"
-                   ))
-      (push dir lsp-file-watch-ignored))
+      :config
+      ;; .venv, .mypy_cache を watch 対象から外す
+      (dolist (dir '(
+                     "[/\\\\]\\.venv\\"
+                     "[/\\\\]\\.venv$"
+                     "[/\\\\]\\build\\"
+                     "[/\\\\]\\build$"
+                     "[/\\\\]\\.mypy_cache$"
+                     "[/\\\\]__pycache__$"
+                     ))
+        (push dir lsp-file-watch-ignored))
 
-    ;; lsp-mode の設定はここを参照してください。
-    ;; https://emacs-lsp.github.io/lsp-mode/page/settings/
+      ;; lsp-mode の設定はここを参照してください。
+      ;; https://emacs-lsp.github.io/lsp-mode/page/settings/
 
-    (setq lsp-auto-configure t)
-    (setq lsp-enable-completion-at-point t)
+      (setq lsp-auto-configure t)
+      (setq lsp-enable-completion-at-point t)
 
-    (setq read-process-output-max (* 1024 1024))
+      (setq read-process-output-max (* 1024 1000))
 
-    (setq lsp-idle-delay 0.500)
+      (setq lsp-idle-delay 0.500)
 
-    ;; クロスリファレンスとの統合を有効化する
-    (setq lsp-enable-xref t)
+      ;; クロスリファレンスとの統合を有効化する
+      (setq lsp-enable-xref t)
 
-    ;; linter framework として flycheck を使う
-    (setq lsp-diagnostics-provider :flycheck)
+      ;; linter framework として flycheck を使う
+      (setq lsp-diagnostics-provider :flycheck)
 
-    ;; ミニバッファでの関数情報表示
-    (setq lsp-eldoc-enable-hover t)
+      ;; ミニバッファでの関数情報表示
+      (setq lsp-eldoc-enable-hover t)
 
-    ;; nii: ミニバッファでの関数情報をシグニチャだけにする
-    ;; t: ミニバッファでの関数情報で、doc-string 本体を表示する
-    (setq lsp-eldoc-render-all nil)
+      ;; nii: ミニバッファでの関数情報をシグニチャだけにする
+      ;; t: ミニバッファでの関数情報で、doc-string 本体を表示する
+      (setq lsp-eldoc-render-all nil)
 
-    ;; snippet
-    (setq lsp-enable-snippet t)
+      ;; snippet
+      (setq lsp-enable-snippet t)
 
-    (setq lsp-log-io nil)
+      (setq lsp-log-io nil)
 
-    ;;:commands (lsp lsp-deferred)
-    :hook
-    (lsp-completion-mode . my/lsp-mode-setup-completion))
+      ;;:commands (lsp lsp-deferred)
+      :hook
+      (lsp-completion-mode . my/lsp-mode-setup-completion)
+      )
 
-  (use-package lsp-ui
-    :straight t
-    :config
+    (use-package lsp-ui
+      :straight t
+      :config
 
-    ;; ui-peek を有効化する
-    (setq lsp-ui-peek-enable t)
+      ;; ui-peek を有効化する
+      (setq lsp-ui-peek-enable t)
 
-    ;; 候補が一つでも、常にpeek表示する。
-    (setq lsp-ui-peek-always-show t)
+      ;; 候補が一つでも、常にpeek表示する。
+      (setq lsp-ui-peek-always-show t)
 
-    ;; sideline で flycheck 等の情報を表示する
-    (setq lsp-ui-sideline-show-diagnostics t)
-    ;; sideline で コードアクションを表示する
-    (setq lsp-ui-sideline-show-code-actions t)
-    ;; ホバーで表示されるものを、ホバーの変わりにsidelineで表示する
-    ;;(setq lsp-ui-sideline-show-hover t)
+      ;; sideline で flycheck 等の情報を表示する
+      (setq lsp-ui-sideline-show-diagnostics t)
+      ;; sideline で コードアクションを表示する
+      (setq lsp-ui-sideline-show-code-actions t)
+      ;; ホバーで表示されるものを、ホバーの変わりにsidelineで表示する
+      ;;(setq lsp-ui-sideline-show-hover t)
 
-    :bind
-    (:map lsp-ui-mode-map
-          ;; デフォルトの xref-find-definitions だと、ジャンプはできるが、ui-peek が使えない。
-          ("M-." . lsp-ui-peek-find-definitions)
+      :bind
+      (:map lsp-ui-mode-map
+            ;; デフォルトの xref-find-definitions だと、ジャンプはできるが、ui-peek が使えない。
+            ("M-." . lsp-ui-peek-find-definitions)
 
-          ;; デフォルトの xref-find-references だと、ジャンプはできるが、ui-peek が使えない。
-          ("M-?" . lsp-ui-peek-find-references)
-          )
-    :hook
-    (lsp-mode . lsp-ui-mode))
+            ;; デフォルトの xref-find-references だと、ジャンプはできるが、ui-peek が使えない。
+            ("M-?" . lsp-ui-peek-find-references)
+            )
+      :hook
+      (lsp-mode . lsp-ui-mode))
 #+end_src
 
 ** C++
@@ -1707,11 +1747,6 @@ M-x lsp-install-server, rust-analyzer
                   ))
       (setq default-process-coding-system '(utf-8 . utf-8))
 
-      (use-package undo-tree
-        :ensure t
-        :diminish undo-tree-mode
-        :config
-        (global-undo-tree-mode 1))
 
       ;; My elisp
       ;;===============================================================
