@@ -875,7 +875,7 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
       :hook ((org-mode . (lambda () (org-superstar-mode 0)))))
 
     (use-package org-download
-      :ensure t
+      :straight t
       :after org
       :config
       (setq org-download-method 'directory)
@@ -935,14 +935,14 @@ org-roam を html に変換して
         org-html-head "<link rel=\"stylesheet\" href=\"./css/latex.css\" /> <script src=\"https://tikzjax.com/v1/tikzjax.js\"></script>")
   (setq org-publish-project-alist
         `(("pages"
-           :base-directory (f-canonical "~/myspace/org-roam")
+           :base-directory ,(file-truename "~/myspace/org-roam")
            :base-extension "org"
            :recursive t
            :publishing-directory "~/tmp/html"
            :publishing-function org-html-publish-to-html)
 
           ("static"
-           :base-directory (f-canonical "~/myspace/org-roam")
+           :base-directory ,(file-truename "~/myspace/org-roam")
            :base-extension "css\\|txt\\|jpg\\|gif\\|png"
            :recursive t
            :publishing-directory  "~/tmp/html"
@@ -956,7 +956,15 @@ org-roam を html に変換して
     (let ((org-export-use-babel t))
       (progn
         (org-id-update-id-locations (directory-files-recursively org-roam-directory ".org$\\|.org.gpg$"))
-        (org-publish-project "k-sunako.org"))))
+        (org-publish-project "k-sunako.org")
+        ;; FIXME: 暫定処置
+
+        (dolist (f (f-files "~/tmp/html"))
+          (when (string= "html" (f-ext f))
+            (let ((contents (f-read-text f 'utf-8)))
+              (f-write-text (s-replace-all
+                             '(("../../Dropbox/org-roam/" . "")) contents)
+                            'utf-8 f)))))))
 
 #+end_src
 
@@ -1090,33 +1098,36 @@ org-mode の latex エクスポートの設定.
 ** citar
 
 #+begin_src emacs-lisp
-      ;;; citeproc をインストール、これがCSLの処理系
-    (use-package citeproc :straight t)
+  ;; citeproc をインストール、これがCSLの処理系
+  (use-package citeproc :straight t)
 
-    (use-package citar
-      :straight (citar :type git :host github :repo "emacs-citar/citar" :includes (citar-org))
-      :bind (("C-c b" . citar-insert-citation)
-             :map minibuffer-local-map
-             ("M-b" . citar-insert-preset))
-      :custom
-      (org-cite-insert-processor 'citar)
-      (org-cite-follow-processor 'citar)
-      (org-cite-activate-processor 'citar)
-      (citar-citeproc-csl-styles-dir "~/repos/styles")
-      (citar-bibliography '("~/myspace/Bibliography/references.bib")))
+  (use-package citar
+    :straight (citar :type git :host github :repo "emacs-citar/citar" :includes (citar-org))
+    :bind (("C-c b" . citar-insert-citation)
+           :map minibuffer-local-map
+           ("M-b" . citar-insert-preset))
+    :custom
+    (org-cite-insert-processor 'citar)
+    (org-cite-follow-processor 'citar)
+    (org-cite-activate-processor 'citar)
+    (org-cite-export-processors '((t . (csl "chicago-author-date.csl"))))
+    (citar-citeproc-csl-styles-dir "~/repos/styles")
+    (org-cite-csl-styles-dir "~/repos/styles")
+    (org-cite-global-bibliography '("~/myspace/Bibliography/references.bib"))
+    (citar-bibliography '("~/myspace/Bibliography/references.bib")))
 
-      ;(setq citar-open-note-functions '(orb-citar-edit-note))
-      ;(setq citar-create-note-function 'citar-org-format-note-default)
-      ;(setq citar-create-note-function (lambda (key entry) nil))
-    (use-package citar-org-roam
-      :straight (citar-org-roam :type git :host github :repo "emacs-citar/citar-org-roam")
-      :config
-      (citar-org-roam-mode 1))
+                                          ;(setq citar-open-note-functions '(orb-citar-edit-note))
+                                          ;(setq citar-create-note-function 'citar-org-format-note-default)
+                                          ;(setq citar-create-note-function (lambda (key entry) nil))
+  (use-package citar-org-roam
+    :straight (citar-org-roam :type git :host github :repo "emacs-citar/citar-org-roam")
+    :config
+    (citar-org-roam-mode 1))
   (use-package citar-embark
     :after citar embark
     :no-require
     :config (citar-embark-mode 1))
-  
+
 #+end_src
 
 
@@ -1301,7 +1312,7 @@ org-mode の latex エクスポートの設定.
 * Utility
   #+BEGIN_SRC emacs-lisp
     (use-package expand-region
-      :ensure t
+      :straight t
       :bind (("C--" . er/expand-region)))
 
     (use-package fix-word
