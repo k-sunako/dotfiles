@@ -696,7 +696,8 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
 
       ;; Export 時にEvalをしないように
       (setq org-babel-default-header-args
-            (-concat '((:eval "never-export"))
+            ;;(-concat '((:eval "never-export"))
+            (-concat '((:eval "never"))
                      (--remove (eq :eval (car it)) org-babel-default-header-args)))
 
       (setq org-export-allow-bind-keywords t)
@@ -910,6 +911,32 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
     (with-eval-after-load "ox"
       (add-hook 'org-export-before-processing-hook 'remove-org-newlines-at-cjk-text))
 
+    ;; pdf のリンクを追加
+    (org-link-set-parameters "pdf"
+                             :follow #'org-pdf-open
+                             :export #'org-pdf-export
+                             :store #'org-pdf-store-link)
+
+    (defun org-pdf-open (path _)
+      (funcall #'find-file path))
+
+    (defun org-pdf-store-link ()
+      (when (memq major-mode '(pdf-view-mode))
+        (let* ((link (buffer-file-name (current-buffer)))
+               (description link))
+          (org-link-store-props
+           :type "pdf"
+           :link (concat "pdf:" link)
+           :description (f-base link)))))
+
+    (defun org-pdf-export (link description format _)
+      (let ((desc (or description link)))
+        (pcase format
+          (`html (format "<iframe width=\"800\" height=\"800\" src=\"%s\"></iframe>" link))
+          (`ascii (format "%s (%s)" desc link))
+          (t path))))
+
+
 
   #+END_SRC
 
@@ -943,7 +970,7 @@ org-roam を html に変換して
 
           ("static"
            :base-directory ,(file-truename "~/myspace/org-roam")
-           :base-extension "css\\|txt\\|jpg\\|gif\\|png"
+           :base-extension "css\\|txt\\|jpg\\|gif\\|png\\|pdf"
            :recursive t
            :publishing-directory  "~/tmp/html"
            :publishing-function org-publish-attachment)
@@ -951,9 +978,11 @@ org-roam を html に変換して
           ("k-sunako.org" :components ("pages" "static"))))
 
   ;; (org-publish-remove-all-timestamps)
+  ;;(setq org-export-babel-evaluate t)
+  ;;(setq org-export-use-babel t)
   (defun ks/publish-wiki ()
     (interactive)
-    (let ((org-export-use-babel t))
+    (let ((org-export-use-babel nil))
       (progn
         (org-id-update-id-locations (directory-files-recursively org-roam-directory ".org$\\|.org.gpg$"))
         (org-publish-project "k-sunako.org")
@@ -1305,6 +1334,8 @@ org-mode の latex エクスポートの設定.
     :diminish org-roam-bibtex-mode
     :config
     (org-roam-bibtex-mode 1))
+  
+  ;; (use-package bibtex-utils :straight t)
 
   (use-package consult-recoll
     :straight t)
