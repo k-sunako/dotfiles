@@ -416,7 +416,7 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
       (projectile-mode +1)
       (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
       (setq projectile-indexing-method 'alien)
-      (setq projectile-project-search-path '("~/repos"))
+      (setq projectile-project-search-path '("~/repos" "~/projects"))
       (projectile-discover-projects-in-search-path))
 
     (use-package selectrum
@@ -678,281 +678,282 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
 * Org
 
   #+BEGIN_SRC emacs-lisp
-      ;;(use-package org-contrib :straight t)
+    ;;(use-package org-contrib :straight t)
 
-      (use-package gnuplot :straight t)
+    (use-package gnuplot :straight t)
 
-      (use-package org
-        :straight t
-        :diminish org-indent-mode
-        :hook ((org-mode . org-indent-mode)
-               (org-capture-mode . skk-mode))
-        :bind (("C-c c" . org-capture)
-               ("C-c a" . org-agenda)
-               ("<f11>" . org-clock-goto))
+    (use-package org
+      :straight t
+      :diminish org-indent-mode
+      :hook ((org-mode . org-indent-mode)
+             (org-capture-mode . skk-mode))
+      :bind (("C-c c" . org-capture)
+             ("C-c a" . org-agenda)
+             ("<f11>" . org-clock-goto))
 
-        :config
+      :config
 
-        ;; C-c C-j 補完
-        (setq org-goto-interface 'outline-path-completion)
+      ;; C-c C-j 補完
+      (setq org-goto-interface 'outline-path-completion)
 
-        ;; Export 時にEvalをしないように
-        (setq org-babel-default-header-args
-              ;;(-concat '((:eval "never-export"))
-              (-concat '((:eval "never"))
-                       (--remove (eq :eval (car it)) org-babel-default-header-args)))
+      ;; Export 時にEvalをしないように
+      (setq org-babel-default-header-args
+            ;;(-concat '((:eval "never-export"))
+            (-concat '((:eval "never"))
+                     (--remove (eq :eval (car it)) org-babel-default-header-args)))
 
-        (setq org-export-allow-bind-keywords t)
-        (defun org-confirm-elisp-link-function--no-confirm-my-org-file (prompt)
-          "自分が書いたorgファイルの(のディレクトリにある)elispリンクはconfirmなし。
-                それ以外のディレクトリではconfirmする。"
-          (or (string-match "/myspace/Org/" (or (buffer-file-name) ""))
-              (member (buffer-name) '("*trace-output*"))
-              (y-or-n-p prompt)))
-        (setq org-confirm-elisp-link-function
-              'org-confirm-elisp-link-function--no-confirm-my-org-file)
+      (setq org-export-allow-bind-keywords t)
+      (defun org-confirm-elisp-link-function--no-confirm-my-org-file (prompt)
+        "自分が書いたorgファイルの(のディレクトリにある)elispリンクはconfirmなし。
+              それ以外のディレクトリではconfirmする。"
+        (or (string-match "/myspace/Org/" (or (buffer-file-name) ""))
+            (member (buffer-name) '("*trace-output*"))
+            (y-or-n-p prompt)))
+      (setq org-confirm-elisp-link-function
+            'org-confirm-elisp-link-function--no-confirm-my-org-file)
 
-        (add-to-list 'auto-mode-alist
-                     '("\\.pdf\\'" . pdf-view-mode))
+      (add-to-list 'auto-mode-alist
+                   '("\\.pdf\\'" . pdf-view-mode))
 
-        (require 'org-habit)
-        (require 'org-protocol)
+      (require 'org-habit)
+      (require 'org-protocol)
 
-        ;;(setq org-link-file-path-type 'relative)
-        (setf (alist-get 'file org-link-frame-setup) 'find-file)
-        ;; default: t
-        (setq org-id-link-to-org-use-id 'create-if-interactive)
-        ;;(setq org-id-link-to-org-use-id t)
+      ;;(setq org-link-file-path-type 'relative)
+      (setf (alist-get 'file org-link-frame-setup) 'find-file)
+      ;; default: t
+      (setq org-id-link-to-org-use-id 'create-if-interactive)
+      ;;(setq org-id-link-to-org-use-id t)
 
-        (setq org-src-fontify-natively t)
-        (setq org-confirm-babel-evaluate nil)
-        (setq org-src-window-setup 'current-window)
+      (setq org-src-fontify-natively t)
+      (setq org-confirm-babel-evaluate nil)
+      (setq org-src-window-setup 'current-window)
 
-        (require 'ob-emacs-lisp)
-        (require 'ob-haskell)
-        (require 'ob-gnuplot)
-        ;; active Babel languages
-        (org-babel-do-load-languages
-         'org-babel-load-languages
-         '((haskell . t)
-           (emacs-lisp . t)
-           (gnuplot . t)
-           (latex . t)
-           (shell . t)
-           (python . t)
-           (dot . t)))
+      (require 'ob-emacs-lisp)
+      (require 'ob-haskell)
+      (require 'ob-gnuplot)
+      ;; active Babel languages
+      (org-babel-do-load-languages
+       'org-babel-load-languages
+       '((haskell . t)
+         (emacs-lisp . t)
+         (gnuplot . t)
+         (latex . t)
+         (shell . t)
+         (python . t)
+         (dot . t)))
 
-        (setq org-log-done t)
-
-
-        (setf org-html-mathjax-options
-              '((path "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML")
-                (scale "100")
-                (align "center")
-                (indent "2em")
-                (mathml nil)))
-
-        (setf org-html-mathjax-template
-              "<script type=\"text/javascript\" src=\"%PATH\"></script>")
+      (setq org-log-done t)
 
 
-        ;; Agenda を現在のウィンドウと入れ替えで表示
-        (setq org-agenda-window-setup 'current-window)
-        (setq org-agenda-start-on-weekday 0)
-        (setq org-agenda-tags-column 80)
-        ;; CANCELLED などのタグは一週間分のみ表示
-        (setq org-scheduled-past-days 7)
-        (setq org-agenda-prefix-format
-              '((agenda . " %i %-12:c%?-12t%-6e% s")
-                (timeline . "  % s")
-                (todo . " %i %-12:c")
-                (tags . " %i %-12:c")
-                (search . " %i %-12:c")))
- 
-        (defun ks-get-readme-in-project ()
-          (-filter #'f-exists?
-                   (--map (f-join it "readme.org")
-                          projectile-known-projects)))
+      (setf org-html-mathjax-options
+            '((path "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML")
+              (scale "100")
+              (align "center")
+              (indent "2em")
+              (mathml nil)))
 
-        (setq org-agenda-files `("~/myspace/org-roam/20230205085538-inbox.org"
-                                 ,@(ks-get-readme-in-project)))
+      (setf org-html-mathjax-template
+            "<script type=\"text/javascript\" src=\"%PATH\"></script>")
 
-        ;; リフィルをアジェンダ内で行えるように
-        (setq org-refile-targets
-              '((nil :maxlevel . 1)
-                (org-agenda-files :maxlevel . 1)))
-        ;; リフィルの移動先の表示を調整
-        (setq org-refile-use-outline-path 'buffer-name)
-        (setq org-outline-path-complete-in-steps nil)
-        (setq org-refile-allow-creating-parent-nodes 'confirm)
 
-        (setq org-tag-persistent-alist '(("@home") ("@cafe") ("@ipx") ("@train")
-                                         ("act_learn") ("act_exercise")
-                                         ("art_ai") ("art_prg") ("art_pyt") ("art_lsp") ("art_dev") ("art_ems")
-                                         ("thr_fun")("thr_prb") ("thr_num") ("thr_cry")))
+      ;; Agenda を現在のウィンドウと入れ替えで表示
+      (setq org-agenda-window-setup 'current-window)
+      (setq org-agenda-start-on-weekday 0)
+      (setq org-agenda-tags-column 80)
+      ;; CANCELLED などのタグは一週間分のみ表示
+      (setq org-scheduled-past-days 7)
+      (setq org-agenda-prefix-format
+            '((agenda . " %i %-12:c%?-12t%-6e% s")
+              (timeline . "  % s")
+              (todo . " %i %-12:c")
+              (tags . " %i %-12:c")
+              (search . " %i %-12:c")))
 
-        ;; クロックレポートのカスタム
-        (defun ks/org-clock-report-filename (filepath)
-          (let* ((bn (f-filename filepath))
-                 (dn (f-dirname filepath))
-                 (pdn (f-filename dn)))
-            (s-concat  (f-dirname filepath) "/" bn "-" pdn)))
+      (defun ks-get-readme-in-project ()
+        (-filter #'f-exists?
+                 (--map (f-join it "readme.org")
+                        projectile-known-projects)))
 
-        (defun ks/org-clocktable-formatter (ipos tables params)
-          (org-clocktable-write-default
-           ipos
-           (-map (lambda (x) (cons (ks/org-clock-report-filename (car x)) (cdr x))) tables)
-           params))
+      (setq org-agenda-files `("~/myspace/org-roam/20230205085538-inbox.org"
+                               ,@(ks-get-readme-in-project)))
 
-        (defun ks/org-clock-report ()
-          (interactive)
-          (let ((org-clock-clocktable-formatter 'ks/org-clocktable-formatter))
-            (org-clock-report)))
+      ;; リフィルをアジェンダ内で行えるように
+      (setq org-refile-targets
+            '((nil :maxlevel . 1)
+              (org-agenda-files :maxlevel . 1)))
+      ;; リフィルの移動先の表示を調整
+      (setq org-refile-use-outline-path 'buffer-name)
+      (setq org-outline-path-complete-in-steps nil)
+      (setq org-refile-allow-creating-parent-nodes 'confirm)
 
-        (defun ks/select-file-for-task ()
-          (let ((fpath (completing-read "file: " (-map #'list org-agenda-files) nil t )))
+      (setq org-tag-persistent-alist '(("@home") ("@cafe") ("@ipx") ("@train")
+                                       ("act_learn") ("act_exercise")
+                                       ("art_ai") ("art_prg") ("art_pyt") ("art_lsp") ("art_dev") ("art_ems")
+                                       ("thr_fun")("thr_prb") ("thr_num") ("thr_cry")))
 
-            (set-buffer (org-capture-target-buffer fpath))
-            (unless (derived-mode-p 'org-mode)
-              (org-display-warning
-               (format "Capture requirement: switching buffer %S to Org mode"
-                       (current-buffer)))
-              (org-mode))
-            (org-capture-put-target-region-and-position)
-            (widen)
-            (goto-char (point-min))
-            (if (re-search-forward (format org-complex-heading-regexp-format
-                                           (regexp-quote "Tasks"))
-                                   nil t)
-                (beginning-of-line)
-              (goto-char (point-max))
-              (unless (bolp) (insert "\n"))
-              (insert "* " "Tasks" "\n")
-              (beginning-of-line 0))))
+      (setq org-clock-mode-line-total 'current)
+      ;; クロックレポートのカスタム
+      (defun ks/org-clock-report-filename (filepath)
+        (let* ((bn (f-filename filepath))
+               (dn (f-dirname filepath))
+               (pdn (f-filename dn)))
+          (s-concat  (f-dirname filepath) "/" bn "-" pdn)))
 
-        (defun ks/add-clock ()
-          (interactive)
-          (save-excursion
-            (let ((str-ts (with-temp-buffer (org-time-stamp-inactive t)))
-                  (end-ts (with-temp-buffer (org-time-stamp-inactive t))))
-              (org-clock-find-position nil)
-              (insert (s-lex-format "CLOCK: ${str-ts}--${end-ts} =>  0:00\n"))
-              (forward-line -1)
-              (org-clock-update-time-maybe))))
+      (defun ks/org-clocktable-formatter (ipos tables params)
+        (org-clocktable-write-default
+         ipos
+         (-map (lambda (x) (cons (ks/org-clock-report-filename (car x)) (cdr x))) tables)
+         params))
 
-        (setq org-capture-templates `(("t" "Todo [inbox]" entry
-                                       (file "~/myspace/org-roam/20230205085538-inbox.org" )
-                                       "* TODO %i%?")
-                                      ("T" "Todo " entry
-                                       (function ks/select-file-for-task)
-                                       "* TODO %i%?")
-                                      ("n" "Note [inbox]" entry
-                                       (file "~/myspace/org-roam/20230205085538-inbox.org")
-                                       "* %u\nPath:%F\nLink: %a\nTask: %k\n\n%?")
-                                      ("q" "Question [inbox]" entry
-                                       (file "~/myspace/org-roam/20230205085538-inbox.org")
-                                       "* QUESTION %?")
-                                      ("a" "Anki [drill]" entry
-                                       (file+headline "~/myspace/Projects/202201201927-drill/main.org" "drill")
-                                       "* Card :drill:\n%?\n** Answer\n ")
-                                      ("r" "reference" plain
-                                       (file "~/myspace/Bibliography/references.bib"))
-                                      ("p" "Protocol" entry
-                                       (file+headline "~/myspace/Org/inbox.org" "Scraps")
-                                       "* %^{Title}\nSource: %u, %c\n  \n #+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n\n%?")
-                                      ("L" "Protocol Link" entry
-                                       (file+headline "~/myspace/Org/inbox.org" "Scraps")
-                                       "* %? [[%:link][%:description]] \nCaptured On: %U")))
-
-        (setq org-todo-keywords '((sequence
-                                   "NEXT(n)" "TODO(t)" "WAITING(w)" "SOMEDAY(s)" "|" "DONE(d)" "CANCELLED(c)" )))
-
-        (setq org-format-latex-options (plist-put org-format-latex-options :scale 2.0))
-
-        (setq org-habit-show-habits-only-for-today 1)
-        (setq org-agenda-repeating-timestamp-show-all nil))
-
-      (use-package org-fragtog :straight t)
-      (use-package org-wild-notifier
-        :straight t
-        :config
-        (org-wild-notifier-mode 1)
-        (setq alert-default-style 'libnotify)
-        (setq org-wild-notifier-alert-time '(10 15 20 30)))
-
-      (use-package org-superstar
-        :straight t
-        :hook ((org-mode . (lambda () (org-superstar-mode 0)))))
-
-      (use-package org-download
-        :straight t
-        :after org
-        :config
-        (setq org-download-method 'directory)
-        (setq-default org-download-image-dir "./images"))
-
-      (use-package org-noter
-        :straight t
-        :after (:any org pdf-view)
-        :config
-        (setq
-         ;; The WM can handle splits
-         org-noter-notes-window-location 'horizontal-split
-         ;; Please stop opening frames
-         org-noter-always-create-frame nil
-         ;; I want to see the whole file
-         org-noter-hide-other nil
-         ;; Everything is relative to the main notes file
-         org-noter-notes-search-path (list "~/myspace/Book")
-         )
-        )
-
-      (defun remove-org-newlines-at-cjk-text (&optional _mode)
-        "先頭が '*', '#', '|' でなく、改行の前後が日本の文字の場合はその改行を除去する。"
+      (defun ks/org-clock-report ()
         (interactive)
-        (goto-char (point-min))
-        (while (re-search-forward "^\\([^|#*\n].+\\)\\(.\\)\n *\\(.\\)" nil t)
-          (if (and (> (string-to-char (match-string 2)) #x2000)
-                   (> (string-to-char (match-string 3)) #x2000))
-              (replace-match "\\1\\2\\3"))
-          (goto-char (point-at-bol))))
+        (let ((org-clock-clocktable-formatter 'ks/org-clocktable-formatter))
+          (org-clock-report)))
 
-      (with-eval-after-load "ox"
-        (add-hook 'org-export-before-processing-hook 'remove-org-newlines-at-cjk-text))
+      (defun ks/select-file-for-task ()
+        (let ((fpath (completing-read "file: " (-map #'list org-agenda-files) nil t )))
 
+          (set-buffer (org-capture-target-buffer fpath))
+          (unless (derived-mode-p 'org-mode)
+            (org-display-warning
+             (format "Capture requirement: switching buffer %S to Org mode"
+                     (current-buffer)))
+            (org-mode))
+          (org-capture-put-target-region-and-position)
+          (widen)
+          (goto-char (point-min))
+          (if (re-search-forward (format org-complex-heading-regexp-format
+                                         (regexp-quote "Tasks"))
+                                 nil t)
+              (beginning-of-line)
+            (goto-char (point-max))
+            (unless (bolp) (insert "\n"))
+            (insert "* " "Tasks" "\n")
+            (beginning-of-line 0))))
 
-      (defun ks-org-open-at-point ()
+      (defun ks/add-clock ()
         (interactive)
-        (let ((org-link-frame-setup
-               (-concat
-                '((file . find-file-other-window))
-                (-remove (lambda (x) (eq (car x) 'file)) org-link-frame-setup))))
-          (org-open-at-point)))
+        (save-excursion
+          (let ((str-ts (with-temp-buffer (org-time-stamp-inactive t)))
+                (end-ts (with-temp-buffer (org-time-stamp-inactive t))))
+            (org-clock-find-position nil)
+            (insert (s-lex-format "CLOCK: ${str-ts}--${end-ts} =>  0:00\n"))
+            (forward-line -1)
+            (org-clock-update-time-maybe))))
 
-      ;; pdf のリンクを追加
-      (org-link-set-parameters "pdf"
-                               :follow #'org-pdf-open
-                               :export #'org-pdf-export
-                               :store #'org-pdf-store-link)
+      (setq org-capture-templates `(("t" "Todo [inbox]" entry
+                                     (file "~/myspace/org-roam/20230205085538-inbox.org" )
+                                     "* TODO %i%?")
+                                    ("T" "Todo " entry
+                                     (function ks/select-file-for-task)
+                                     "* TODO %i%?")
+                                    ("n" "Note [inbox]" entry
+                                     (file "~/myspace/org-roam/20230205085538-inbox.org")
+                                     "* %u\nPath:%F\nLink: %a\nTask: %k\n\n%?")
+                                    ("q" "Question [inbox]" entry
+                                     (file "~/myspace/org-roam/20230205085538-inbox.org")
+                                     "* QUESTION %?")
+                                    ("a" "Anki [drill]" entry
+                                     (file+headline "~/myspace/Projects/202201201927-drill/main.org" "drill")
+                                     "* Card :drill:\n%?\n** Answer\n ")
+                                    ("r" "reference" plain
+                                     (file "~/myspace/Bibliography/references.bib"))
+                                    ("p" "Protocol" entry
+                                     (file+headline "~/myspace/Org/inbox.org" "Scraps")
+                                     "* %^{Title}\nSource: %u, %c\n  \n #+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n\n%?")
+                                    ("L" "Protocol Link" entry
+                                     (file+headline "~/myspace/Org/inbox.org" "Scraps")
+                                     "* %? [[%:link][%:description]] \nCaptured On: %U")))
 
-      (defun org-pdf-open (path _)
-        (funcall #'find-file path))
+      (setq org-todo-keywords '((sequence
+                                 "NEXT(n)" "TODO(t)" "WAITING(w)" "SOMEDAY(s)" "|" "DONE(d)" "CANCELLED(c)" )))
 
-      (defun org-pdf-store-link ()
-        (when (memq major-mode '(pdf-view-mode))
-          (let* ((link (buffer-file-name (current-buffer)))
-                 (description link))
-            (org-link-store-props
-             :type "pdf"
-             :link (concat "pdf:" link)
-             :description (f-base link)))))
+      (setq org-format-latex-options (plist-put org-format-latex-options :scale 2.0))
 
-      (defun org-pdf-export (link description format _)
-        (let ((desc (or description link)))
-          (pcase format
-            (`html (format "<iframe width=\"800\" height=\"800\" src=\"%s\"></iframe>" link))
-            (`ascii (format "%s (%s)" desc link))
-            (t path))))
+      (setq org-habit-show-habits-only-for-today 1)
+      (setq org-agenda-repeating-timestamp-show-all nil))
+
+    (use-package org-fragtog :straight t)
+    (use-package org-wild-notifier
+      :straight t
+      :config
+      (org-wild-notifier-mode 1)
+      (setq alert-default-style 'libnotify)
+      (setq org-wild-notifier-alert-time '(10 15 20 30)))
+
+    (use-package org-superstar
+      :straight t
+      :hook ((org-mode . (lambda () (org-superstar-mode 0)))))
+
+    (use-package org-download
+      :straight t
+      :after org
+      :config
+      (setq org-download-method 'directory)
+      (setq-default org-download-image-dir "./images"))
+
+    (use-package org-noter
+      :straight t
+      :after (:any org pdf-view)
+      :config
+      (setq
+       ;; The WM can handle splits
+       org-noter-notes-window-location 'horizontal-split
+       ;; Please stop opening frames
+       org-noter-always-create-frame nil
+       ;; I want to see the whole file
+       org-noter-hide-other nil
+       ;; Everything is relative to the main notes file
+       org-noter-notes-search-path (list "~/myspace/Book")
+       )
+      )
+
+    (defun remove-org-newlines-at-cjk-text (&optional _mode)
+      "先頭が '*', '#', '|' でなく、改行の前後が日本の文字の場合はその改行を除去する。"
+      (interactive)
+      (goto-char (point-min))
+      (while (re-search-forward "^\\([^|#*\n].+\\)\\(.\\)\n *\\(.\\)" nil t)
+        (if (and (> (string-to-char (match-string 2)) #x2000)
+                 (> (string-to-char (match-string 3)) #x2000))
+            (replace-match "\\1\\2\\3"))
+        (goto-char (point-at-bol))))
+
+    (with-eval-after-load "ox"
+      (add-hook 'org-export-before-processing-hook 'remove-org-newlines-at-cjk-text))
+
+
+    (defun ks-org-open-at-point ()
+      (interactive)
+      (let ((org-link-frame-setup
+             (-concat
+              '((file . find-file-other-window))
+              (-remove (lambda (x) (eq (car x) 'file)) org-link-frame-setup))))
+        (org-open-at-point)))
+
+    ;; pdf のリンクを追加
+    (org-link-set-parameters "pdf"
+                             :follow #'org-pdf-open
+                             :export #'org-pdf-export
+                             :store #'org-pdf-store-link)
+
+    (defun org-pdf-open (path _)
+      (funcall #'find-file path))
+
+    (defun org-pdf-store-link ()
+      (when (memq major-mode '(pdf-view-mode))
+        (let* ((link (buffer-file-name (current-buffer)))
+               (description link))
+          (org-link-store-props
+           :type "pdf"
+           :link (concat "pdf:" link)
+           :description (f-base link)))))
+
+    (defun org-pdf-export (link description format _)
+      (let ((desc (or description link)))
+        (pcase format
+          (`html (format "<iframe width=\"800\" height=\"800\" src=\"%s\"></iframe>" link))
+          (`ascii (format "%s (%s)" desc link))
+          (t path))))
 
 
 
