@@ -42,6 +42,12 @@ Common Lisp の関数/マクロを実装したライブラリ
   (use-package f :straight '(:files ("*.el*")))
 #+end_src
 
+** s
+
+#+begin_src emacs-lisp
+  (use-package s :straight '(:files ("*.el*")))
+#+end_src
+
 * ユーティリティ
 ** Latex スタイルファイルの確認用
 
@@ -758,7 +764,7 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
 
       ;; Agenda を現在のウィンドウと入れ替えで表示
       (setq org-agenda-window-setup 'current-window)
-      (setq org-agenda-start-on-weekday 0)
+      (setq org-agenda-start-on-weekday 1)
       (setq org-agenda-tags-column 80)
       ;; CANCELLED などのタグは一週間分のみ表示
       (setq org-scheduled-past-days 7)
