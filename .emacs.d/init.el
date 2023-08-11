@@ -9,6 +9,8 @@
 (setq inhibit-startup-message t)
 (setq initial-scratch-message "")
 
+(setq native-comp-deferred-compilation-deny-list nil)
+
 ;; シンボリックリンクの読み込みを許可
 (setq vc-follow-symlinks t)
 ;; シンボリックリンク先のVCS内で更新が入った場合にバッファを自動更新
