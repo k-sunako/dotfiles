@@ -1763,6 +1763,14 @@ org-mode の latex エクスポートの設定.
       (lsp-mode . lsp-ui-mode))
 #+end_src
 
+** Idris
+#+begin_src emacs-lisp
+  (use-package idris-mode
+    :straight t
+    :custom
+    (idris-interpreter-path "idris"))
+#+end_src
+
 ** C++
 
 #+begin_src emacs-lisp
