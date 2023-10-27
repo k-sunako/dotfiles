@@ -422,281 +422,292 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
 * 補完 / 絞り込み
 
   #+BEGIN_SRC emacs-lisp
-    (use-package recentf
-      :ensure t
-      :config
-      (setq recentf-max-saved-items 2000) ;; 2000ファイルまで履歴保存する
-      (setq recentf-auto-cleanup 'never)  ;; 存在しないファイルは消さない
-      (setq recentf-exclude '("/recentf" "COMMIT_EDITMSG" "/.?TAGS" "^/sudo:" "/\\.emacs\\.d/games/*-scores" "/\\.emacs\\.d/\\.cask/"))
-      (setq recentf-auto-save-timer (run-with-idle-timer 12000 t 'recentf-save-list))
-      (recentf-mode 1))
+     (use-package recentf
+       :ensure t
+       :config
+       (setq recentf-max-saved-items 2000) ;; 2000ファイルまで履歴保存する
+       (setq recentf-auto-cleanup 'never)  ;; 存在しないファイルは消さない
+       (setq recentf-exclude '("/recentf" "COMMIT_EDITMSG" "/.?TAGS" "^/sudo:" "/\\.emacs\\.d/games/*-scores" "/\\.emacs\\.d/\\.cask/"))
+       (setq recentf-auto-save-timer (run-with-idle-timer 12000 t 'recentf-save-list))
+       (recentf-mode 1))
 
 
-    (use-package ace-window
+     (use-package ace-window
+       :straight t
+       :bind (("C-t". ace-window)))
+
+     (use-package projectile
+       :ensure t
+       :diminish projectile-mode
+       :config
+       (projectile-mode +1)
+       (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
+       (setq projectile-indexing-method 'alien)
+       (setq projectile-project-search-path '("~/projects"))
+       (projectile-discover-projects-in-search-path))
+
+    ; (use-package selectrum
+    ;   :straight t
+    ;   :config
+    ;   (selectrum-mode +1))
+    (use-package vertico
       :straight t
-      :bind (("C-t". ace-window)))
-
-    (use-package projectile
-      :ensure t
-      :diminish projectile-mode
-      :config
-      (projectile-mode +1)
-      (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
-      (setq projectile-indexing-method 'alien)
-      (setq projectile-project-search-path '("~/projects"))
-      (projectile-discover-projects-in-search-path))
-
-    (use-package selectrum
-      :straight t
-      :config
-      (selectrum-mode +1))
-
-    ;; Migemoを有効にする
-    ;; https://github.com/yamatakau08/.emacs.d/blob/master/.orderless.el
-    (use-package orderless
-      :straight t
-
       :init
-      (setq
-       completion-styles '(orderless partial-completion basic)
-       completion-category-defaults nil
-       ;completion-category-overrides '((file (styles . (partial-completion)))))
-       completion-category-overrides nil)
+      (vertico-mode)
 
-      :after migemo
+      ;; Different scroll margin
+      (setq vertico-scroll-margin 0)
 
-      :custom
-      ;;(completion-styles '(orderless))
-      (orderless-matching-styles '(orderless-literal orderless-regexp orderless-migemo))
-      ;;(orderless-matching-styles '(orderless-literal orderless-regexp))
+      ;; Show more candidates
+      (setq vertico-count 20)
 
-      :config
-      ;; supported emacs-jp slack
-      ;;(setq orderless-matching-styles '(orderless-migemo))
-      ;;(setq orderless-matching-styles '(orderless-literal orderless-regexp orderless-migemo)) ; move to :custom block
-      ;;(defalias 'orderless-migemo #'migemo-get-pattern)
+      ;; Grow and shrink the Vertico minibuffer
+      (setq vertico-resize t)
+
+      ;; Optionally enable cycling for `vertico-next' and `vertico-previous'.
+      (setq vertico-cycle t))
+     ;; Migemoを有効にする
+     ;; https://github.com/yamatakau08/.emacs.d/blob/master/.orderless.el
+     (use-package orderless
+       :straight t
+
+       :custom
+       ;;(completion-styles '(orderless))
+       (completion-styles '(orderless basic))
+       (orderless-matching-styles '(orderless-regexp))
+       (completion-category-overrides '((file (styles basic partial-completion))))
+       ;;(orderless-matching-styles '(orderless-literal orderless-regexp))
+       ;;(orderless-matching-styles '(orderless-literal orderless-regexp))
+
+       :config
+       ;; supported emacs-jp slack
+       (setq orderless-matching-styles '(orderless-migemo))
+       ;;(setq orderless-matching-styles '(orderless-literal orderless-regexp orderless-migemo)) ; move to :custom block
+       ;;(defalias 'orderless-migemo #'migemo-get-pattern)
+
+        (defun orderless-migemo (component)
+          (let ((pattern (migemo-get-pattern component)))
+            ;;(message component)
+            (condition-case nil
+            (progn (string-match-p pattern "") pattern)
+            (invalid-regexp nil))))
 
        (defun orderless-migemo (component)
-         (let ((pattern (migemo-get-pattern component)))
-           ;;(message component)
-           (condition-case nil
-           (progn (string-match-p pattern "") pattern)
-           (invalid-regexp nil))))
+         (if (>= (length component) 4)
+             (let ((pattern (migemo-get-pattern component)))
+               (condition-case nil
+                   (progn (string-match-p pattern "") pattern)
+                 (invalid-regexp nil)))
+           component)))
+     ;;(use-package marginalia
+     ;;
+     ;;  :config
+     ;;  (marginalia-mode))
+     ;; Enable richer annotations using the Marginalia package
+     (use-package marginalia
+       :straight t
 
-      (defun orderless-migemo (component)
-        (if (>= (length component) 4)
-            (let ((pattern (migemo-get-pattern component)))
-              (condition-case nil
-                  (progn (string-match-p pattern "") pattern)
-                (invalid-regexp nil)))
-          component)))
-    ;;(use-package marginalia
-    ;;
-    ;;  :config
-    ;;  (marginalia-mode))
-    ;; Enable richer annotations using the Marginalia package
-    (use-package marginalia
-      :straight t
+       ;; Either bind `marginalia-cycle` globally or only in the minibuffer
+       :bind (("M-A" . marginalia-cycle)
+          :map minibuffer-local-map
+          ("M-A" . marginalia-cycle))
 
-      ;; Either bind `marginalia-cycle` globally or only in the minibuffer
-      :bind (("M-A" . marginalia-cycle)
-         :map minibuffer-local-map
-         ("M-A" . marginalia-cycle))
+       ;; The :init configuration is always executed (Not lazy!)
+       :init
 
-      ;; The :init configuration is always executed (Not lazy!)
-      :init
+       ;; Must be in the :init section of use-package such that the mode gets
+       ;; enabled right away. Note that this forces loading the package.
+       (marginalia-mode)
+       :config
+       (add-to-list 'marginalia-prompt-categories
+                '("\\<File\\>" . file)))
 
-      ;; Must be in the :init section of use-package such that the mode gets
-      ;; enabled right away. Note that this forces loading the package.
-      (marginalia-mode)
-      :config
-      (add-to-list 'marginalia-prompt-categories
-               '("\\<File\\>" . file)))
+     (use-package consult
+       :straight t
+       ;; Replace bindings. Lazily loaded due by `use-package'.
+       :bind (;; C-c bindings (mode-specific-map)
+          ("C-c h" . consult-history)
+          ("C-c m" . consult-mode-command)
+          ("C-c b" . consult-bookmark)
+          ("C-c k" . consult-kmacro)
+          ;; C-x bindings (ctl-x-map)
+          ("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
+          ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
+          ("C-x 4 b" . consult-buffer-other-window) ;; orig. switch-to-buffer-other-window
+          ("C-x 5 b" . consult-buffer-other-frame)  ;; orig. switch-to-buffer-other-frame
+          ;; Custom M-# bindings for fast register access
+          ("M-#" . consult-register-load)
+          ("M-'" . consult-register-store)          ;; orig. abbrev-prefix-mark (unrelated)
+          ("C-M-#" . consult-register)
+          ;; Other custom bindings
+          ("M-y" . consult-yank-pop)                ;; orig. yank-pop
+          ("<help> a" . consult-apropos)            ;; orig. apropos-command
+          ;; M-g bindings (goto-map)
+          ("M-g e" . consult-compile-error)
+          ("M-g f" . consult-flymake)               ;; Alternative: consult-flycheck
+          ("M-g g" . consult-goto-line)             ;; orig. goto-line
+          ("M-g M-g" . consult-goto-line)           ;; orig. goto-line
+          ("M-g o" . consult-outline)               ;; Alternative: consult-org-heading
+          ("M-g m" . consult-mark)
+          ("M-g k" . consult-global-mark)
+          ("M-g i" . consult-imenu)
+          ("M-g I" . consult-project-imenu)
+          ;; M-s bindings (search-map)
+          ("M-s f" . consult-find)
+          ("M-s L" . consult-locate)
+          ("M-s g" . consult-grep)
+          ("M-s G" . consult-git-grep)
+          ("M-s r" . consult-ripgrep)
+          ("M-s l" . consult-line)
+          ("M-s m" . consult-multi-occur)
+          ("M-s k" . consult-keep-lines)
+          ("M-s u" . consult-focus-lines)
+          ;; Isearch integration
+          ("C-s" . ks/consult-line)
+          ("M-s e" . consult-isearch)
+          :map isearch-mode-map
+          ("M-e" . consult-isearch)                 ;; orig. isearch-edit-string
+          ("M-s e" . consult-isearch)               ;; orig. isearch-edit-string
+          ("M-s l" . consult-line))                 ;; needed by consult-line to detect isearch
 
-    (use-package consult
-      :straight t
-      ;; Replace bindings. Lazily loaded due by `use-package'.
-      :bind (;; C-c bindings (mode-specific-map)
-         ("C-c h" . consult-history)
-         ("C-c m" . consult-mode-command)
-         ("C-c b" . consult-bookmark)
-         ("C-c k" . consult-kmacro)
-         ;; C-x bindings (ctl-x-map)
-         ("C-x M-:" . consult-complex-command)     ;; orig. repeat-complex-command
-         ("C-x b" . consult-buffer)                ;; orig. switch-to-buffer
-         ("C-x 4 b" . consult-buffer-other-window) ;; orig. switch-to-buffer-other-window
-         ("C-x 5 b" . consult-buffer-other-frame)  ;; orig. switch-to-buffer-other-frame
-         ;; Custom M-# bindings for fast register access
-         ("M-#" . consult-register-load)
-         ("M-'" . consult-register-store)          ;; orig. abbrev-prefix-mark (unrelated)
-         ("C-M-#" . consult-register)
-         ;; Other custom bindings
-         ("M-y" . consult-yank-pop)                ;; orig. yank-pop
-         ("<help> a" . consult-apropos)            ;; orig. apropos-command
-         ;; M-g bindings (goto-map)
-         ("M-g e" . consult-compile-error)
-         ("M-g f" . consult-flymake)               ;; Alternative: consult-flycheck
-         ("M-g g" . consult-goto-line)             ;; orig. goto-line
-         ("M-g M-g" . consult-goto-line)           ;; orig. goto-line
-         ("M-g o" . consult-outline)               ;; Alternative: consult-org-heading
-         ("M-g m" . consult-mark)
-         ("M-g k" . consult-global-mark)
-         ("M-g i" . consult-imenu)
-         ("M-g I" . consult-project-imenu)
-         ;; M-s bindings (search-map)
-         ("M-s f" . consult-find)
-         ("M-s L" . consult-locate)
-         ("M-s g" . consult-grep)
-         ("M-s G" . consult-git-grep)
-         ("M-s r" . consult-ripgrep)
-         ("M-s l" . consult-line)
-         ("M-s m" . consult-multi-occur)
-         ("M-s k" . consult-keep-lines)
-         ("M-s u" . consult-focus-lines)
-         ;; Isearch integration
-         ("C-s" . ks/consult-line)
-         ("M-s e" . consult-isearch)
-         :map isearch-mode-map
-         ("M-e" . consult-isearch)                 ;; orig. isearch-edit-string
-         ("M-s e" . consult-isearch)               ;; orig. isearch-edit-string
-         ("M-s l" . consult-line))                 ;; needed by consult-line to detect isearch
+       ;; Enable automatic preview at point in the *Completions* buffer.
+       ;; This is relevant when you use the default completion UI,
+       ;; and not necessary for Vertico, Selectrum, etc.
+       :hook (completion-list-mode . consult-preview-at-point-mode)
 
-      ;; Enable automatic preview at point in the *Completions* buffer.
-      ;; This is relevant when you use the default completion UI,
-      ;; and not necessary for Vertico, Selectrum, etc.
-      :hook (completion-list-mode . consult-preview-at-point-mode)
+       ;; The :init configuration is always executed (Not lazy)
+       :init
+       ;; consult-line のリージョン対応
+       (defun ks/consult-line ()
+         "Consult-line uses things-at-point if set C-u prefix."
+         (interactive)
+         (if (region-active-p)
+         (let ((reg (buffer-substring-no-properties (region-beginning) (region-end))))
+           (deactivate-mark)
+           (consult-line reg))
+           (consult-line)))
 
-      ;; The :init configuration is always executed (Not lazy)
-      :init
-      ;; consult-line のリージョン対応
-      (defun ks/consult-line ()
-        "Consult-line uses things-at-point if set C-u prefix."
-        (interactive)
-        (if (region-active-p)
-        (let ((reg (buffer-substring-no-properties (region-beginning) (region-end))))
-          (deactivate-mark)
-          (consult-line reg))
-          (consult-line)))
+       ;; Optionally configure the register formatting. This improves the register
+       ;; preview for `consult-register', `consult-register-load',
+       ;; `consult-register-store' and the Emacs built-ins.
+       (setq register-preview-delay 0
+         register-preview-function #'consult-register-format)
 
-      ;; Optionally configure the register formatting. This improves the register
-      ;; preview for `consult-register', `consult-register-load',
-      ;; `consult-register-store' and the Emacs built-ins.
-      (setq register-preview-delay 0
-        register-preview-function #'consult-register-format)
+       ;; Optionally tweak the register preview window.
+       ;; This adds thin lines, sorting and hides the mode line of the window.
+       (advice-add #'register-preview :override #'consult-register-window)
 
-      ;; Optionally tweak the register preview window.
-      ;; This adds thin lines, sorting and hides the mode line of the window.
-      (advice-add #'register-preview :override #'consult-register-window)
+       ;; Optionally replace `completing-read-multiple' with an enhanced version.
+       ;;(advice-add #'completing-read-multiple :override #'consult-completing-read-multiple)
 
-      ;; Optionally replace `completing-read-multiple' with an enhanced version.
-      ;;(advice-add #'completing-read-multiple :override #'consult-completing-read-multiple)
-
-      ;; Use Consult to select xref locations with preview
-      (setq xref-show-xrefs-function #'consult-xref
-        xref-show-definitions-function #'consult-xref)
-      ;; Consult-ripgrep の Migemo 対応
-      (defvar consult--migemo-regexp "")
-      (defun consult--migemo-regexp-compiler (input type ignore-case)
-        (setq consult--migemo-regexp
-          (mapcar #'migemo-get-pattern (consult--split-escaped input)))
-        (cons (mapcar (lambda (x) (consult--convert-regexp x type))
-              consult--migemo-regexp)
-          (lambda (str)
-            (consult--highlight-regexps consult--migemo-regexp str))))
-      (setq consult--regexp-compiler #'consult--migemo-regexp-compiler)
+       ;; Use Consult to select xref locations with preview
+       (setq xref-show-xrefs-function #'consult-xref
+         xref-show-definitions-function #'consult-xref)
+       ;; Consult-ripgrep の Migemo 対応
+       (defvar consult--migemo-regexp "")
+       (defun consult--migemo-regexp-compiler (input type ignore-case)
+         (setq consult--migemo-regexp
+           (mapcar #'migemo-get-pattern (consult--split-escaped input)))
+         (cons (mapcar (lambda (x) (consult--convert-regexp x type))
+               consult--migemo-regexp)
+           (lambda (str)
+             (consult--highlight-regexps consult--migemo-regexp str))))
+       ;; (setq consult--regexp-compiler #'consult--migemo-regexp-compiler)
 
 
-      ;; Configure other variables and modes in the :config section,
-      ;; after lazily loading the package.
-      :config
+       ;; Configure other variables and modes in the :config section,
+       ;; after lazily loading the package.
+       :config
+       
+       ;; Optionally configure preview. The default value
+       ;; is 'any, such that any key triggers the preview.
+       ;; (setq consult-preview-key 'any)
+       ;; (setq consult-preview-key (kbd "M-."))
+       ;; (setq consult-preview-key (list (kbd "<S-down>") (kbd "<S-up>")))
+       ;; For some commands and buffer sources it is useful to configure the
+       ;; :preview-key on a per-command basis using the `consult-customize' macro.
+       (consult-customize
+        consult-theme :preview-key '(:debounce 0.2 any)
+     ;;       consult-ripgrep consult-git-grep consult-grep
+     ;;       consult-bookmark consult-recent-file consult-xref
+     ;;       consult--source-file consult--source-project-file consult--source-bookmark
 
-      ;; Optionally configure preview. The default value
-      ;; is 'any, such that any key triggers the preview.
-      ;; (setq consult-preview-key 'any)
-      ;; (setq consult-preview-key (kbd "M-."))
-      ;; (setq consult-preview-key (list (kbd "<S-down>") (kbd "<S-up>")))
-      ;; For some commands and buffer sources it is useful to configure the
-      ;; :preview-key on a per-command basis using the `consult-customize' macro.
-      (consult-customize
-       consult-theme :preview-key '(:debounce 0.2 any)
-    ;;       consult-ripgrep consult-git-grep consult-grep
-    ;;       consult-bookmark consult-recent-file consult-xref
-    ;;       consult--source-file consult--source-project-file consult--source-bookmark
+        consult-ripgrep consult-git-grep consult-grep
+        consult-bookmark consult-recent-file consult-xref
+        consult--source-bookmark consult--source-recent-file
+        consult--source-project-recent-file
+        :preview-key '(:debounce 0.2 any))
+    ;    :preview-key "M-.")
 
-       consult-ripgrep consult-git-grep consult-grep
-       consult-bookmark consult-recent-file consult-xref
-       consult--source-bookmark consult--source-recent-file
-       consult--source-project-recent-file       
-       :preview-key "M-.")
+       ;; Optionally configure the narrowing key.
+       ;; Both < and C-+ work reasonably well.
+       (setq consult-narrow-key "<") ;; (kbd "C-+")
 
-      ;; Optionally configure the narrowing key.
-      ;; Both < and C-+ work reasonably well.
-      (setq consult-narrow-key "<") ;; (kbd "C-+")
+       ;; Optionally make narrowing help available in the minibuffer.
+       ;; You may want to use `embark-prefix-help-command' or which-key instead.
+       ;; (define-key consult-narrow-map (vconcat consult-narrow-key "?") #'consult-narrow-help)
 
-      ;; Optionally make narrowing help available in the minibuffer.
-      ;; You may want to use `embark-prefix-help-command' or which-key instead.
-      ;; (define-key consult-narrow-map (vconcat consult-narrow-key "?") #'consult-narrow-help)
+       ;; Optionally configure a function which returns the project root directory.
+       ;; There are multiple reasonable alternatives to chose from.
+                 ;;;; 1. project.el (project-roots)
+       (setq consult-project-root-function
+         (lambda ()
+           (when-let (project (project-current))
+             (car (project-roots project)))))
+                 ;;;; 2. projectile.el (projectile-project-root)
+       ;; (autoload 'projectile-project-root "projectile")
+       ;; (setq consult-project-root-function #'projectile-project-root)
+                 ;;;; 3. vc.el (vc-root-dir)
+       ;; (setq consult-project-root-function #'vc-root-dir)
+                 ;;;; 4. locate-dominating-file
+       ;; (setq consult-project-root-function (lambda () (locate-dominating-file "." ".git")))
 
-      ;; Optionally configure a function which returns the project root directory.
-      ;; There are multiple reasonable alternatives to chose from.
-                ;;;; 1. project.el (project-roots)
-      (setq consult-project-root-function
-        (lambda ()
-          (when-let (project (project-current))
-            (car (project-roots project)))))
-                ;;;; 2. projectile.el (projectile-project-root)
-      ;; (autoload 'projectile-project-root "projectile")
-      ;; (setq consult-project-root-function #'projectile-project-root)
-                ;;;; 3. vc.el (vc-root-dir)
-      ;; (setq consult-project-root-function #'vc-root-dir)
-                ;;;; 4. locate-dominating-file
-      ;; (setq consult-project-root-function (lambda () (locate-dominating-file "." ".git")))
+       ;; C-x b の consult-buffer に recentf を追加する
+       ;; https://tam5917.hatenablog.com/entry/2021/04/29/235949
+       (setq consult--source-file
+         `(:name     "File"
+                 :narrow   ?f
+                 :category file
+                 :face     consult-file
+                 :history  file-name-history
+                 :action   ,#'consult--file-action
+                 :enabled   ,(lambda () recentf-mode)
+                 :items ,recentf-list))
 
-      ;; C-x b の consult-buffer に recentf を追加する
-      ;; https://tam5917.hatenablog.com/entry/2021/04/29/235949
-      (setq consult--source-file
-        `(:name     "File"
-                :narrow   ?f
-                :category file
-                :face     consult-file
-                :history  file-name-history
-                :action   ,#'consult--file-action
-                :enabled   ,(lambda () recentf-mode)
-                :items ,recentf-list))
+       )
 
-      )
+     (use-package embark
+       :straight t
 
-    (use-package embark
-      :straight t
+       :bind
+       (("C-." . embark-act)         ;; pick some comfortable binding
+        ("C-;" . embark-dwim)        ;; good alternative: M-.
+        ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
 
-      :bind
-      (("C-." . embark-act)         ;; pick some comfortable binding
-       ("C-;" . embark-dwim)        ;; good alternative: M-.
-       ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
+       :init
 
-      :init
+       ;; Optionally replace the key help with a completing-read interface
+       (setq prefix-help-command #'embark-prefix-help-command)
+       ;; 
+       (setq embark-help-key "?")
 
-      ;; Optionally replace the key help with a completing-read interface
-      (setq prefix-help-command #'embark-prefix-help-command)
-      ;; 
-      (setq embark-help-key "?")
+       :config
 
-      :config
+       ;; Hide the mode line of the Embark live/completions buffers
+       (add-to-list 'display-buffer-alist
+                '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+              nil
+              (window-parameters (mode-line-format . none)))))
 
-      ;; Hide the mode line of the Embark live/completions buffers
-      (add-to-list 'display-buffer-alist
-               '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
-             nil
-             (window-parameters (mode-line-format . none)))))
-
-    ;; Consult users will also want the embark-consult package.
-    (use-package embark-consult
-      :straight t
-      :hook
-      (embark-collect-mode . consult-preview-at-point-mode))
+     ;; Consult users will also want the embark-consult package.
+     (use-package embark-consult
+       :straight t
+       :hook
+       (embark-collect-mode . consult-preview-at-point-mode))
   #+END_SRC
 
   #+RESULTS:
+  | :name | File | :narrow | 102 | :category | file | :face | consult-file | :history | file-name-history | :action | consult--file-action | :enabled | (lambda nil recentf-mode) | :items | (~/.elfeed/index ~/repos/dotfiles/.emacs.d/myinit.org ~/Dropbox/org-roam/20200612132324-index.org ~/.emacs.d/bookmarks ~/.emacs.d/myinit.org ~/myspace/org-roam/20200612132324-index.org ~/Dropbox/org-roam/daily/2023-08-27.org /tmp/a.txt ~/Dropbox/org-roam/daily/2023-08-27.txt /usr/local/share/emacs/30.0.50/lisp/gnus/mm-util.el.gz /usr/local/share/emacs/30.0.50/lisp/descr-text.el.gz /usr/local/share/emacs/30.0.50/lisp/international/mule-cmds.el.gz ~/.skk-jisyo ~/Dropbox/org-roam/20200614082330-ih.org ~/Dropbox/Lecture/Math/数学工房/IH 20210313/notes.pdf ~/Dropbox/Lecture/Math/数学工房/G 20150118 抽象線形代数Ⅲ/000.Abstract Linear Alg 3 Inner Product sp 2015 spring.pdf ~/Dropbox/Lecture/Math/数学工房/G 20170122 複素計量空間/ノート 2017-01-22.pdf ~/Dropbox/Lecture/Math/数学工房/G 20130519 抽象線形代数Ⅰ　線形空間、実在と表現/100.2018年02月17日14時28分17秒.pdf ~/Dropbox/org-roam/20220821184728-数学工房_g.org ~/projects/understanding-machine-learning/docs/stable_rules_do_not_overfit.org ~/projects/hello-idris/fizzbuzz.idr ~/projects/hello-idris/hello.idr ~/Dropbox/org-roam/daily/2023-08-17.org ~/projects/boilerplate_cxx/gui/main.cpp ~/projects/boilerplate_cxx/include/fib.hpp ~/projects/boilerplate_cxx/src/main.cpp ~/projects/boilerplate_cxx/readme.org ~/projects/boilerplate_cxx/gui/CMakeLists.txt ~/Dropbox/org-roam/20211229113327-数学工房.org ~/Dropbox/Lecture/Math/数学工房/G 20160702 線型代数特論、線型写像の構造/ノート 2016-07-02.pdf ~/Dropbox/Lecture/Math/数学工房/G 20160918 抽象線形代数特論　対称変換とスペクトル/ノート 2016-09-18.pdf ~/Dropbox/Lecture/Math/数学工房/G 20150118 抽象線形代数Ⅲ/100.2018年02月17日14時11分02秒.pdf ~/Dropbox/Lecture/Math/数学工房/G 20140706 抽象線形代数/101.2018年02月17日14時03分35秒.pdf ~/Dropbox/Lecture/Math/数学工房/G 20140706 抽象線形代数/100.2018年02月17日14時01分54秒.pdf ~/Dropbox/Lecture/Math/数学工房/G 20140119 抽象線形代数　内積空間の幾 何と作用素のクラス/102.2018年02月17日14時51分00秒.pdf ~/Dropbox/Lecture/Math/数学工房/G 20140119 抽象線形代数　内積空間の幾 何と作用素のクラス/101.2018年02月17日14時50分23秒.pdf ~/Dropbox/Lecture/Math/数学工房/G 20130922 抽象線形代数/101.2018年02月17日15時15分22秒.pdf ~/Dropbox/Lecture/Math/数学工房/G 20130922 抽象線形代数/100.2018年02月17日15時14分15秒.pdf ~/Dropbox/Lecture/Math/数学工房/G 20130519 抽象線形代数Ⅰ　線形空間、実在と表現/101.2018年02月17日14時30分20秒.pdf ~/Dropbox/org-roam/20221231164459-線型代数.org ~/Dropbox/org-roam/daily/2023-08-12.org ~/.emacs.d/straight/repos/emacs-sqlite3-api/emacs-module.h ~/.emacs.d/straight/build/sqlite3/emacs-module.h ~/.emacs.d/straight/repos/emacs-sqlite3-api/sqlite3.el ~/.emacs.d/straight/build/sqlite3/sqlite3.el ~/.emacs.d/custom-vars.el ~/tmp/org-roam ~/Dropbox/Lecture/Math/数学工房/IH　可換代数序論（解析のための代数入門） 20200119/print_01.pdf ~/Dropbox/Lecture/Math/数学工房/IH　可換代数序論（解析のための代数入門） 20200119/print_6th_for_no_lecture.pdf ~/Dropbox/org-roam/20230205085538-inbox.org ~/.bash_profile ~/Dropbox/flashcards/org-fc-refviews.tsv ~/Dropbox/flashcards/algebra.org ~/.emacs.d/straight/repos/org-fc/org-fc-awk.el ~/.emacs.d/straight/repos/org-fc/org-fc-review.el ~/.emacs.d/org-fc-reviews.tsv ~/.emacs.d/straight/repos/org-fc/demo.org ~/Dropbox/org-roam/20230714120444-pdfの分割.org ~/Dropbox/org-roam/daily/2023-07-01.org) |
 
 
 
@@ -1114,14 +1125,16 @@ org-mode の latex エクスポートの設定.
     (setq org-latex-listings 'minted)
     (setq org-latex-minted-options
           '(("style" "friendly")("frame" "lines") ("linenos=true")))
-    (setq org-latex-pdf-process
-          '("xelatex -shell-escape -interaction nonstopmode -output-directory %o %f"
-            "biber %b"
-            "xelatex -shell-escape -interaction nonstopmode -output-directory %o %f"
-            "xelatex -shell-escape -interaction nonstopmode -output-directory %o %f"
-            "rm -fr _minted-%b"
-            ))
-
+    ;; (setq org-latex-pdf-process
+    ;;       '("xelatex -shell-escape -interaction nonstopmode -output-directory %o %f"
+    ;;         "biber %b"
+    ;;         "xelatex -shell-escape -interaction nonstopmode -output-directory %o %f"
+    ;;         "xelatex -shell-escape -interaction nonstopmode -output-directory %o %f"
+    ;;         "rm -fr _minted-%b"
+    ;;         ))
+    (setq org-latex-pdf-process (list
+                                 "latexmk -pdflatex='%latex -shell-escape -interaction nonstopmode' -pdf -output-directory=%o %f"
+                                 "latexmk -c %f"))
     (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
     (setq org-latex-default-class "koma-jarticle")
 
@@ -1404,7 +1417,7 @@ org-mode の latex エクスポートの設定.
     :custom
     (citar-org-roam-note-title-template "${author editor} - ${title}")
     )
-  (use-package citar-embark
+  (use-package citar-embark :straight t
     :after citar embark
     :no-require
     :config (citar-embark-mode 1))
@@ -1887,161 +1900,169 @@ M-x lsp-install-server, rust-analyzer
 
 * Etc
   #+BEGIN_SRC emacs-lisp
-      (use-package define-word
-        :straight t
-        :bind (("<f8>" . define-word-at-point)))
-      (use-package terraform-mode :straight t)
+    (use-package define-word
+      :straight t
+      :bind (("<f8>" . define-word-at-point)))
+    (use-package terraform-mode :straight t)
 
-      (setq large-file-warning-threshold nil)
+    (setq large-file-warning-threshold nil)
 
-      (save-place-mode 1)
+    (save-place-mode 1)
 
-      (use-package recentf
-        :ensure t
-        :config
-        (setq recentf-max-saved-items 2000) ;; 2000ファイルまで履歴保存する
-        (setq recentf-auto-cleanup 'never)  ;; 存在しないファイルは消さない
-        (setq recentf-exclude '("/recentf" "COMMIT_EDITMSG" "/.?TAGS" "^/sudo:" "/\\.emacs\\.d/games/*-scores" "/\\.emacs\\.d/\\.cask/"))
-        (setq recentf-auto-save-timer (run-with-idle-timer 12000 t 'recentf-save-list))
-        (recentf-mode 1))
+    (use-package recentf
+      :ensure t
+      :config
+      (setq recentf-max-saved-items 2000) ;; 2000ファイルまで履歴保存する
+      (setq recentf-auto-cleanup 'never)  ;; 存在しないファイルは消さない
+      (setq recentf-exclude '("/recentf" "COMMIT_EDITMSG" "/.?TAGS" "^/sudo:" "/\\.emacs\\.d/games/*-scores" "/\\.emacs\\.d/\\.cask/"))
+      (setq recentf-auto-save-timer (run-with-idle-timer 12000 t 'recentf-save-list))
+      (recentf-mode 1))
 
-      ;;===============================================================
-      ;; Packages
-      ;;===============================================================
-      (use-package ediff
-        :ensure t
-        :config
-        (setq ediff-diff-program "~/bin/my-diff.sh")
-        ;;(setq ediff-diff-program "ediff")
-        ;; コントロール用のバッファを同一フレーム内に表示
-        (setq ediff-window-setup-function 'ediff-setup-windows-plain)
-        ;; diffのバッファを上下ではなく左右に並べる
-        (setq ediff-split-window-function 'split-window-horizontally))
+    ;;===============================================================
+    ;; Packages
+    ;;===============================================================
+    (use-package ediff
+      :ensure t
+      :config
+      (setq ediff-diff-program "~/bin/my-diff.sh")
+      ;;(setq ediff-diff-program "ediff")
+      ;; コントロール用のバッファを同一フレーム内に表示
+      (setq ediff-window-setup-function 'ediff-setup-windows-plain)
+      ;; diffのバッファを上下ではなく左右に並べる
+      (setq ediff-split-window-function 'split-window-horizontally))
 
-      ;; org-modeのExportでコードを色付きで出力するため
-      (use-package htmlize :ensure t)
+    ;; org-modeのExportでコードを色付きで出力するため
+    (use-package htmlize :ensure t)
 
-      (use-package pdf-tools
-        :straight t
+    (use-package pdf-tools
+      :straight t
 
-        :mode (("\\.pdf?\\'" . pdf-view-mode))
-        :config
-        (pdf-loader-install)
-        ;;(add-hook 'pdf-view-mode-hook (lambda() (linum-mode -1)))
-        (add-hook 'pdf-view-mode-hook (lambda() (display-line-numbers-mode -1)))
-        (add-hook 'pdf-view-mode-hook (lambda() (pdf-tools-enable-minor-modes)))
-        (setq-default pdf-view-display-size 'fit-page))
+      :mode (("\\.pdf?\\'" . pdf-view-mode))
+      :config
+      (pdf-loader-install)
+      ;;(add-hook 'pdf-view-mode-hook (lambda() (linum-mode -1)))
+      (add-hook 'pdf-view-mode-hook (lambda() (display-line-numbers-mode -1)))
+      (add-hook 'pdf-view-mode-hook (lambda() (pdf-tools-enable-minor-modes)))
+      (setq-default pdf-view-display-size 'fit-page))
 
-      (use-package multiple-cursors
-        :ensure t
-        :config
-        (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
-        (global-set-key (kbd "C->") 'mc/mark-next-like-this)
-        (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
-        (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this))
+    (use-package multiple-cursors
+      :ensure t
+      :config
+      (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
+      (global-set-key (kbd "C->") 'mc/mark-next-like-this)
+      (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+      (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this))
 
-      (use-package winner
-        :init
-        (winner-mode 1)
-        (global-set-key (kbd "C-z") 'winner-undo))
+    (use-package winner
+      :init
+      (winner-mode 1)
+      (global-set-key (kbd "C-z") 'winner-undo))
 
-      (use-package elfeed
-        :ensure t
-        :if (file-exists-p "~/myspace/dotfiles-secret/elfeed.el")
-        :init
-        (load "~/myspace/dotfiles-secret/elfeed.el")
-        :config
-        (setq shr-inhibit-images t))
+    (use-package elfeed
+      :ensure t
+      :if (file-exists-p "~/myspace/dotfiles-secret/elfeed.el")
+      :init
+      (load "~/myspace/dotfiles-secret/elfeed.el")
+      :config
+      (setq shr-inhibit-images t))
 
-      (use-package yasnippet
-        :ensure t
-        :diminish yas-minor-mode
-        :config
-        (add-to-list 'warning-suppress-types '(yasnippet backquote-change))
-        (yas-global-mode 1))
+    (use-package yasnippet
+      :ensure t
+      :diminish yas-minor-mode
+      :config
+      (add-to-list 'warning-suppress-types '(yasnippet backquote-change))
+      (yas-global-mode 1))
 
-      (use-package auto-save-buffers-enhanced
-        :ensure t)
+    (use-package auto-save-buffers-enhanced
+      :ensure t)
 
-      (use-package super-save
-        :ensure t
-        :diminish super-save-mode
-        :init
-        (super-save-mode 1)
-        (setq super-save-exclude nil)
-        (setq super-save-auto-save-when-idle t))
+    (use-package super-save
+      :ensure t
+      :diminish super-save-mode
+      :init
+      (super-save-mode 1)
+      (setq super-save-exclude nil)
+      (setq super-save-auto-save-when-idle t))
 
-      ;; shellの文字化けを回避
-      (add-hook 'shell-mode-hook
-                (lambda ()
-                  (set-buffer-process-coding-system 'utf-8-unix 'utf-8-unix)
-                  ))
-      (setq default-process-coding-system '(utf-8 . utf-8))
-
-
-      ;; My elisp
-      ;;===============================================================
+    ;; shellの文字化けを回避
+    (add-hook 'shell-mode-hook
+              (lambda ()
+                (set-buffer-process-coding-system 'utf-8-unix 'utf-8-unix)
+                ))
+    (setq default-process-coding-system '(utf-8 . utf-8))
 
 
-      (defun ks/get-hash ()
-        (interactive)
-        (let ((salt "k-sunako")
-              (now (number-to-string (ts-unix (ts-now)))))
-          (insert (s-left 5 (secure-hash 'sha512 (s-concat salt now))))))
+    ;; My elisp
+    ;;===============================================================
 
-      (defun ks-make-bibtex-symbolic-link (bibkey path)
-        (let* ((default-directory my-ref-pdfs)
-               (target (f-relative path)))
-          (shell-command-to-string
-           (s-lex-format "ln -s \"${target}\" ${bibkey}.pdf"))))
+    (defun ks/insert-math-symbol ()
+      (interactive)
+      (let* ((codes (number-sequence #x2200 #x22ff))
+             (candidates (-map (lambda (c)
+                                 (format "%c : %s"
+                                         c
+                                         (get-char-code-property c 'name))) codes)))
+        (insert (s-left 1 (completing-read "math symbol: " candidates)))))
 
-      (defun ks-get-books (title)
-        (let ((len (/ (length title) 2)))
-          (s-lines (shell-command-to-string
-                    (s-lex-format "find ~/myspace/Book | agrep -E ${len} \"${title}\"")))))
+    (defun ks/get-hash ()
+      (interactive)
+      (let ((salt "k-sunako")
+            (now (number-to-string (ts-unix (ts-now)))))
+        (insert (s-left 5 (secure-hash 'sha512 (s-concat salt now))))))
 
-      (defun ks-get-bibtex-title (bibkey)
-        (let* ((key bibkey)
-               (hs (gethash key (parsebib-collect-entries)))
-               (value (cdr (assoc "title" hs)))
-               (title (s-chop-prefix "{" (s-chop-suffix "}" value)))
-               )
-          title))
+    (defun ks-make-bibtex-symbolic-link (bibkey path)
+      (let* ((default-directory my-ref-pdfs)
+             (target (f-relative path)))
+        (shell-command-to-string
+         (s-lex-format "ln -s \"${target}\" ${bibkey}.pdf"))))
 
-      (defun ks-get-path-of-book (title)
-        (let ((books (ks-get-books title)))
-          (helm :sources (helm-build-sync-source "books"
-                                                 :candidates books
-                                                 :fuzzy-match t)
-                :buffer "*helm books*")))
+    (defun ks-get-books (title)
+      (let ((len (/ (length title) 2)))
+        (s-lines (shell-command-to-string
+                  (s-lex-format "find ~/myspace/Book | agrep -E ${len} \"${title}\"")))))
 
-      (defun ks-init-bib-pdf (start end)
-        (interactive "r")
-        (let* ((bibkey (buffer-substring-no-properties start end))
-               (title (ks-get-bibtex-title bibkey))
-               (path (ks-get-path-of-book title))
-               )
-          (ks-make-bibtex-symbolic-link bibkey path)))
+    (defun ks-get-bibtex-title (bibkey)
+      (let* ((key bibkey)
+             (hs (gethash key (parsebib-collect-entries)))
+             (value (cdr (assoc "title" hs)))
+             (title (s-chop-prefix "{" (s-chop-suffix "}" value)))
+             )
+        title))
+
+    (defun ks-get-path-of-book (title)
+      (let ((books (ks-get-books title)))
+        (helm :sources (helm-build-sync-source "books"
+                                               :candidates books
+                                               :fuzzy-match t)
+              :buffer "*helm books*")))
+
+    (defun ks-init-bib-pdf (start end)
+      (interactive "r")
+      (let* ((bibkey (buffer-substring-no-properties start end))
+             (title (ks-get-bibtex-title bibkey))
+             (path (ks-get-path-of-book title))
+             )
+        (ks-make-bibtex-symbolic-link bibkey path)))
 
 
-      (defun join-lines () (interactive)
-             (setq fill-column 100000)
-             (fill-paragraph nil)
-             (setq fill-column 78))
+    (defun join-lines () (interactive)
+           (setq fill-column 100000)
+           (fill-paragraph nil)
+           (setq fill-column 78))
 
-      (defun ks/create-task-dir (prj-name)
-        (interactive "sTask Name: ")
-        (let* ((prefix (ts-format "%Y%m%d%H%M" (ts-now)))
-               (prjdir (s-concat prefix "-" prj-name))
-               (rootdir "~/myspace/Projects/")
-               (prjpath (f-join rootdir prjdir)))
-          (f-mkdir prjpath)
-          (shell-command-to-string (s-concat "git init " prjpath))
-          (projectile-discover-projects-in-search-path)))
+    (defun ks/create-task-dir (prj-name)
+      (interactive "sTask Name: ")
+      (let* ((prefix (ts-format "%Y%m%d%H%M" (ts-now)))
+             (prjdir (s-concat prefix "-" prj-name))
+             (rootdir "~/myspace/Projects/")
+             (prjpath (f-join rootdir prjdir)))
+        (f-mkdir prjpath)
+        (shell-command-to-string (s-concat "git init " prjpath))
+        (projectile-discover-projects-in-search-path)))
 
-      (defun ks/search-roam ()
-        (interactive)
-        (consult-ripgrep "~/myspace/org-roam"))
+    (defun ks/search-roam ()
+      (interactive)
+      (consult-ripgrep "~/myspace/org-roam"))
 
   #+END_SRC
 
