@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 
-
 $xelatex = "internal mylatex xelatex -shell-escape -interaction nonstopmode -output-directory %O %S";
+# $xelatex = "xelatex -shell-escape -interaction nonstopmode -output-directory %O %S";
 # $pdflatex = "xelatex -shell-escape -interaction nonstopmode -output-directory %O %S";
 # $biber = "biber --output_safechars  %O %S";
 # $biber = "biber";
@@ -10,7 +10,6 @@ $biber = 'biber --bblencoding=utf8 -u -U --output_safechars';
 $pdf_mode = 5;
 $dvi_mode = 0;
 $postscript_mode = 0;
-
 
 sub mylatex {
     my ($engine, $base, @args) = @_;

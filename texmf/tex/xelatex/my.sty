@@ -1,4 +1,7 @@
 \ProvidesPackage{my}[2022/01/29 v1.0]
+
+\usepackage{tcolorbox}
+\tcbuselibrary{theorems}
 \usepackage{amsmath, amsthm, mathrsfs, amssymb, xifthen, xstring, physics, tikz, tikz-cd}
 
 \usepackage{zxjatype}
@@ -9,7 +12,6 @@
 \DeclareMathOperator{\cod}{cod}
 \DeclareMathOperator{\sign}{sign}
 
-
 %\theoremstyle{plain}
 \newtheoremstyle{break}
   {\topsep}{\topsep}%
@@ -17,7 +19,7 @@
   {\bfseries}{}%
   {\newline}{}%
 \theoremstyle{break}
-  
+
 \newtheorem{thm}{Theorem}
 \newtheorem*{thm*}{Theorem}
 
@@ -25,6 +27,8 @@
 \newtheorem*{theorem*}{Theorem}
 \newtheorem{proposition}{Proposition}
 \newtheorem*{proposition*}{Proposition}
+\newtheorem{claim}{Proposition}
+\newtheorem*{claim*}{Proposition}
 
 \newtheorem{lemma}{Lemma}
 \newtheorem*{lemma*}{Lemma}
@@ -32,6 +36,31 @@
 \theoremstyle{definition}
 \newtheorem{definition}{Definition}
 \newtheorem*{definition*}{Definition}
+
+\newtcbtheorem{defn}{定義}%
+{colback=green!5,colframe=green!35!black,fonttitle=\bfseries}{th}
+
+\newtcbtheorem{theo}{定理}%
+{colback=green!5,colframe=green!35!black,fonttitle=\bfseries}{th}
+
+\newtcbtheorem{lemm}{補題}%
+{colback=green!5,colframe=green!35!black,fonttitle=\bfseries}{th}
+
+\newtcbtheorem{clai}{命題}%
+{colback=green!5,colframe=green!35!black,fonttitle=\bfseries}{th}
+
+\newtcbtheorem{coro}{系}%
+{colback=green!5,colframe=green!35!black,fonttitle=\bfseries}{th}
+
+\newtcbtheorem{exam}{例}%
+{colback=blue!5,colframe=blue!35!black,fonttitle=\bfseries}{th}
+
+\newtcbtheorem{algo}{アルゴ}%
+{colback=black!5,colframe=black!35!black,fonttitle=\bfseries}{th}
+
+\newtcbtheorem{rema}{注釈}%
+{colback=yellow!5,colframe=yellow!35!black,fonttitle=\bfseries}{th}
+
 
 \makeatletter
 \newcommand*{\relrelbarsep}{.386ex}

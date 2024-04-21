@@ -1,8 +1,8 @@
 * 警告の抑制
 #+begin_src emacs-lisp
-  (if warning-suppress-types
-      (setq warning-suppress-types (append warning-suppress-types '((org-element-cache))))
-    (setq warning-suppress-types '((org-element-cache))))
+ ; (if warning-suppress-types
+ ;     (setq warning-suppress-types (append warning-suppress-types '((org-element-cache))))
+ ;   (setq warning-suppress-types '((org-element-cache))))
 #+end_src
 
 * 初期ページ
@@ -65,7 +65,7 @@ Common Lisp の関数/マクロを実装したライブラリ
 #+end_src
 * ユーティリティ
 ** 自作
-(load-file "~/projects/ks-elisp/ks-elisp.el")
+;;(load-file "~/projects/ks-elisp/ks-elisp.el")
 
 ** Latex スタイルファイルの確認用
 
@@ -167,9 +167,9 @@ IMEは ~DDSKK~ を利用する.
     ;; Set your installed path
     ;; (setq migemo-dictionary "/usr/share/migemo/utf-8/migemo-dict")
     ;;(let ((candidates '("/usr/share/migemo/utf-8/migemo-dict")))
-    (let ((candidates `(,(f-canonical "~/myspace/skkdic/utf-8.d/migemo-dict"))))
+    (let ((candidates `(,(file-truename "~/myspace/skkdic/utf-8.d/migemo-dict"))))
       (-some--> candidates
-        (-filter #'f-file? it)
+        (-filter #'file-regular-p it)
         (car it)
         (setq migemo-dictionary it)))
 
@@ -241,49 +241,77 @@ Google翻訳をemacsで使えるように.
 * 見た目
   メニューバー、ツールバー、スクロールバーは非表示。行の折り返しはしない。
 
-  #+BEGIN_SRC emacs-lisp
-    ;; Don't pop up UI dialogs when prompting
-    (setq use-dialog-box nil)
+#+BEGIN_SRC emacs-lisp
+  ;; Don't pop up UI dialogs when prompting
+  (setq use-dialog-box nil)
 
-    (menu-bar-mode -1)
-    (when (display-graphic-p)
-      (scroll-bar-mode -1))
-    (tool-bar-mode -1)
+  (menu-bar-mode -1)
+  (when (display-graphic-p)
+    (scroll-bar-mode -1))
+  (tool-bar-mode -1)
 
-    ;; 行番号表示(Emacs26以降)
-    (global-display-line-numbers-mode nil)
-    ;;(custom-set-variables '(display-line-numbers-width-start t))
+  ;; 行番号表示(Emacs26以降)
+  (global-display-line-numbers-mode nil)
+  ;;(custom-set-variables '(display-line-numbers-width-start t))
 
-    (use-package beacon
-      :ensure t
-      :diminish beacon-mode
-      :config
-      (beacon-mode 1))
+  (use-package pulsar
+    :straight t
+    :config
+    (setq pulsar-pulse t)
+    (setq pulsar-delay 0.055)
+    (setq pulsar-iterations 10)
+    (setq pulsar-face 'pulsar-magenta)
+    (setq pulsar-highlight-face 'pulsar-yellow)
 
-    (set-default 'truncate-lines 1)
+    (pulsar-global-mode 1)
+    (add-to-list 'pulsar-pulse-functions 'ace-window)
+    ;; (add-hook 'minibuffer-setup-hook #'pulsar-pulse-line)
+    (add-hook 'consult-after-jump-hook #'pulsar-recenter-top)
+    (add-hook 'consult-after-jump-hook #'pulsar-reveal-entry)
 
-    (let* ((ffl (font-family-list))
-           (ffl-utf8 (mapcar (lambda (x) (decode-coding-string x 'utf-8)) ffl)))
-      (cond
-       ((member "Cica" ffl)
-        (set-frame-font "Cica 15"))
-       ((member "NasuM" ffl)
-        (set-frame-font "NasuM 15"))
-       ((member "Ricty" ffl)
-        (set-frame-font "Ricty 15"))
-       ((member "source han code jp n" ffl)
-        (set-frame-font "source han code jp n 12"))
-       ((member "源ノ角ゴシック Code JP" ffl-utf8)
-        (set-frame-font "源ノ角ゴシック Code JP n 12"))
-       ((member "Ricty Diminished" ffl)
-        (set-frame-font "Ricty Diminished 12"))
-       ))
+    )
 
-    (use-package nord-theme
-      :straight t
-      :config
-      (load-theme 'nord t))
-  #+END_SRC
+  (set-default 'truncate-lines 1)
+
+  ;; (use-package nord-theme
+  ;;   :straight t
+  ;;   :config
+  ;;   (load-theme 'nord t))
+
+  ;;; For packaged versions which must use `require'.
+  (use-package modus-themes
+    :straight t
+    :config
+    ;; Add all your customizations prior to loading the themes
+    (setq modus-themes-italic-constructs t
+          modus-themes-bold-constructs nil)
+
+    ;; Maybe define some palette overrides, such as by using our presets
+    (setq modus-themes-common-palette-overrides
+          modus-themes-preset-overrides-intense)
+
+    ;; Load the theme of your choice.
+    (load-theme 'modus-vivendi)
+
+    (define-key global-map (kbd "<f5>") #'modus-themes-toggle))
+
+  (let* ((candidates '(
+                       "Cica" "NasuM" "Ricty"
+                       "source han code jp n" "源ノ角ゴシック Code JP"
+                       "Ricty Diminished"))
+         (ffl (font-family-list))
+         (ffl-utf8 (mapcar (lambda (x) (decode-coding-string x 'utf-8)) ffl))
+         (myfont (car (--filter (member it ffl-utf8) candidates)))
+         (myfont2 (concat myfont "-12")))
+    ;; (message myfont)
+    ;; (set-frame-font (concat myfont " 12"))
+    ;; Initial frame settings
+    (setq default-frame-alist
+          (append (list
+                   `(font . ,myfont2))
+                  default-frame-alist))
+    )
+#+END_SRC
 
 * Dired
 #+begin_src emacs-lisp
@@ -461,24 +489,24 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
       :straight t
       :bind (("C-t". ace-window)))
 
-    ;; https://www.emacs.dyerdwelling.family/emacs/20231221210441-emacs--selected-window-accent/
-    (defun my/selected-window-accent ()
-      (interactive)
-      (set-face-background 'fringe "#77002e")
-      (walk-windows
-       (lambda (window)
-         (if (eq window (selected-window))
-             (progn
-               (set-window-margins window 1 0)
-               (set-window-fringes window 8 0 t nil))
-           (progn
-             (set-window-margins window 3 0)
-             (set-window-fringes window 0 0 t nil))
-           )
-         )
-       nil t))
+    ;; ;; https://www.emacs.dyerdwelling.family/emacs/20231221210441-emacs--selected-window-accent/
+    ;; (defun my/selected-window-accent ()
+    ;;   (interactive)
+    ;;   (set-face-background 'fringe "#77002e")
+    ;;   (walk-windows
+    ;;    (lambda (window)
+    ;;      (if (eq window (selected-window))
+    ;;          (progn
+    ;;            (set-window-margins window 1 0)
+    ;;            (set-window-fringes window 8 0 t nil))
+    ;;        (progn
+    ;;          (set-window-margins window 3 0)
+    ;;          (set-window-fringes window 0 0 t nil))
+    ;;        )
+    ;;      )
+    ;;    nil t))
 
-    (add-hook 'window-state-change-hook 'my/selected-window-accent)
+    ;; (add-hook 'window-state-change-hook 'my/selected-window-accent)
 
     (use-package projectile
       :ensure t
@@ -764,20 +792,19 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
 
     (use-package org
       :straight t
-      :diminish org-indent-mode
-      :hook ((org-mode . org-indent-mode)
+      :hook (
              (org-capture-mode . skk-mode))
       :bind (("C-c c" . org-capture)
              ("C-c a" . org-agenda)
              ("<f11>" . org-clock-goto))
 
       :config
-
+      (setq org-export-with-broken-links t)
 
       ;; 複数行で強調表示かのうなように拡張
       (setcar (nthcdr 4 org-emphasis-regexp-components) 5)
       (org-set-emph-re 'org-emphasis-regexp-components org-emphasis-regexp-components) 
-
+      
       ;; C-c C-j 補完
       (setq org-goto-interface 'outline-path-completion)
 
@@ -824,6 +851,7 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
          (gnuplot . t)
          (latex . t)
          (shell . t)
+         (lisp . t)
          (python . t)
          (dot . t)))
 
@@ -958,6 +986,24 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
 
       (setq org-habit-show-habits-only-for-today 1)
       (setq org-agenda-repeating-timestamp-show-all nil))
+
+    ;; (use-package org-modern
+    ;;   :straight t
+    ;;   :hook (org-mode . org-modern-mode)
+    ;;   :init
+    ;;   (setq
+    ;;    ;; Edit settings
+    ;;    org-auto-align-tags nil
+    ;;    org-tags-column 0
+    ;;    org-catch-invisible-edits 'show-and-error
+    ;;    org-special-ctrl-a/e t
+    ;;    org-insert-heading-respect-content t
+
+    ;;    ;; Org styling, hide markup etc.
+    ;;    org-hide-emphasis-markers t
+    ;;    org-pretty-entities t
+    ;;    org-ellipsis "…"))
+
 
     (use-package org-fragtog :straight t)
     (use-package org-wild-notifier
@@ -1387,11 +1433,12 @@ org-mode の latex エクスポートの設定.
     (org-roam-directory (file-truename "~/myspace/org-roam"))
     (org-roam-db-location "~/tmp/org-roam")
     (org-roam-dailies-capture-templates '(("d" "default" entry
-                                           "\n* %<%H:%M>\n%?"
+                                           "\n* %<%H:%M>\n%a\n%?"
                                            :if-new (file+head "%<%Y-%m-%d>.org"
                                                               "#+title: %<%Y-%m-%d>\n"))))
     :bind (("C-c n l" . org-roam-buffer-toggle)
            ("C-c n f" . org-roam-node-find)
+           ("C-c n t" . org-roam-dailies-capture-today)
            ("C-c n g" . org-roam-graph)
            ("C-c n i" . org-roam-node-insert)
            ("C-c n c" . org-roam-capture))
@@ -1400,7 +1447,7 @@ org-mode の latex エクスポートの設定.
     ;;(org-roam-setup)
     (setq org-roam-node-display-template (concat "${title:*} " (propertize "${tags:10}" 'face 'org-tag)))
     (org-roam-db-autosync-mode)
-    
+
     ;; If using org-roam-protocol
     (require 'org-roam-protocol))
 
@@ -1435,6 +1482,8 @@ org-mode の latex エクスポートの設定.
     :straight t)
 #+end_src
 
+#+RESULTS:
+
 
 ** citar
 
@@ -1447,7 +1496,39 @@ org-mode の latex エクスポートの設定.
     :bind (("C-c b" . citar-insert-citation)
            :map minibuffer-local-map
            ("M-b" . citar-insert-preset))
+    :init
+    ;; Here we define a face to dim non 'active' icons, but preserve alignment.
+    ;; Change to your own theme's background(s)
+
+    ;; (defface kb/citar-icon-dim
+    ;;   ;; Change these colors to match your theme. Using something like
+    ;;   ;; `face-attribute' to get the value of a particular attribute of a face might
+    ;;   ;; be more convenient.
+    ;;   '((((background dark)) :foreground "#212428")
+    ;;     (((background light)) :foreground "#f0f0f0"))
+    ;;   "Face for having icons' color be identical to the theme
+    ;;   background when \"not shown\".")
+    
     :custom
+    (
+     citar-templates
+     '((main . "${author editor:30}   ${date year issued:4}    ${title:110}")
+       (suffix . "     ${=type=:20}    ${tags keywords keywords:*}")
+       (preview . "${author editor} (${year issued date}) ${title}, ${journal journaltitle publisher container-title collection-title}.\n")
+       (note . "#+title: Notes on ${author editor}, ${title}") ; For new notes
+       ))
+    ;; Configuring all-the-icons. From
+    ;; https://github.com/bdarcus/citar#rich-ui
+    ;; (citar-symbols
+    ;;  `((file ,(all-the-icons-faicon "file-o" :face 'all-the-icons-green :v-adjust -0.1) .
+    ;;          ,(all-the-icons-faicon "file-o" :face 'kb/citar-icon-dim :v-adjust -0.1) )
+    ;;    (note ,(all-the-icons-material "speaker_notes" :face 'all-the-icons-blue :v-adjust -0.3) .
+    ;;          ,(all-the-icons-material "speaker_notes" :face 'kb/citar-icon-dim :v-adjust -0.3))
+    ;;    (link ,(all-the-icons-octicon "link" :face 'all-the-icons-orange :v-adjust 0.01) .
+    ;;          ,(all-the-icons-octicon "link" :face 'kb/citar-icon-dim :v-adjust 0.01))))
+    ;; (citar-symbol-separator "  ")
+
+    
     (org-cite-insert-processor 'citar)
     (org-cite-follow-processor 'citar)
     (org-cite-activate-processor 'citar)
@@ -1471,6 +1552,9 @@ org-mode の latex エクスポートの設定.
     :after citar embark
     :no-require
     :config (citar-embark-mode 1))
+  (use-package all-the-icons
+    :straight t
+    :if (display-graphic-p))
 
 #+end_src
 
@@ -1600,114 +1684,111 @@ org-mode の latex エクスポートの設定.
 * プログラミング
 ** corfu
 #+begin_src emacs-lisp
-    ;; (use-package consult-dash
-    ;;   :straight (consult-dash :type git :repo "https://codeberg.org/ravi/consult-dash.git")
-    ;;   :bind (("M-s d" . consult-dash))
-    ;;   :custom  (dash-docs-browser-func 'eww)
-    ;;   :config
-    ;;   ;; Use the symbol at point as initial search term
-    ;;   (consult-customize consult-dash :initial (thing-at-point 'symbol)))
+  ;; (use-package consult-dash
+  ;;   :straight (consult-dash :type git :repo "https://codeberg.org/ravi/consult-dash.git")
+  ;;   :bind (("M-s d" . consult-dash))
+  ;;   :custom  (dash-docs-browser-func 'eww)
+  ;;   :config
+  ;;   ;; Use the symbol at point as initial search term
+  ;;   (consult-customize consult-dash :initial (thing-at-point 'symbol)))
 
-    (use-package corfu
-      :straight t
-      :custom
-      (corfu-auto t)                 ;; Enable auto completion
-      (corfu-quit-no-match 'separator)      ;; Never quit, even if there is no match
+  (use-package corfu
+    :straight (:files (:defaults "extensions/*"))
+    :custom
+    (corfu-auto t)
+    (corfu-quit-no-match 'separator) 
 
-  ;  :bind
-  ;  (:map corfu-map
-  ;   ("C-n"      . corfu-next)
-  ;   ("C-p"      . corfu-previous)
-  ;   ("S-SPC"    . corfu-insert)
-  ;   ("ESC"      . corfu-reset)
-  ;   ("<S-up>"   . corfu-first)
-  ;   ("<S-down>" . corfu-scroll-down))    
-      :init
-      (global-corfu-mode))
-
-    (use-package cape
-      :straight t
-      ;; Bind dedicated completion commands
-      ;; Alternative prefix keys: C-c p, M-p, M-+, ...
-      :bind (("C-c p p" . completion-at-point) ;; capf
-             ("C-c p t" . complete-tag)        ;; etags
-             ("C-c p d" . cape-dabbrev)        ;; or dabbrev-completion
-             ("C-c p h" . cape-history)
-             ("C-c p f" . cape-file)
-             ("C-c p k" . cape-keyword)
-             ("C-c p s" . cape-symbol)
-             ("C-c p a" . cape-abbrev)
-             ("C-c p i" . cape-ispell)
-             ("C-c p l" . cape-line)
-             ("C-c p w" . cape-dict)
-             ("C-c p \\" . cape-tex)
-             ("C-c p _" . cape-tex)
-             ("C-c p ^" . cape-tex)
-             ("C-c p &" . cape-sgml)
-             ("C-c p r" . cape-rfc1345))
-      :init
-      (when (and (version< emacs-version "29.1") (not (and (fboundp 'pos-bol) (fboundp 'pos-eol))))
-        (defun pos-bol (&optional n)
-          "Return the position at the line beginning."
-          (declare (side-effect-free t))
-          (let ((inhibit-field-text-motion t))
-            (line-beginning-position n)))
-        (defun pos-eol (&optional n)
-          "Return the position at the line end."
-          (declare (side-effect-free t))
-          (let ((inhibit-field-text-motion t))
-            (line-end-position n))))
-
-      (advice-add #'lsp-completion-at-point :around #'cape-wrap-noninterruptible)
+    :init
+    (setq corfu-auto-prefix 2)
+    (setq corfu-popupinfo-max-height 150)
+    (setq corfu-popupinfo-delay '(0.5 . 0.2))
+    (corfu-popupinfo-mode 1)
+    (global-corfu-mode))
 
 
-    
-      ;; Add `completion-at-point-functions', used by `completion-at-point'.
-      (add-to-list 'completion-at-point-functions #'cape-file)
-      (add-to-list 'completion-at-point-functions #'cape-dabbrev)
-      ;;(add-to-list 'completion-at-point-functions #'cape-history)
-      ;;(add-to-list 'completion-at-point-functions #'cape-keyword)
-      ;;(add-to-list 'completion-at-point-functions #'cape-tex)
-      ;;(add-to-list 'completion-at-point-functions #'cape-sgml)
-      ;;(add-to-list 'completion-at-point-functions #'cape-rfc1345)
-      ;;(add-to-list 'completion-at-point-functions #'cape-abbrev)
-      ;;(add-to-list 'completion-at-point-functions #'cape-ispell)
-      ;;(add-to-list 'completion-at-point-functions #'cape-dict)
-      ;;(add-to-list 'completion-at-point-functions #'cape-symbol)
-      ;;(add-to-list 'completion-at-point-functions #'cape-line)
-      )
+  (use-package cape
+    :straight t
+    ;; Bind dedicated completion commands
+    ;; Alternative prefix keys: C-c p, M-p, M-+, ...
+    :bind (("C-c p p" . completion-at-point) ;; capf
+           ("C-c p t" . complete-tag)        ;; etags
+           ("C-c p d" . cape-dabbrev)        ;; or dabbrev-completion
+           ("C-c p h" . cape-history)
+           ("C-c p f" . cape-file)
+           ("C-c p k" . cape-keyword)
+           ("C-c p s" . cape-symbol)
+           ("C-c p a" . cape-abbrev)
+           ("C-c p i" . cape-ispell)
+           ("C-c p l" . cape-line)
+           ("C-c p w" . cape-dict)
+           ("C-c p \\" . cape-tex)
+           ("C-c p _" . cape-tex)
+           ("C-c p ^" . cape-tex)
+           ("C-c p &" . cape-sgml)
+           ("C-c p r" . cape-rfc1345))
+    :init
+    (when (and (version< emacs-version "29.1") (not (and (fboundp 'pos-bol) (fboundp 'pos-eol))))
+      (defun pos-bol (&optional n)
+        "Return the position at the line beginning."
+        (declare (side-effect-free t))
+        (let ((inhibit-field-text-motion t))
+          (line-beginning-position n)))
+      (defun pos-eol (&optional n)
+        "Return the position at the line end."
+        (declare (side-effect-free t))
+        (let ((inhibit-field-text-motion t))
+          (line-end-position n))))
 
-    ;; A few more useful configurations...
-    (use-package emacs
-      :init
-      ;; TAB cycle if there are only few candidates
-      (setq completion-cycle-threshold 3)
+    (advice-add #'lsp-completion-at-point :around #'cape-wrap-noninterruptible)
 
-      ;; Emacs 28: Hide commands in M-x which do not apply to the current mode.
-      ;; Corfu commands are hidden, since they are not supposed to be used via M-x.
-      ;; (setq read-extended-command-predicate
-      ;;       #'command-completion-default-include-p)
 
-      ;; Enable indentation+completion using the TAB key.
-      ;; `completion-at-point' is often bound to M-TAB.
-      (setq tab-always-indent 'complete))
 
-    (use-package kind-icon
-      :straight t
-      :after corfu
-      :custom
-      (kind-icon-default-face 'corfu-default) ; to compute blended backgrounds correctly
-      :config
-      (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
+    ;; Add `completion-at-point-functions', used by `completion-at-point'.
+    (add-to-list 'completion-at-point-functions #'cape-file)
+    (add-to-list 'completion-at-point-functions #'cape-dabbrev)
+    ;;(add-to-list 'completion-at-point-functions #'cape-history)
+    ;;(add-to-list 'completion-at-point-functions #'cape-keyword)
+    ;;(add-to-list 'completion-at-point-functions #'cape-tex)
+    ;;(add-to-list 'completion-at-point-functions #'cape-sgml)
+    ;;(add-to-list 'completion-at-point-functions #'cape-rfc1345)
+    ;;(add-to-list 'completion-at-point-functions #'cape-abbrev)
+    ;;(add-to-list 'completion-at-point-functions #'cape-ispell)
+    ;;(add-to-list 'completion-at-point-functions #'cape-dict)
+    ;;(add-to-list 'completion-at-point-functions #'cape-symbol)
+    ;;(add-to-list 'completion-at-point-functions #'cape-line)
+    )
 
-    ;; Use Dabbrev with Corfu!
-    (use-package dabbrev
-      ;; Swap M-/ and C-M-/
-      :bind (("M-/" . dabbrev-completion)
-             ("C-M-/" . dabbrev-expand))
-      ;; Other useful Dabbrev configurations.
-      :custom
-      (dabbrev-ignored-buffer-regexps '("\\.\\(?:pdf\\|jpe?g\\|png\\)\\'")))
+  ;; A few more useful configurations...
+  (use-package emacs
+    :init
+    ;; TAB cycle if there are only few candidates
+    (setq completion-cycle-threshold 3)
+
+    ;; Emacs 28: Hide commands in M-x which do not apply to the current mode.
+    ;; Corfu commands are hidden, since they are not supposed to be used via M-x.
+    ;; (setq read-extended-command-predicate
+    ;;       #'command-completion-default-include-p)
+
+    ;; Enable indentation+completion using the TAB key.
+    ;; `completion-at-point' is often bound to M-TAB.
+    (setq tab-always-indent 'complete))
+
+  (use-package kind-icon
+    :straight t
+    :after corfu
+    ;;:custom
+    ;;(kind-icon-default-face 'corfu-default) ; to compute blended backgrounds correctly
+    :config
+    (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
+
+  ;; Use Dabbrev with Corfu!
+  (use-package dabbrev
+    ;; Swap M-/ and C-M-/
+    :bind (("M-/" . dabbrev-completion)
+           ("C-M-/" . dabbrev-expand))
+    ;; Other useful Dabbrev configurations.
+    :custom
+    (dabbrev-ignored-buffer-regexps '("\\.\\(?:pdf\\|jpe?g\\|png\\)\\'")))
 #+end_src
 
 ** tree-sitter
@@ -1736,9 +1817,9 @@ org-mode の latex エクスポートの設定.
     :custom
     (lsp-completion-provider :none) ;; we use Corfu!
     :init
-  ;  (defun my/lsp-mode-setup-completion ()
-  ;    (setf (alist-get 'styles (alist-get 'lsp-capf completion-category-defaults))
-  ;          '(orderless))) ;; Configure flex
+                                          ;  (defun my/lsp-mode-setup-completion ()
+                                          ;    (setf (alist-get 'styles (alist-get 'lsp-capf completion-category-defaults))
+                                          ;          '(orderless))) ;; Configure flex
     (defun my/orderless-dispatch-flex-first (_pattern index _total)
       (and (eq index 0) 'orderless-flex))
 
@@ -1773,7 +1854,7 @@ org-mode の latex エクスポートの設定.
 
     (setq read-process-output-max (* 1024 1000))
 
-    (setq lsp-idle-delay 0.500)
+    (setq lsp-idle-delay 0.300)
 
     ;; クロスリファレンスとの統合を有効化する
     (setq lsp-enable-xref t)
@@ -1791,14 +1872,45 @@ org-mode の latex エクスポートの設定.
     ;; snippet
     (setq lsp-enable-snippet t)
 
-
-
     (setq lsp-log-io nil)
 
     ;;:commands (lsp lsp-deferred)
     :hook
     (lsp-completion-mode . my/lsp-mode-setup-completion)
     )
+
+  ;; https://github.com/blahgeek/emacs-lsp-booster
+  (defun lsp-booster--advice-json-parse (old-fn &rest args)
+    "Try to parse bytecode instead of json."
+    (or
+     (when (equal (following-char) ?#)
+       (let ((bytecode (read (current-buffer))))
+         (when (byte-code-function-p bytecode)
+           (funcall bytecode))))
+     (apply old-fn args)))
+    (advice-add (if (progn (require 'json)
+                           (fboundp 'json-parse-buffer))
+                    'json-parse-buffer
+                  'json-read)
+                :around
+                #'lsp-booster--advice-json-parse)
+
+    ;; (defun lsp-booster--advice-final-command (old-fn cmd &optional test?)
+    ;;   "Prepend emacs-lsp-booster command to lsp CMD."
+    ;;   (let ((orig-result (funcall old-fn cmd test?)))
+    ;;     (message "edd")
+    ;;     (if (and (not test?)                             ;; for check lsp-server-present?
+    ;;              (not (file-remote-p default-directory)) ;; see lsp-resolve-final-command, it would add extra shell wrapper
+    ;;              lsp-use-plists
+    ;;              (not (functionp 'json-rpc-connection))  ;; native json-rpc
+    ;;              (executable-find "emacs-lsp-booster"))
+    ;;         (progn
+    ;;           (message "Using emacs-lsp-booster for %s." orig-result)
+    ;;           (cons "emacs-lsp-booster" orig-result))
+    ;;       orig-result)))
+    ;; (advice-add 'lsp-resolve-final-function :around #'lsp-booster--advice-final-command)
+
+
 
   (use-package lsp-ui
     :straight t
@@ -1855,6 +1967,17 @@ org-mode の latex エクスポートの設定.
 
 ** Lisp
 #+begin_src emacs-lisp
+  (use-package lispy
+    :straight t
+    :hook (emacs-lisp-mode . (lambda () (lispy-mode 1)))
+    :hook (lisp-mode . (lambda () (lispy-mode 1))))
+#+end_src
+
+#+RESULTS:
+| (closure (font-lock-end font-lock-beg sly-fontifying-fu--contrib sly-fontifying-fu--path t) nil (add-hook 'font-lock-extend-region-functions 'sly-extend-region-for-font-lock t t)) | sly--lisp-indent-lisp-mode-hook | sly-editing-mode | (lambda nil (lispy-mode 1)) |
+| (lambda nil (lispy-mode 1))                                                                                                                                                         | sly-editing-mode                |                  |                             |
+
+#+begin_src emacs-lisp
   (load (expand-file-name "~/.roswell/helper.el"))
   ;;(setq inferior-lisp-program "ros -Q run")
 #+end_src
@@ -1864,6 +1987,20 @@ M-x lsp-install-server, rust-analyzer
 #+begin_src emacs-lisp
   (use-package rustic :straight t)
 #+end_src
+
+** lean4
+
+#+begin_src emacs-lisp
+  (use-package lean4-mode
+    :straight (lean4-mode
+  	     :type git
+  	     :host github
+  	     :repo "leanprover/lean4-mode"
+  	     :files ("*.el" "data"))
+    ;; to defer loading the package until required
+    :commands (lean4-mode))
+#+end_src
+
 
 ** Python
 #+begin_src emacs-lisp
@@ -1879,21 +2016,30 @@ M-x lsp-install-server, rust-analyzer
 
     ;;(eval-when-compile
     ;;(require 'cl))
-    ;(require 'dap-python)
+    (require 'dap-python)
     (require 'dap-cpptools)
-    ;(require 'dap-lldb)
+    ;; dap-gdb-lldb-setup の実行が必要
+    (require 'dap-lldb)
     (setq dap-auto-configure-features '(sessions locals))
-    ;(setq dap-auto-configure-features nil)
-    ;(dap-mode 1)
+                                          ;(setq dap-auto-configure-features nil)
+    (dap-mode 1)
 
     ;; The modes below are optional
-    ;(dap-ui-mode 1)
-    ;(dap-ui-many-windows-mode 1)
-    ;(dap-tooltip-mode 1)
-    ;(tooltip-mode 1)
-    ;(dap-ui-controls-mode 1)
+    (dap-ui-mode 1)
+    (dap-ui-many-windows-mode 1)
+    (dap-tooltip-mode 1)
+    (tooltip-mode 1)
+    (dap-ui-controls-mode 1)
+
+    (dap-register-debug-template "Rust::GDB Run Configuration"
+                                 (list :type "gdb"
+                                       :request "launch"
+                                       :name "GDB::Run"
+                                       :gdbpath "rust-gdb"
+                                       :target nil
+                                       :cwd nil))  
     (add-hook 'dap-stopped-hook
-          (lambda (arg) (call-interactively #'dap-hydra)))
+              (lambda (arg) (call-interactively #'dap-hydra)))
     ;; Temporal fix
     (defun dap-python--pyenv-executable-find (command)
       (with-venv (executable-find "python"))))
@@ -1990,14 +2136,41 @@ M-x lsp-install-server, rust-analyzer
 
     (use-package pdf-tools
       :straight t
-
-      :mode (("\\.pdf?\\'" . pdf-view-mode))
+      :after cus-edit
+      :magic ("%PDF" . pdf-view-mode)
       :config
-      (pdf-loader-install)
+      ;; (require 'pdf-tools)
+      ;; (require 'pdf-view)
+      ;; (require 'pdf-misc)
+      ;; (require 'pdf-occur)
+      ;; (require 'pdf-util)
+      ;; (require 'pdf-annot)
+      ;; (require 'pdf-info)
+      ;; (require 'pdf-isearch)
+      ;; (require 'pdf-history)
+      ;; (require 'pdf-links)
+      ;; (require 'pdf-outline)
+      ;; (require 'pdf-loader)
+      ;; (require 'pdf-macs)
+      ;; (require 'pdf-virtual)
+      (pdf-tools-install :no-query)
+      ;; (pdf-loader-install)
       ;;(add-hook 'pdf-view-mode-hook (lambda() (linum-mode -1)))
-      (add-hook 'pdf-view-mode-hook (lambda() (display-line-numbers-mode -1)))
-      (add-hook 'pdf-view-mode-hook (lambda() (pdf-tools-enable-minor-modes)))
-      (setq-default pdf-view-display-size 'fit-page))
+      ;;(add-hook 'pdf-view-mode-hook (lambda() (display-line-numbers-mode -1)))
+      ;; (add-hook 'pdf-view-mode-hook (lambda() (pdf-tools-enable-minor-modes 1)))
+      ;; (setq-default pdf-view-display-size 'fit-page)
+      )
+
+    (require 'display-line-numbers)
+    (defun display-line-numbers--turn-on ()
+      "Turn on `display-line-numbers-mode'."
+      (unless (or (minibufferp) (eq major-mode 'pdf-view-mode))
+        (display-line-numbers-mode)))
+    (global-display-line-numbers-mode 1)
+
+    (use-package org-pdftools
+      :straight t
+      :hook (org-mode . org-pdftools-setup-link))
 
     (use-package multiple-cursors
       :ensure t
@@ -2121,11 +2294,8 @@ M-x lsp-install-server, rust-analyzer
   #+END_SRC
 
 * Org2Blog
-:PROPERTIES:
-:ID:       75e777ad-7154-4cc6-88aa-c0c0305cc6e3
-:END:
-** パッケージ
 
+** パッケージ
 
 #+begin_src emacs-lisp
   (use-package org2blog
@@ -2135,10 +2305,8 @@ M-x lsp-install-server, rust-analyzer
     :config
     (load "~/myspace/dotfiles-secret/org2blog.el"))
 #+end_src
+
 ** 自作関数
-:PROPERTIES:
-:ID:       de5de08b-d7ba-4491-80c2-0fbd99c70f81
-:END:
 
 #+begin_src emacs-lisp
     (defun ks-post-to-wordpress ()
@@ -2217,39 +2385,39 @@ M-x lsp-install-server, rust-analyzer
 * a
 
 #+begin_src emacs-lisp
-        (defgroup gio-group nil
-          "Group for customization"
-          :prefix "gio-")
+  ;; (defgroup gio-group nil
+  ;;   "Group for customization"
+  ;;   :prefix "gio-")
 
-        (defface gio-highlight-numbers-face
-          '((t :inherit (default)
-               :foreground "#ff0000"))
-          "Face for numbers"
-          :group 'gio-group )
+  ;; (defface gio-highlight-numbers-face
+  ;;   '((t :inherit (default)
+  ;;        :foreground "#ff0000"))
+  ;;   "Face for numbers"
+  ;;   :group 'gio-group )
 
-        ;; (defvar gio-keywords '(("\\(\\b\\|[-]\\)\\([-]?\\([0-9]+\\)\\(\\.?[0-9]\\)*\\)\\b" . 'gio-highlight-numbers-face)) ;; Integers & Decimals
-        ;;   "Keywords for gio-minor-mode highlighting")
-
-
-        (defvar gio-keywords '(("#\\+begin\\(.\\)*#\\+end" 0 'gio-highlight-numbers-face t)) "")
+  ;; ;; (defvar gio-keywords '(("\\(\\b\\|[-]\\)\\([-]?\\([0-9]+\\)\\(\\.?[0-9]\\)*\\)\\b" . 'gio-highlight-numbers-face)) ;; Integers & Decimals
+  ;; ;;   "Keywords for gio-minor-mode highlighting")
 
 
-        (define-minor-mode gio-minor-mode
-          "Minor mode for customization"
-          :init-value 1
-          :lighter " GioMode"
-          :group 'gio-group
-          (when (bound-and-true-p gio-minor-mode)
-            (font-lock-add-keywords nil gio-keywords)
-            (font-lock-fontify-buffer))
-          (when (not (bound-and-true-p gio-minor-mode))
-            (font-lock-remove-keywords nil gio-keywords)
-            (font-lock-fontify-buffer)))
+  ;; (defvar gio-keywords '(("#\\+begin\\(.\\)*#\\+end" 0 'gio-highlight-numbers-face t)) "")
 
-        (define-globalized-minor-mode gio-global-minor-mode
-          gio-minor-mode
-          gio-minor-mode :group 'gio-group)
-        ;;(gio-global-minor-mode 0)
+
+  ;; (define-minor-mode gio-minor-mode
+  ;;   "Minor mode for customization"
+  ;;   :init-value 1
+  ;;   :lighter " GioMode"
+  ;;   :group 'gio-group
+  ;;   (when (bound-and-true-p gio-minor-mode)
+  ;;     (font-lock-add-keywords nil gio-keywords)
+  ;;     (font-lock-fontify-buffer))
+  ;;   (when (not (bound-and-true-p gio-minor-mode))
+  ;;     (font-lock-remove-keywords nil gio-keywords)
+  ;;     (font-lock-fontify-buffer)))
+
+  ;; (define-globalized-minor-mode gio-global-minor-mode
+  ;;   gio-minor-mode
+  ;;   gio-minor-mode :group 'gio-group)
+  ;; ;;(gio-global-minor-mode 0)
 #+end_src
 
 #+RESULTS:
@@ -2308,6 +2476,20 @@ M-x lsp-install-server, rust-analyzer
       (let ((books (s-lines (shell-command-to-string
                              (s-lex-format "find ~/myspace/Book")))))
         (find-file (completing-read "Book Title: " books nil t ""))))
+
+
+    (defun org-roam-journal-p (node)
+      (let ((rdate "^[[:digit:]]\\{4\\}-[[:digit:]]\\{1,2\\}-[[:digit:]]\\{1,2\\}$"))
+        (string-match-p rdate (org-roam-node-title node))))
+  (defun ks-org-roam-random-node ()
+    (interactive)
+    (org-roam-node-random nil
+                          (lambda (node) (not (org-roam-journal-p node)))))
+  (defun nanoid (n)
+    (let ((chars "useandom-26T198340PX75pxJACKVERYMINDBUSHWOLF_GQZbfghjklqvwyzrict"))
+      (reduce #'concat (mapcar #'string
+                               (mapcar (lambda (_) (seq-random-elt chars))
+                                       (number-sequence 1 n))))))
 
   ;; (define-globalized-minor-mode ks-live-ox-html-global-minor-mode
   ;;   ks-live-ox-html-minor-mode
