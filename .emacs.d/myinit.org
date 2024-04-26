@@ -1682,16 +1682,19 @@ org-mode の latex エクスポートの設定.
   #+END_SRC
 
 * プログラミング
-** corfu
-#+begin_src emacs-lisp
-  ;; (use-package consult-dash
-  ;;   :straight (consult-dash :type git :repo "https://codeberg.org/ravi/consult-dash.git")
-  ;;   :bind (("M-s d" . consult-dash))
-  ;;   :custom  (dash-docs-browser-func 'eww)
-  ;;   :config
-  ;;   ;; Use the symbol at point as initial search term
-  ;;   (consult-customize consult-dash :initial (thing-at-point 'symbol)))
 
+** corfu
+
+
+~corfu-popupinfo-max-height~ で下図のように候補の右にでる説明文の高さ
+を大きくした。
+
+#+DOWNLOADED: screenshot @ 2024-04-26 20:03:11
+#+attr_org: :width 400px
+[[file:images/2024-04-26_20-03-11_screenshot_.png]]
+
+
+#+begin_src emacs-lisp
   (use-package corfu
     :straight (:files (:defaults "extensions/*"))
     :custom
