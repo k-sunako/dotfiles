@@ -980,8 +980,9 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
                                      "* %? [[%:link][%:description]] \nCaptured On: %U")))
 
       (setq org-todo-keywords '((sequence
-                                 "NEXT(n)" "TODO(t)" "WAITING(w)" "SOMEDAY(s)" "|" "DONE(d)" "CANCELLED(c)" )))
-
+                                 "NEXT(n)" "TODO(t)" "WIP(p)" "WAITING(w)" "SOMEDAY(s)" "|" "DONE(d)" "CANCELLED(c)" )))
+      (setq org-todo-keyword-faces
+            '(("WIP" . "orange") ("WAITING" . "magenta") ("CANCELED" . "red") ("DONE" . "green")))
       (setq org-format-latex-options (plist-put org-format-latex-options :scale 2.0))
 
       (setq org-habit-show-habits-only-for-today 1)
