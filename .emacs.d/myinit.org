@@ -1985,6 +1985,9 @@ org-mode の latex エクスポートの設定.
 #+begin_src emacs-lisp
   (load (expand-file-name "~/.roswell/helper.el"))
   ;;(setq inferior-lisp-program "ros -Q run")
+
+  (use-package sly-overlay
+    :straight (:host sourcehut :repo "fosskers/sly-overlay"))
 #+end_src
 
 ** Rust
