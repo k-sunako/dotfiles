@@ -1667,6 +1667,10 @@ org-mode の latex エクスポートの設定.
        (TeX-command-extra-options "-shell-escape -interaction nonstopmode --synctex=1")
        (TeX-engine 'xetex)
       )
+  (use-package cdlatex
+    :hook ((LaTeX-mode . turn-on-cdlatex)
+           (org-mode   . turn-on-org-cdlatex))
+    :straight t)
 #+end_src
 
 * Utility
