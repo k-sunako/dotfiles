@@ -1714,6 +1714,7 @@ org-mode の latex エクスポートの設定.
     (corfu-popupinfo-mode 1)
     (global-corfu-mode))
 
+  (setq text-mode-ispell-word-completion nil)
 
   (use-package cape
     :straight t
