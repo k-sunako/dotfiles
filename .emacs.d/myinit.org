@@ -1,8 +1,9 @@
 * 警告の抑制
 #+begin_src emacs-lisp
- ; (if warning-suppress-types
- ;     (setq warning-suppress-types (append warning-suppress-types '((org-element-cache))))
- ;   (setq warning-suppress-types '((org-element-cache))))
+  (setq warning-minimum-level :error)
+  ;; (if warning-suppress-types
+  ;;     (setq warning-suppress-types (append warning-suppress-types '((org-element-cache))))
+  ;;   (setq warning-suppress-types '((org-element-cache))))
 #+end_src
 
 * 初期ページ
