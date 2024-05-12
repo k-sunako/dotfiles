@@ -974,11 +974,11 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
                                     ("r" "reference" plain
                                      (file "~/myspace/Bibliography/references.bib"))
                                     ("p" "Protocol" entry
-                                     (file+headline "~/myspace/Org/inbox.org" "Scraps")
-                                     "* %^{Title}\nSource: %u, %c\n  \n #+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n\n%?")
+                                     (file "~/myspace/org-roam/20230205085538-inbox.org")
+                                     "* TODO %? [[%:link][%:description]]  \n #+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n\n %(org-set-tags \"article\")")
                                     ("L" "Protocol Link" entry
-                                     (file+headline "~/myspace/Org/inbox.org" "Scraps")
-                                     "* %? [[%:link][%:description]] \nCaptured On: %U")))
+                                     (file "~/myspace/org-roam/20230205085538-inbox.org")
+                                     "* TODO %? [[%:link][%:description]] %(org-set-tags \"article\") \nCaptured On: %U ")))
 
       (setq org-todo-keywords '((sequence
                                  "NEXT(n)" "TODO(t)" "WIP(p)" "WAITING(w)" "SOMEDAY(s)" "|" "DONE(d)" "CANCELLED(c)" )))
