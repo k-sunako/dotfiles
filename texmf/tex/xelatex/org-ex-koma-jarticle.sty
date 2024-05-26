@@ -16,8 +16,14 @@
 \usepackage[xetex]{hyperref}
 \usepackage{xcolor}
 \usepackage{minted}
-\usepackage{geometry}
-\geometry{left=1cm,right=1cm,top=1cm,bottom=1cm}
+% \usepackage{geometry}
+% \geometry{left=1cm,right=1cm,top=1cm,bottom=1cm}
+\usepackage[a4paper,
+  vmargin=1cm, hmargin=1cm, % page margins
+  includehead, includefoot, % Margins calculated include header and footer
+  footskip=2em]
+  {geometry}
+\usepackage[footsepline=0.25pt,automark]{scrlayer-scrpage}
 \usepackage[style=reading]{biblatex}
 \DeclareFieldFormat{apacase}{#1}
 \addbibresource{~/myspace/Bibliography/references.bib}
