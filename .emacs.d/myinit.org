@@ -434,9 +434,10 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
 #+begin_src emacs-lisp
   ;; Revert buffers when the underlying file has changed
   (global-auto-revert-mode 1)
-
+  ;; minibuffer に一々表示がでるのは煩わしい
+  (setq auto-revert-verbose nil)
   ;; Revert Dired and other buffers
-  (setq global-auto-revert-non-file-buffers t)
+  (setq global-auto-revert-non-file-buffers nil)
 #+end_src
 
 * バックアップファイル
@@ -1102,12 +1103,12 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
           (`ascii (format "%s (%s)" desc link))
           (t desc))))
 
-    (use-package org-hyperscheduler
-      :straight
-      ( :repo "dmitrym0/org-hyperscheduler"
-        :host github
-        :type git
-        :files ("*")))
+    ;; (use-package org-hyperscheduler
+    ;;   :straight
+    ;;   ( :repo "dmitrym0/org-hyperscheduler"
+    ;;     :host github
+    ;;     :type git
+    ;;     :files ("*")))
 
     (use-package org-web-tools :straight t)    
   #+END_SRC
@@ -1121,10 +1122,10 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
 org-roam を html に変換して
 
 #+begin_src emacs-lisp
-  (use-package simple-httpd
-    :straight t
-    :init
-    (httpd-serve-directory "~/tmp/html"))
+  ;; (use-package simple-httpd
+  ;;   :straight t
+  ;;   :init
+  ;;   (httpd-serve-directory "~/tmp/html"))
 
   (require 'ox-publish)
   (setq org-html-html5-fancy t
