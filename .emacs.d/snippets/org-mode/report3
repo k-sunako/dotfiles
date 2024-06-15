@@ -1,0 +1,23 @@
+# key: rep3
+# name: report3
+# --
+#+LaTeX_CLASS: koma-jarticle
+
+#+STARTUP:  overview
+#+STARTUP:  hidestars
+#+OPTIONS:  H:4 num:nil toc:nil \n:nil @:t ::t |:t ^:nil -:t f:t *:t TeX:t LaTeX:t skip:nil d:nil todo:t pri:nil tags:not-in-toc
+#+LINK_UP:
+#+LINK_HOME:
+
+#+cite_export: csl ~/repos/styles/chicago-author-date.csl
+#+BIBLIOGRAPHY: ~/myspace/Bibliography/references.bib
+
+#+TITLE: ${1: title}
+#+AUTHOR: k-sunako
+#+DATE: `(let ((x (org-time-stamp '(16) t ))))`
+
+* 概要
+  blabla
+
+* 参考文献
+#+print_bibliography:
