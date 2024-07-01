@@ -321,6 +321,8 @@ Google翻訳をemacsで使えるように.
     :bind (("C-x d" . dired-jump))
     :config
     (define-key dired-mode-map (kbd "C-t") 'other-window)
+    (add-to-list 'display-buffer-alist
+                 (cons "\\*Async Shell Command\\*.*" (cons #'display-buffer-no-window nil)))
     (setq dired-listing-switches "-alGhv --group-directories-first")
     (setq dired-recursive-copies 'always)
     (setq dired-dwim-target t))  
@@ -1690,6 +1692,12 @@ org-mode の latex エクスポートの設定.
   #+END_SRC
 
 * プログラミング
+
+** indent
+
+#+begin_src emacs-lisp
+  (use-package aggressive-indent :straight t)
+#+end_src
 
 ** corfu
 
