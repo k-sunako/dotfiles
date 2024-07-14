@@ -1,0 +1,12 @@
+# key: orgpy
+# name: org-pyenv
+# expand-env: ((yas-indent-line 'fixed))
+# --
+#+PROPERTY: header-args:python :session (concat "*python* - " (buffer-file-name))
+#+PROPERTY: header-args:python+ :var cur_dir=(identity default-directory)
+#+PROPERTY: header-args:python+ :eval no-export
+
+#+begin_src elisp :exports none
+  (setq-local org-babel-python-command "/home/snowfox/repos/ks_python_env/.venv/bin/python")
+#+end_src
+
