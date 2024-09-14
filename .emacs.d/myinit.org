@@ -315,23 +315,78 @@ Google翻訳をemacsで使えるように.
     )
 #+END_SRC
 
+* Buffer/Window制御
+
+** activities
+
+セッションを管理をするパッケージである。
+
+#+begin_src emacs-lisp
+  (use-package activities
+    :straight (:host github :repo "alphapapa/activities.el")
+
+    :init
+    (activities-mode)
+    (activities-tabs-mode)
+    ;; Prevent `edebug' default bindings from interfering.
+    (setq edebug-inhibit-emacs-lisp-mode-bindings t)
+
+    :bind
+    (("C-x C-a C-n" . activities-new)
+     ("C-x C-a C-d" . activities-define)
+     ("C-x C-a C-a" . activities-resume)
+     ("C-x C-a C-s" . activities-suspend)
+     ("C-x C-a C-k" . activities-kill)
+     ("C-x C-a RET" . activities-switch)
+     ("C-x C-a b" . activities-switch-buffer)
+     ("C-x C-a g" . activities-revert)
+     ("C-x C-a l" . activities-list)))
+#+end_src
+
+** Ace Window
+
+Window毎に数字が表示され移動できるようになる。ホームポジションで操作し
+たいため /asdfjkl/ を設定した。
+
+#+begin_src emacs-lisp
+  (use-package ace-window
+    :straight t
+    :bind (("C-t". ace-window))
+    :config
+    (setq aw-keys '(?a ?s ?d ?f ?j ?k ?l)))
+#+end_src
+
+** Shackle
+
+コマンドで表示されるWindowを抑制するために導入。
+
+#+begin_src emacs-lisp
+  (use-package shackle
+    :straight (
+               :package shackle
+               :type git
+               :repo "https://depp.brause.cc/shackle.git")
+    :init
+    (setq shackle-rules '(("*Async Shell Command*" :ignore t)))
+    (add-hook 'after-init-hook #'(lambda () (shackle-mode 1))))
+
+#+end_src
+
 * Dired
 #+begin_src emacs-lisp
   (use-package dired
     :bind (("C-x d" . dired-jump))
     :config
     (define-key dired-mode-map (kbd "C-t") 'other-window)
-    (add-to-list 'display-buffer-alist
-                 (cons "\\*Async Shell Command\\*.*" (cons #'display-buffer-no-window nil)))
     (setq dired-listing-switches "-alGhv --group-directories-first")
     (setq dired-recursive-copies 'always)
-    (setq dired-dwim-target t))  
+    (setq dired-dwim-target t))
 #+end_src
 
 ** find-dired
 #+begin_src emacs-lisp
   (use-package find-dired
-    :custom ((find-ls-option '("-exec ls -ldh {} +" . "-ldh"))))  
+    :custom ((find-ls-option '("-exec ls -ldh {} +" . "-ldh"))))
 #+end_src
 
 ** wdired
@@ -342,7 +397,7 @@ dired バッファで直接ファイル名を変更できるようになる。
 #+begin_src emacs-lisp
   (use-package wdired
     :bind (:map dired-mode-map
-                ("e" . wdired-change-to-wdired-mode)))  
+                ("e" . wdired-change-to-wdired-mode)))
 #+end_src
 
 ** dired-launch
@@ -471,48 +526,6 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
       (setq recentf-auto-save-timer (run-with-idle-timer 12000 t 'recentf-save-list))
       (recentf-mode 1))
 
-
-    (use-package popper
-      :ensure t ; or :straight t
-      :bind (("C-`"   . popper-toggle)
-             ("M-`"   . popper-cycle)
-             ("C-M-`" . popper-toggle-type))
-      :init
-      (setq popper-reference-buffers
-            '("\\*Messages\\*"
-              "Output\\*$"
-              "\\*Async Shell Command\\*"
-              org-journal-mode
-              help-mode
-              compilation-mode))
-      (popper-mode +1)
-      (setq popper-window-height 20)
-      (popper-echo-mode +1))                ; For echo area hints
-
-
-    (use-package ace-window
-      :straight t
-      :bind (("C-t". ace-window)))
-
-    ;; ;; https://www.emacs.dyerdwelling.family/emacs/20231221210441-emacs--selected-window-accent/
-    ;; (defun my/selected-window-accent ()
-    ;;   (interactive)
-    ;;   (set-face-background 'fringe "#77002e")
-    ;;   (walk-windows
-    ;;    (lambda (window)
-    ;;      (if (eq window (selected-window))
-    ;;          (progn
-    ;;            (set-window-margins window 1 0)
-    ;;            (set-window-fringes window 8 0 t nil))
-    ;;        (progn
-    ;;          (set-window-margins window 3 0)
-    ;;          (set-window-fringes window 0 0 t nil))
-    ;;        )
-    ;;      )
-    ;;    nil t))
-
-    ;; (add-hook 'window-state-change-hook 'my/selected-window-accent)
-
     (use-package projectile
       :ensure t
       :diminish projectile-mode
@@ -523,31 +536,22 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
       (setq projectile-project-search-path '("~/projects"))
       (projectile-discover-projects-in-search-path))
 
-                                            ; (use-package selectrum
-                                            ;   :straight t
-                                            ;   :config
-                                            ;   (selectrum-mode +1))
     (use-package vertico
       :straight t
       :init
       (vertico-mode)
-
       ;; Different scroll margin
       (setq vertico-scroll-margin 0)
-
       ;; Show more candidates
       (setq vertico-count 20)
-
       ;; Grow and shrink the Vertico minibuffer
       (setq vertico-resize t)
-
       ;; Optionally enable cycling for `vertico-next' and `vertico-previous'.
       (setq vertico-cycle t))
-    ;; Migemoを有効にする
+
     ;; https://github.com/yamatakau08/.emacs.d/blob/master/.orderless.el
     (use-package orderless
       :straight t
-
       :custom
       ;;(completion-styles '(orderless))
       (completion-styles '(orderless basic))
@@ -576,22 +580,14 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
                   (progn (string-match-p pattern "") pattern)
                 (invalid-regexp nil)))
           component)))
-    ;;(use-package marginalia
-    ;;
-    ;;  :config
-    ;;  (marginalia-mode))
-    ;; Enable richer annotations using the Marginalia package
     (use-package marginalia
       :straight t
-
       ;; Either bind `marginalia-cycle` globally or only in the minibuffer
       :bind (("M-A" . marginalia-cycle)
              :map minibuffer-local-map
              ("M-A" . marginalia-cycle))
-
       ;; The :init configuration is always executed (Not lazy!)
       :init
-
       ;; Must be in the :init section of use-package such that the mode gets
       ;; enabled right away. Note that this forces loading the package.
       (marginalia-mode)
@@ -695,7 +691,7 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
       ;; Configure other variables and modes in the :config section,
       ;; after lazily loading the package.
       :config
-      
+
       ;; Optionally configure preview. The default value
       ;; is 'any, such that any key triggers the preview.
       ;; (setq consult-preview-key 'any)
@@ -749,27 +745,21 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
                         :history  file-name-history
                         :action   ,#'consult--file-action
                         :enabled   ,(lambda () recentf-mode)
-                        :items ,recentf-list))
-
-      )
+                        :items ,recentf-list)))
 
     (use-package embark
       :straight t
-
       :bind
       (("C-." . embark-act)         ;; pick some comfortable binding
        ("C-;" . embark-dwim)        ;; good alternative: M-.
        ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
 
       :init
-
       ;; Optionally replace the key help with a completing-read interface
       (setq prefix-help-command #'embark-prefix-help-command)
-      ;; 
       (setq embark-help-key "?")
 
       :config
-
       ;; Hide the mode line of the Embark live/completions buffers
       (add-to-list 'display-buffer-alist
                    '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
@@ -783,17 +773,12 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
       (embark-collect-mode . consult-preview-at-point-mode))
   #+END_SRC
 
-  #+RESULTS:
-  | embark-consult--upgrade-markers | consult-preview-at-point-mode |
-
-
-
 * Org
 
   #+BEGIN_SRC emacs-lisp
     ;;(use-package org-contrib :straight t)
 
-    (use-package gnuplot :straight t)
+    ;(use-package gnuplot :straight t)
 
     (use-package org
       :straight t
@@ -808,8 +793,8 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
 
       ;; 複数行で強調表示かのうなように拡張
       (setcar (nthcdr 4 org-emphasis-regexp-components) 5)
-      (org-set-emph-re 'org-emphasis-regexp-components org-emphasis-regexp-components) 
-      
+      (org-set-emph-re 'org-emphasis-regexp-components org-emphasis-regexp-components)
+
       ;; C-c C-j 補完
       (setq org-goto-interface 'outline-path-completion)
 
@@ -962,27 +947,16 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
 
       (setq org-capture-templates `(("t" "Todo [inbox]" entry
                                      (file "~/myspace/org-roam/20230205085538-inbox.org" )
-                                     "* TODO %i%?")
-                                    ("T" "Todo " entry
-                                     (function ks/select-file-for-task)
-                                     "* TODO %i%?")
+                                     "** TODO %i%?")
                                     ("n" "Note [inbox]" entry
                                      (file "~/myspace/org-roam/20230205085538-inbox.org")
-                                     "* %u\nPath:%F\nLink: %a\nTask: %k\n\n%?")
-                                    ("q" "Question [inbox]" entry
-                                     (file "~/myspace/org-roam/20230205085538-inbox.org")
-                                     "* QUESTION %?")
-                                    ("a" "Anki [drill]" entry
-                                     (file+headline "~/myspace/Projects/202201201927-drill/main.org" "drill")
-                                     "* Card :drill:\n%?\n** Answer\n ")
-                                    ("r" "reference" plain
-                                     (file "~/myspace/Bibliography/references.bib"))
+                                     "** %u\nPath:%F\nLink: %a\nTask: %k\n\n%?")
                                     ("p" "Protocol" entry
                                      (file "~/myspace/org-roam/20230205085538-inbox.org")
-                                     "* TODO %? [[%:link][%:description]]  \n #+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n\n %(org-set-tags \"article\")")
+                                     "** TODO %? [[%:link][%:description]]  \n #+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n\n %(org-set-tags \"article\")")
                                     ("L" "Protocol Link" entry
                                      (file "~/myspace/org-roam/20230205085538-inbox.org")
-                                     "* TODO %? [[%:link][%:description]] %(org-set-tags \"article\") \nCaptured On: %U ")))
+                                     "** TODO %? [[%:link][%:description]] %(org-set-tags \"article\") \nCaptured On: %U ")))
 
       (setq org-todo-keywords '((sequence
                                  "NEXT(n)" "TODO(t)" "WIP(p)" "WAITING(w)" "SOMEDAY(s)" "|" "DONE(d)" "CANCELLED(c)" )))
@@ -1112,13 +1086,13 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
     ;;     :type git
     ;;     :files ("*")))
 
-    (use-package org-web-tools :straight t)    
+    (use-package org-web-tools :straight t)
   #+END_SRC
 
   [[https://emacs.stackexchange.com/questions/26451/agenda-view-for-all-tasks-with-a-project-tag-and-at-a-certain-level][org mode - Agenda view for all tasks with a project tag and at a certain leve...]]
   [[https://emacs.stackexchange.com/questions/41150/top-level-heading-in-the-org-mode-agenda][Top level heading in the `org-mode` agenda - Emacs Stack Exchange]]
 
-  
+
 ** org-publish
 
 org-roam を html に変換して
@@ -1163,7 +1137,7 @@ org-roam を html に変換して
           (progn
             (remove-hook 'find-file-hooks 'vc-find-file-hook)
             (remove-hook 'find-file-hooks 'org-roam-db-autosync--setup-file-h)
-            ;; 
+            ;;
             (org-id-update-id-locations (directory-files-recursively org-roam-directory ".org$\\|.org.gpg$"))
             (org-publish-project "k-sunako.org")
             ;; FIXME: 暫定処置
@@ -1409,7 +1383,7 @@ org-mode の latex エクスポートの設定.
   (defun ks-make-flashcard (imgfile backimg frontimg)
     (let* ((x))
       (if (not (f-exists-p backimg))
-          (progn 
+          (progn
             (f-copy imgfile backimg)
             (f-copy imgfile frontimg)
 
@@ -1514,7 +1488,7 @@ org-mode の latex エクスポートの設定.
     ;;     (((background light)) :foreground "#f0f0f0"))
     ;;   "Face for having icons' color be identical to the theme
     ;;   background when \"not shown\".")
-    
+
     :custom
     (
      citar-templates
@@ -1534,7 +1508,7 @@ org-mode の latex エクスポートの設定.
     ;;          ,(all-the-icons-octicon "link" :face 'kb/citar-icon-dim :v-adjust 0.01))))
     ;; (citar-symbol-separator "  ")
 
-    
+
     (org-cite-insert-processor 'citar)
     (org-cite-follow-processor 'citar)
     (org-cite-activate-processor 'citar)
@@ -1715,7 +1689,7 @@ org-mode の latex エクスポートの設定.
     :straight (:files (:defaults "extensions/*"))
     :custom
     (corfu-auto t)
-    (corfu-quit-no-match 'separator) 
+    (corfu-quit-no-match 'separator)
 
     :init
     (setq corfu-auto-prefix 2)
@@ -1973,7 +1947,7 @@ org-mode の latex エクスポートの設定.
 
 #+begin_src emacs-lisp
   ;(use-package modern-cpp-font-lock
-  ;  :straight 
+  ;  :straight
   ;  :hook (c++-mode . modern-c++-font-lock-mode))
 #+end_src
 
@@ -2006,10 +1980,26 @@ org-mode の latex エクスポートの設定.
 #+end_src
 
 ** Rust
-M-x lsp-install-server, rust-analyzer
-#+begin_src emacs-lisp
-  (use-package rustic :straight t)
+
+~rustup~ などを実行後に以下のように rust-analyzer が見つからないとエラーがでることがある。
+
+#+begin_src
+  error: Unknown binary 'rust-analyzer' in official toolchain '1.80-x86_64-unknown-linux-gnu'.
 #+end_src
+
+~rustup component add rust-analyzer~ を実行して解決できる。
+
+#+begin_src emacs-lisp
+  (use-package rust-mode
+    :ensure t
+    :init
+    (setq rust-mode-treesitter-derive t))
+  (use-package rustic
+    :straight (:host github :repo "emacs-rustic/rustic" :branch "main" :files ("*.el" "out"))
+    :after (rust-mode))
+#+end_src
+
+#+RESULTS:
 
 ** lean4
 
@@ -2026,8 +2016,9 @@ M-x lsp-install-server, rust-analyzer
 
 
 ** Python
+
 #+begin_src emacs-lisp
-  (use-package pyvenv :straight t) 
+  (use-package pyvenv :straight t)
 #+end_src
 
 ** dap-mode
@@ -2043,13 +2034,14 @@ M-x lsp-install-server, rust-analyzer
     (require 'dap-cpptools)
     ;; dap-gdb-lldb-setup の実行が必要
     (require 'dap-lldb)
+    (require 'dap-gdb)
+    (require 'dap-gdb-lldb)
     (setq dap-auto-configure-features '(sessions locals))
-                                          ;(setq dap-auto-configure-features nil)
     (dap-mode 1)
 
     ;; The modes below are optional
     (dap-ui-mode 1)
-    (dap-ui-many-windows-mode 1)
+    ;; (dap-ui-many-windows-mode 0)
     (dap-tooltip-mode 1)
     (tooltip-mode 1)
     (dap-ui-controls-mode 1)
@@ -2060,7 +2052,10 @@ M-x lsp-install-server, rust-analyzer
                                        :name "GDB::Run"
                                        :gdbpath "rust-gdb"
                                        :target nil
-                                       :cwd nil))  
+                                       :cwd nil))
+    (dap-register-debug-template "Rust::GDB remote"
+                                 (list :type "gdbserver"
+                                       :name "GDB::Run remote"))
     (add-hook 'dap-stopped-hook
               (lambda (arg) (call-interactively #'dap-hydra)))
     ;; Temporal fix
@@ -2402,7 +2397,7 @@ M-x lsp-install-server, rust-analyzer
   (advice-add 'tmsu-dired-edit-directory :around
               #'call-without-orderless-dispatchers)
   (advice-add 'tmsu-dired-query :around
-              #'call-without-orderless-dispatchers)  
+              #'call-without-orderless-dispatchers)
 #+end_src
 
 * a
@@ -2467,7 +2462,7 @@ M-x lsp-install-server, rust-analyzer
       ;;(org-export-to-file 'html "/tmp/html/live.html")))
       (progn
         (org-export-to-file 'html (f-join (f-dirname (buffer-file-name)) "index.html")))))
-  ;;(add-hook 'after-save-hook 'ks-live-export)  
+  ;;(add-hook 'after-save-hook 'ks-live-export)
 
   (define-minor-mode ks-live-ox-html-minor-mode
     "Minor mode for customization"
@@ -2521,4 +2516,3 @@ M-x lsp-install-server, rust-analyzer
   ;;(ks-live-ox-html-global-minor-mode 0)
   ;;(start-process "my-process" "*ks-live-ox-html*" "livereload" "/tmp/html" "-p" "8002")
 #+end_src
-
