@@ -42,7 +42,7 @@
 (defvar bootstrap-version)
 (let ((bootstrap-file
        (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-      (bootstrap-version 5))
+      (bootstrap-version 7))
   (unless (file-exists-p bootstrap-file)
     (with-current-buffer
         (url-retrieve-synchronously
@@ -53,6 +53,10 @@
   (load bootstrap-file nil 'nomessage))
 (setq package-enable-at-startup nil)
 (setq straight-disable-native-compile t)
+
+(with-eval-after-load 'comp
+  (setq native-comp-async-jobs-number 8)
+  (setq native-comp-speed 3))
 
 (add-to-list 'load-path "~/.emacs.d/straight/build/org/")
 (require 'org-loaddefs)

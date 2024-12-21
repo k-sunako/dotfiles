@@ -13,7 +13,7 @@
   (setq initial-buffer-choice "~/myspace/org-roam/20200612132324-index.org")
 #+end_src
 
-* デバッグ用のフラグ
+* デバッグ用のフラグ#
 ~myinit.org~ の挙動を確認するときは ~t~ を設定.
 
   #+begin_src emacs-lisp
@@ -65,6 +65,17 @@ Common Lisp の関数/マクロを実装したライブラリ
   ;; (use-package emacsql-sqlite-builtin)
   ;; (use-package emacsql-sqlite-builtin :ensure t)
 #+end_src
+
+
+** plz
+
+#+begin_src emacs-lisp
+  (use-package plz :straight t)
+  (setq yacy-url-template "http://localhost:8090/Crawler_p.html?crawlingDomMaxPages=1&range=wide&intention=&sitemapURL=&crawlingQ=on&crawlingMode=url&crawlingURL=ZZZ&crawlingFile=&mustnotmatch=&crawlingFile%24file=&crawlingstart=Neuen%20Crawl%20starten&mustmatch=.*&createBookmark=on&bookmarkFolder=/crawlStart&xsstopw=on&indexMedia=on&crawlingIfOlderUnit=hour&cachePolicy=iffresh&indexText=on&crawlingIfOlderCheck=on&bookmarkTitle=&crawlingDomFilterDepth=1&crawlingDomFilterCheck=on&crawlingIfOlderNumber=1&crawlingDepth=0")
+  (defun ks-capture-firefox (lnk)
+    (progn (plz 'get (string-replace "ZZZ" lnk yacy-url-template) :then (lambda (x) nil)) nil))
+#+end_src
+
 * ユーティリティ
 ** 自作
 ;;(load-file "~/projects/ks-elisp/ks-elisp.el")
@@ -110,7 +121,9 @@ IMEは ~DDSKK~ を利用する.
     :config
     (global-set-key (kbd "C-x C-j") 'skk-mode)
     (setq default-input-method "japanese-skk")
-
+    (add-hook 'skk-load-hook
+            (lambda ()
+              (require 'context-skk)))
     ;; カーソルの色の変更
     (setq skk-use-color-cursor t)
     (setq skk-cursor-hiragana-color "#d33682")
@@ -269,7 +282,7 @@ Google翻訳をemacsで使えるように.
     (pulsar-global-mode 1)
     (add-to-list 'pulsar-pulse-functions 'ace-window)
     ;; (add-hook 'minibuffer-setup-hook #'pulsar-pulse-line)
-    (add-hook 'consult-after-jump-hook #'pulsar-recenter-top)
+    (add-hook 'consult-after-jump-hook #'pulsar-recenter-middle)
     (add-hook 'consult-after-jump-hook #'pulsar-reveal-entry)
 
     )
@@ -324,24 +337,22 @@ Google翻訳をemacsで使えるように.
 
 #+begin_src emacs-lisp
   (use-package activities
-    :straight (:host github :repo "alphapapa/activities.el")
-
+    :straight (:package activities :host github :repo "alphapapa/activities.el")
+    :bind (("C-x C-a C-n" . activities-new)
+           ("C-x C-a C-d" . activities-define)
+           ("C-x C-a C-a" . activities-resume)
+           ("C-x C-a C-s" . activities-suspend)
+           ("C-x C-a C-k" . activities-kill)
+           ("C-x C-a RET" . activities-switch)
+           ("C-x C-a b" . activities-switch-buffer)
+           ("C-x C-a g" . activities-revert)
+           ("C-x C-a l" . activities-list)
+           )
     :init
     (activities-mode)
     (activities-tabs-mode)
     ;; Prevent `edebug' default bindings from interfering.
-    (setq edebug-inhibit-emacs-lisp-mode-bindings t)
-
-    :bind
-    (("C-x C-a C-n" . activities-new)
-     ("C-x C-a C-d" . activities-define)
-     ("C-x C-a C-a" . activities-resume)
-     ("C-x C-a C-s" . activities-suspend)
-     ("C-x C-a C-k" . activities-kill)
-     ("C-x C-a RET" . activities-switch)
-     ("C-x C-a b" . activities-switch-buffer)
-     ("C-x C-a g" . activities-revert)
-     ("C-x C-a l" . activities-list)))
+    (setq edebug-inhibit-emacs-lisp-mode-bindings t))
 #+end_src
 
 ** Ace Window
@@ -352,10 +363,19 @@ Window毎に数字が表示され移動できるようになる。ホームポ�
 #+begin_src emacs-lisp
   (use-package ace-window
     :straight t
-    :bind (("C-t". ace-window))
+    :bind (("C-t" . ace-window))
     :config
     (setq aw-keys '(?a ?s ?d ?f ?j ?k ?l)))
 #+end_src
+
+** Avy
+
+#+begin_src emacs-lisp
+  (use-package avy
+    :straight (:host github :repo "abo-abo/avy")
+    :bind (("M-j" . avy-goto-char-timer)))
+#+end_src
+
 
 ** Shackle
 
@@ -413,7 +433,7 @@ dired バッファでファイルとアプリを関連付ける。
 
 #+begin_src emacs-lisp
   (use-package dired-launch
-    :ensure t
+    :straight t
     :bind (:map dired-mode-map
                 ("J" . dired-launch-command))
     :config
@@ -482,7 +502,7 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
   #+BEGIN_SRC emacs-lisp
     (bind-key "C-x C-c" nil)
     (fset 'yes-or-no-p 'y-or-n-p)
-    (global-set-key (kbd "C-t") 'other-window)
+    ;(global-set-key (kbd "C-t") 'other-window)
 
     ;; http://akisute3.hatenablog.com/entry/20120318/1332059326
     (keyboard-translate ?\C-h ?\C-?)
@@ -958,12 +978,15 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
                                     ("n" "Note [inbox]" entry
                                      (file "~/myspace/org-roam/20230205085538-inbox.org")
                                      "** %u\nPath:%F\nLink: %a\nTask: %k\n\n%?")
+                                    ("m" "Note [inbox]" entry
+                                     (file (lambda ()(concat (file-name-as-directory org-roam-directory) (format-time-string "daily/%Y-%m-%d.org"))))
+                                     "\n* %<%H:%M>\n\n%?")
                                     ("p" "Protocol" entry
-                                     (file "~/myspace/org-roam/20230205085538-inbox.org")
-                                     "** TODO %? [[%:link][%:description]]  \n #+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n\n %(org-set-tags \"article\")")
+                                     (file (lambda ()(concat (file-name-as-directory org-roam-directory) (format-time-string "daily/%Y-%m-%d.org"))))
+                                     "\n %<%H:%M>\n\n [[%:link][%:description]] \n\n %? \n\n #+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n")
                                     ("L" "Protocol Link" entry
-                                     (file "~/myspace/org-roam/20230205085538-inbox.org")
-                                     "** TODO %? [[%:link][%:description]] %(org-set-tags \"article\") \nCaptured On: %U ")))
+                                     (file (lambda ()(concat (file-name-as-directory org-roam-directory) (format-time-string "daily/%Y-%m-%d.org"))))
+                                     "\n* %<%H:%M>\n\n [[%:link][%:description]] \n\n %? %(ks-capture-firefox \"%:link\") ")))
 
       (setq org-todo-keywords '((sequence
                                  "NEXT(n)" "TODO(t)" "WIP(p)" "WAITING(w)" "SOMEDAY(s)" "|" "DONE(d)" "CANCELLED(c)" )))
@@ -973,7 +996,7 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
       (setq org-log-into-drawer t)
       (setq org-habit-show-habits-only-for-today 1)
       (setq org-agenda-repeating-timestamp-show-all nil))
- 
+
     (use-package org-superstar
       :straight t
       :hook ((org-mode . (lambda () (org-superstar-mode 0)))))
@@ -1366,7 +1389,7 @@ org-mode の latex エクスポートの設定.
     (org-roam-directory (file-truename "~/myspace/org-roam"))
     (org-roam-db-location "~/tmp/org-roam")
     (org-roam-dailies-capture-templates '(("d" "default" entry
-                                           "\n* %<%H:%M>\n%a\n%?"
+                                           "\n* %<%H:%M>\n%a\n%?\n\n"
                                            :if-new (file+head "%<%Y-%m-%d>.org"
                                                               "#+title: %<%Y-%m-%d>\n"))))
     :bind (("C-c n l" . org-roam-buffer-toggle)
@@ -1607,6 +1630,32 @@ org-mode の latex エクスポートの設定.
 
 #+begin_src emacs-lisp
   (use-package aggressive-indent :straight t)
+  (use-package dtrt-indent :straight (:host github :repo "jscheid/dtrt-indent"))
+  (use-package indent-bars
+    :straight (:host github :repo "jdtsmith/indent-bars")
+    :custom
+    (indent-bars-no-descend-lists t) ; no extra bars in continued func arg lists
+    (indent-bars-treesit-support t)
+    (indent-bars-treesit-ignore-blank-lines-types '("module"))
+    ;; Add other languages as needed
+    (indent-bars-treesit-scope '((python function_definition class_definition for_statement
+  	  if_statement with_statement while_statement)))
+    ;; Note: wrap may not be needed if no-descend-list is enough
+    ;;(indent-bars-treesit-wrap '((python argument_list parameters ; for python, as an example
+    ;;				      list list_comprehension
+    ;;				      dictionary dictionary_comprehension
+    ;;				      parenthesized_expression subscript)))
+    :hook ((python-base-mode yaml-mode) . indent-bars-mode))
+
+  (use-package ws-butler
+    :straight (:host github :repo "lewang/ws-butler")
+    :config
+    (add-hook 'prog-mode-hook #'ws-butler-mode))
+
+  (use-package git-gutter
+    :straight (:host github :repo "emacsorphanage/git-gutter")
+    :config
+    (global-git-gutter-mode +1))
 #+end_src
 
 ** corfu
@@ -1760,9 +1809,9 @@ org-mode の latex エクスポートの設定.
     :config
     ;; .venv, .mypy_cache を watch 対象から外す
     (dolist (dir '(
-                   "[/\\\\]\\.venv\\"
+                   "[/\\\\]\\.venv\\'"
                    "[/\\\\]\\.venv$"
-                   "[/\\\\]\\build\\"
+                   "[/\\\\]\\build\\'"
                    "[/\\\\]\\build$"
                    "[/\\\\]\\.mypy_cache$"
                    "[/\\\\]__pycache__$"
@@ -1843,6 +1892,13 @@ org-mode の latex エクスポートの設定.
     (lsp-mode . lsp-ui-mode))
 #+end_src
 
+** gnuplot
+
+#+begin_src emacs-lisp
+    (use-package gnuplot
+      :straight t)
+#+end_src
+
 ** ELisp
 
 #+begin_src emacs-lisp
@@ -1866,6 +1922,24 @@ org-mode の latex エクスポートの設定.
     :straight (:host sourcehut :repo "fosskers/sly-overlay"))
 #+end_src
 
+** node
+#+begin_src emacs-lisp
+  (use-package nvm
+    :straight (:host github :repo "rejeep/nvm.el")
+    :config
+    ;; Optionally set a default node version
+    (nvm-use "22.2.0"))
+
+  (add-to-list 'auto-mode-alist '("\\.ts" . typescript-ts-mode))
+
+  (use-package add-node-modules-path
+    :straight t
+    :hook ((typescript-ts-mode . add-node-modules-path))
+    :config
+    (setq add-node-modules-path-command '("echo \"$(npm root)/.bin\"")))
+
+#+end_src
+
 ** Rust
 
 ~rustup~ などを実行後に以下のように rust-analyzer が見つからないとエラーがでることがある。
@@ -1878,7 +1952,7 @@ org-mode の latex エクスポートの設定.
 
 #+begin_src emacs-lisp
   (use-package rust-mode
-    :ensure t
+    :straight t
     :init
     (setq rust-mode-treesitter-derive t))
   (use-package rustic
@@ -1956,7 +2030,7 @@ org-mode の latex エクスポートの設定.
   (setq-default tab-width 4 indent-tabs-mode nil)
 
   (use-package flycheck
-    :ensure t
+    :straight t
     :diminish flycheck-mode
     :init
     (add-hook 'after-init-hook #'global-flycheck-mode)
@@ -1966,14 +2040,14 @@ org-mode の latex エクスポートの設定.
   (show-paren-mode)
 
   (use-package smartparens
-    :ensure t
+    :straight t
     :diminish smartparens-mode
     :config
     (require 'smartparens-config)
     (smartparens-global-mode 1))
 
   (use-package editorconfig
-    :ensure t
+    :straight t
     :diminish editorconfig-mode
     :config
     (editorconfig-mode 1))
@@ -2013,7 +2087,7 @@ org-mode の latex エクスポートの設定.
   (save-place-mode 1)
 
   (use-package recentf
-    :ensure t
+    :straight t
     :config
     (setq recentf-max-saved-items 2000) ;; 2000ファイルまで履歴保存する
     (setq recentf-auto-cleanup 'never)  ;; 存在しないファイルは消さない
@@ -2025,7 +2099,7 @@ org-mode の latex エクスポートの設定.
   ;; Packages
   ;;===============================================================
   (use-package ediff
-    :ensure t
+    :straight t
     :config
     (setq ediff-diff-program "~/bin/my-diff.sh")
     ;;(setq ediff-diff-program "ediff")
@@ -2035,7 +2109,7 @@ org-mode の latex エクスポートの設定.
     (setq ediff-split-window-function 'split-window-horizontally))
 
   ;; org-modeのExportでコードを色付きで出力するため
-  (use-package htmlize :ensure t)
+  (use-package htmlize :straight t)
 
   (use-package pdf-tools
     :straight t
@@ -2076,7 +2150,7 @@ org-mode の latex エクスポートの設定.
     :hook (org-mode . org-pdftools-setup-link))
 
   (use-package multiple-cursors
-    :ensure t
+    :straight t
     :config
     (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
     (global-set-key (kbd "C->") 'mc/mark-next-like-this)
@@ -2089,7 +2163,7 @@ org-mode の latex エクスポートの設定.
     (global-set-key (kbd "C-z") 'winner-undo))
 
   (use-package elfeed
-    :ensure t
+    :straight t
     :if (file-exists-p "~/myspace/dotfiles-secret/elfeed.el")
     :init
     (load "~/myspace/dotfiles-secret/elfeed.el")
@@ -2097,17 +2171,17 @@ org-mode の latex エクスポートの設定.
     (setq shr-inhibit-images t))
 
   (use-package yasnippet
-    :ensure t
+    :straight t
     :diminish yas-minor-mode
     :config
     (add-to-list 'warning-suppress-types '(yasnippet backquote-change))
     (yas-global-mode 1))
 
   (use-package auto-save-buffers-enhanced
-    :ensure t)
+    :straight t)
 
   (use-package super-save
-    :ensure t
+    :straight t
     :diminish super-save-mode
     :init
     (super-save-mode 1)
@@ -2260,3 +2334,13 @@ org-mode の latex エクスポートの設定.
                 (insert line2)))))))
 #+end_src
 
+#+begin_src emacs-lisp
+  (defun nanoid (n)
+    (let ((chars "useandom-26T198340PX75pxJACKVERYMINDBUSHWOLF_GQZbfghjklqvwyzrict"))
+      (reduce #'concat (mapcar #'string
+                               (mapcar (lambda (_) (seq-random-elt chars))
+                                       (number-sequence 1 n))))))
+#+end_src
+
+#+RESULTS:
+: nanoid
