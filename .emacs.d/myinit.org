@@ -6,6 +6,26 @@
   ;;   (setq warning-suppress-types '((org-element-cache))))
 #+end_src
 
+
+* Elispのネイティブコンパイル
+
+#+begin_src emacs-lisp
+  (use-package compile-angel
+    :straight (:host github :repo "jamescherti/compile-angel.el")
+    :demand t
+    :config
+    ;; Set `compile-angel-verbose' to nil to disable compile-angel messages.
+    ;; (When set to nil, compile-angel won't show which file is being compiled.)
+    (setq compile-angel-verbose t)
+
+    ;; Uncomment the line below to compile automatically when an Elisp file is saved
+    ;; (add-hook 'emacs-lisp-mode-hook #'compile-angel-on-save-local-mode)
+
+    ;; A global mode that compiles .el files before they are loaded
+    ;; using `load' or `require'.
+    (compile-angel-on-load-mode))
+#+end_src
+
 * 初期ページ
 初期ページとして、ダッシュボード表示する.
 
@@ -1108,7 +1128,7 @@ org-roam を html に変換して
     (let ((org-export-use-babel nil))
       (unwind-protect
           (progn
-            (remove-hook 'find-file-hooks 'vc-find-file-hook)
+            (remove-hook 'find-ffile-hooks 'vc-find-file-hook)
             (remove-hook 'find-file-hooks 'org-roam-db-autosync--setup-file-h)
             ;;
             (org-id-update-id-locations (directory-files-recursively org-roam-directory ".org$\\|.org.gpg$"))
@@ -2019,6 +2039,9 @@ org-mode の latex エクスポートの設定.
     ;; Temporal fix
     (defun dap-python--pyenv-executable-find (command)
       (with-venv (executable-find "python"))))
+
+  (use-package dape
+    :straight (:host github :repo "svaante/dape"))
 #+end_src
 
 
@@ -2077,6 +2100,26 @@ org-mode の latex エクスポートの設定.
 * Etc
 #+BEGIN_SRC emacs-lisp
   (use-package anki-editor :straight t)
+  (defun ks-anki-editor-push-notes ()
+    (interactive)
+    (ignore-errors
+      (unwind-protect
+          (progn
+            (advice-add #'org-html--format-image :override #'org-org-html--format-image)
+            (anki-editor-push-notes))
+        (advice-remove #'org-html--format-image #'org-org-html--format-image))))
+  (defun org-org-html--format-image (source attributes info)
+    (format "<img src=\"data:image/%s+xml;base64,%s\"%s />"
+            (or (file-name-extension source) "")
+            (base64-encode-string
+             (with-temp-buffer
+               (insert-file-contents-literally source)
+               (buffer-string)))
+            (file-name-nondirectory source)))
+  ;; (advice-add #'org-html--format-image :override #'org-org-html--format-image)
+  ;; (advice-remove #'org-html--format-image #'org-org-html--format-image)
+
+
   (use-package define-word
     :straight t
     :bind (("<f8>" . define-word-at-point)))
@@ -2284,6 +2327,14 @@ org-mode の latex エクスポートの設定.
 #+end_src
 
 ** 自作関数
+
+#+begin_src emacs-lisp
+  (defun ks-open-blog-entry ()
+    (interactive)
+    (let ((year (format-time-string "%Y" (current-time)))
+          (filename (format-time-string "%m-%d.org" (current-time))))
+      (find-file (format "~/myspace/snowfox.site/articles/%s/%s" year filename))))
+#+end_src
 
 #+begin_src emacs-lisp
   (defun ks-post-to-wordpress ()
