@@ -386,6 +386,10 @@ Window毎に数字が表示され移動できるようになる。ホームポ�
     :bind (("C-t" . ace-window))
     :config
     (setq aw-keys '(?a ?s ?d ?f ?j ?k ?l)))
+
+  (use-package ace-link :straight t
+    :config
+    (ace-link-setup-default))
 #+end_src
 
 ** Avy
@@ -1125,7 +1129,8 @@ org-roam を html に変換して
 
   (defun ks/publish-wiki ()
     (interactive)
-    (let ((org-export-use-babel nil))
+    (let ((org-export-use-babel nil)
+          (org-export-with-toc nil))
       (unwind-protect
           (progn
             (remove-hook 'find-ffile-hooks 'vc-find-file-hook)
