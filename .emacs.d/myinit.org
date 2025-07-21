@@ -1535,7 +1535,9 @@ org-mode の latex エクスポートの設定.
 #+begin_src emacs-lisp
   (use-package aidermacs
     :straight (:host github :repo "MatthewZMD/aidermacs" :files ("*.el"))
+    :if (file-exists-p "~/myspace/dotfiles-secret/openai.el")
     :config
+    (load "~/myspace/dotfiles-secret/openai.el")
     (setq aidermacs-args '("--model" "gpt-4o"))
     (global-set-key (kbd "C-c a") 'aidermacs-transient-menu))  
 #+end_src
