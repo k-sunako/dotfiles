@@ -1542,6 +1542,18 @@ org-mode の latex エクスポートの設定.
     (global-set-key (kbd "C-c a") 'aidermacs-transient-menu))  
 #+end_src
 
+#+begin_src emacs-lisp
+  (use-package org-ai
+    :if (file-exists-p "~/myspace/dotfiles-secret/openai.el")
+    :straight
+    (:type git :host github :repo "rksm/org-ai"
+           :local-repo "org-ai"
+           :files ("*.el" "README.md" "snippets"))
+    :config
+    (load "~/myspace/dotfiles-secret/openai.el")
+    (setq org-ai-openai-api-token (getenv "OPENAI_API_KEY")))
+#+end_src
+
 * Latex
 #+begin_src emacs-lisp
   (use-package tex :straight auctex
