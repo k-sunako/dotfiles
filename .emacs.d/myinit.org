@@ -81,20 +81,12 @@ Common Lisp の関数/マクロを実装したライブラリ
 
 
 #+begin_src emacs-lisp
-  (use-package emacsql-sqlite :straight t)
+  ;; (use-package emacsql-sqlite :straight t)
   ;; (use-package emacsql-sqlite-builtin)
   ;; (use-package emacsql-sqlite-builtin :ensure t)
 #+end_src
 
 
-** plz
-
-#+begin_src emacs-lisp
-  (use-package plz :straight t)
-  (setq yacy-url-template "http://localhost:8090/Crawler_p.html?crawlingDomMaxPages=1&range=wide&intention=&sitemapURL=&crawlingQ=on&crawlingMode=url&crawlingURL=ZZZ&crawlingFile=&mustnotmatch=&crawlingFile%24file=&crawlingstart=Neuen%20Crawl%20starten&mustmatch=.*&createBookmark=on&bookmarkFolder=/crawlStart&xsstopw=on&indexMedia=on&crawlingIfOlderUnit=hour&cachePolicy=iffresh&indexText=on&crawlingIfOlderCheck=on&bookmarkTitle=&crawlingDomFilterDepth=1&crawlingDomFilterCheck=on&crawlingIfOlderNumber=1&crawlingDepth=0")
-  (defun ks-capture-firefox (lnk)
-    (progn (plz 'get (string-replace "ZZZ" lnk yacy-url-template) :then (lambda (x) nil)) nil))
-#+end_src
 
 * ユーティリティ
 ** 自作
@@ -250,7 +242,10 @@ Google翻訳をemacsで使えるように.
       (exec-path-from-shell-initialize))
 
     (use-package vterm
-      :straight t)
+      :straight t
+      :config
+      (push "C-t" vterm-keymap-exceptions)
+      :hook (vterm-mode . (lambda () (vterm--exclude-keys vterm-mode-map vterm-keymap-exceptions))))
   #+END_SRC
 
 * 終了を制御
@@ -338,7 +333,7 @@ Google翻訳をemacsで使えるように.
          (ffl (font-family-list))
          (ffl-utf8 (mapcar (lambda (x) (decode-coding-string x 'utf-8)) ffl))
          (myfont (car (--filter (member it ffl-utf8) candidates)))
-         (myfont2 (concat myfont "-12")))
+         (myfont2 (concat myfont "-13")))
     ;; (message myfont)
     ;; (set-frame-font (concat myfont " 12"))
     ;; Initial frame settings
@@ -415,6 +410,26 @@ Window毎に数字が表示され移動できるようになる。ホームポ�
     (setq shackle-rules '(("*Async Shell Command*" :ignore t)))
     (add-hook 'after-init-hook #'(lambda () (shackle-mode 1))))
 
+#+end_src
+
+** buffer-terminator
+
+#+begin_src emacs-lisp
+  (use-package buffer-terminator
+    :straight (:host github :repo "jamescherti/buffer-terminator.el")
+    :custom
+    (buffer-terminator-verbose nil)
+
+    ;; Set the inactivity timeout (in seconds) after which buffers are considered
+    ;; inactive (default is 30 minutes):
+    (buffer-terminator-inactivity-timeout (* 30 60)) ; 30 minutes
+
+    ;; Define how frequently the cleanup process should run (default is every 10
+    ;; minutes):
+    (buffer-terminator-interval (* 10 60)) ; 10 minutes
+
+    :config
+    (buffer-terminator-mode 1))
 #+end_src
 
 * Dired
@@ -583,6 +598,12 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
       (setq recentf-auto-save-timer (run-with-idle-timer 12000 t 'recentf-save-list))
       (recentf-mode 1))
 
+
+    (defun my/projectile-discover-projects-before-switch (&rest _args)
+      "プロジェクトを切り替える前に、検索パス内のプロジェクトを再検出します。"
+      (message "Discovering projects in search path...")
+      (projectile-discover-projects-in-search-path))
+
     (use-package projectile
       :ensure t
       :diminish projectile-mode
@@ -590,8 +611,11 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
       (projectile-mode +1)
       (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
       (setq projectile-indexing-method 'alien)
+      (setq projectile-auto-discover t)
       (setq projectile-project-search-path '("~/projects"))
-      (projectile-discover-projects-in-search-path))
+      (projectile-discover-projects-in-search-path)
+      (advice-add 'projectile-switch-project :before #'my/projectile-discover-projects-before-switch)
+      )
 
     (use-package vertico
       :straight t
@@ -843,7 +867,9 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
              ("<f11>" . org-clock-goto))
       :config
       (setq org-export-with-broken-links t)
+      (setq org-export-with-inline-images t)
 
+      (setq org-startup-folded 'content)
       ;; 複数行で強調表示かのうなように拡張
       (setcar (nthcdr 4 org-emphasis-regexp-components) 5)
       (org-set-emph-re 'org-emphasis-regexp-components org-emphasis-regexp-components)
@@ -909,7 +935,7 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
       (setf org-html-mathjax-template
             "<script type=\"text/javascript\" src=\"%PATH\"></script>")
 
-
+      
       ;; Agenda を現在のウィンドウと入れ替えで表示
       (setq org-agenda-window-setup 'current-window)
       (setq org-agenda-start-on-weekday 1)
@@ -1109,14 +1135,16 @@ org-roam を html に変換して
   (setq org-html-validation-link nil            ;; Don't show validation link
         org-html-head-include-scripts nil       ;; Use our own scripts
         org-html-head-include-default-style nil ;; Use our own styles
-        org-html-head "<link rel=\"stylesheet\" href=\"./css/latex.css\" /> <script src=\"https://tikzjax.com/v1/tikzjax.js\"></script>")
+        org-html-head "<link rel=\"stylesheet\" href=\"./css/tufte.css\" /> <script src=\"https://tikzjax.com/v1/tikzjax.js\"></script>")
   (setq org-publish-project-alist
         `(("pages"
            :base-directory ,(file-truename "~/myspace/org-roam")
            :base-extension "org"
            :recursive t
            :publishing-directory "~/tmp/html"
-           :publishing-function org-html-publish-to-html)
+           
+           ;; :publishing-function org-html-publish-to-html
+           :publishing-function org-tufte-publish-to-html)
 
           ("static"
            :base-directory ,(file-truename "~/myspace/org-roam")
@@ -1127,10 +1155,22 @@ org-roam を html に変換して
 
           ("k-sunako.org" :components ("pages" "static"))))
 
+  (use-package org-tufte
+    :straight (:host github :repo "Zilong-Li/org-tufte")
+    :config
+    (setq org-tufte-htmlize-code t  ;; htmlize and beautify source code!
+          org-tufte-embed-images nil ;; do not embed images. faster!
+          org-tufte-goto-top-button t ;; add go-to-top button in html
+          org-html-html5-fancy t  ;; enable html5 elements
+          org-html-doctype "html5" ;; html5 page
+          )
+    )
+
   (defun ks/publish-wiki ()
     (interactive)
     (let ((org-export-use-babel nil)
-          (org-export-with-toc nil))
+          (org-export-with-toc nil)
+          (org-export-with-sub-superscripts nil))
       (unwind-protect
           (progn
             (remove-hook 'find-ffile-hooks 'vc-find-file-hook)
@@ -1158,120 +1198,143 @@ org-roam を html に変換して
 org-mode の latex エクスポートの設定.
 
 #+begin_src emacs-lisp
-  (use-package org-fragtog :straight t)
-  (use-package ox-latex
-    :config
-    (require 'ox-latex)
+    (use-package org-fragtog :straight t
+      :config
+      (add-hook 'org-mode-hook 'org-fragtog-mode))
+    (use-package ox-latex
+      :config
+      (require 'ox-latex)
 
-    ;; pdfの生成プロセスで作成される中間ファイルを削除する設定
-    (setq org-latex-logfiles-extensions
-          (quote ("lof" "lot" "tex" "tex~" "aux" "idx"
-                  "log" "out" "toc" "nav" "snm"
-                  "vrb" "dvi" "fdb_latexmk"
-                  "blg" "brf" "fls" "entoc" "ps"
-                  "spl" "bbl" "run.xml" "bcf")))
+      ;; pdfの生成プロセスで作成される中間ファイルを削除する設定
+      (setq org-latex-logfiles-extensions
+            (quote ("lof" "lot" "tex" "tex~" "aux" "idx"
+                    "log" "out" "toc" "nav" "snm"
+                    "vrb" "dvi" "fdb_latexmk"
+                    "blg" "brf" "fls" "entoc" "ps"
+                    "spl" "bbl" "run.xml" "bcf")))
 
-    (setq org-preview-latex-process-alist
-          '((dvipng
-             :programs ("xelatex" "dvipng")
-             :description "dvi > png"
-             :message "you need to install the programs: latex and dvipng."
-             :image-input-type "dvi"
-             :image-output-type "png"
-             :image-size-adjust (1.0 . 1.0)
-             :latex-compiler ("xelatex -shell-escape -interaction nonstopmode -output-directory %o %f")
-             :image-converter ("dvipng -D %D -T tight -o %O %f"))
-            (dvisvgm
-             :programs ("latex" "dvisvgm")
-             :description "dvi > svg"
-             :message "you need to install the programs: latex and dvisvgm."
-             :image-input-type "dvi"
-             :image-output-type "svg"
-             :image-size-adjust (1.7 . 1.5)
-             :latex-compiler ("latex -interaction nonstopmode -output-directory %o %f")
-             :image-converter ("dvisvgm %f -n -b min -c %S -o %O"))
-            (imagemagick
-             :programs ("xelatex" "convert")
-             :description "pdf > png"
-             :message "you need to install the programs: latex and imagemagick."
-             :image-input-type "pdf" :image-output-type "png"
-             :image-size-adjust (1.0 . 1.0) :latex-compiler
-             ("xelatex -shell-escape -interaction nonstopmode -output-directory %o %f")
-             :image-converter ("convert -density %D -trim -antialias %f -quality 100 %O"))))
+      (setq org-preview-latex-process-alist
+            '((dvipng
+               :programs ("lualatex" "dvipng")
+               :description "dvi > png"
+               :message "you need to install the programs: latex and dvipng."
+               :image-input-type "dvi"
+               :image-output-type "png"
+               :image-size-adjust (1.0 . 1.0)
+               :latex-compiler ("lualatex -shell-escape -interaction nonstopmode -output-directory %o %f")
+               :image-converter ("dvipng -D %D -T tight -o %O %f"))
+              (dvisvgm
+               :programs ("latex" "dvisvgm")
+               :description "dvi > svg"
+               :message "you need to install the programs: latex and dvisvgm."
+               :image-input-type "dvi"
+               :image-output-type "svg"
+               :image-size-adjust (1.7 . 1.5)
+               :latex-compiler ("latex -interaction nonstopmode -output-directory %o %f")
+               :image-converter ("dvisvgm %f -n -b min -c %S -o %O"))
+              (imagemagick
+               :programs ("latex" "convert")
+               :description "pdf > png"
+               :message "you need to install the programs: latex and imagemagick."
+               :image-input-type "pdf" :image-output-type "png"
+               :image-size-adjust (1.0 . 1.0) :latex-compiler
+               ("latex -shell-escape -interaction nonstopmode -output-directory %o %f")
+               :image-converter ("convert -density %D -trim -antialias %f -quality 100 %O"))))
+      (setq org-preview-latex-process-alist
+            '(
+              
+              (imagemagick
+               :programs ("lualatex" "convert")
+               :description "pdf > png"
+               :message "you need to install the programs: latex and imagemagick."
+               :image-input-type "pdf" :image-output-type "png"
+               :image-size-adjust (1.0 . 1.0) :latex-compiler
+               ("lualatex -shell-escape -interaction nonstopmode -output-directory %o %f")
+               :image-converter ("convert -density %D -trim -antialias %f -quality 100 %O"))))
 
-    (setq org-latex-create-formula-image-program 'imagemagick)
+      (setq org-latex-create-formula-image-program 'imagemagick)
+  (setq luamagick '(luamagick :programs ("lualatex" "convert")
+         :description "pdf > png"
+         :message "you need to install lualatex and imagemagick."
+         :use-xcolor t
+         :image-input-type "pdf"
+         :image-output-type "png"
+         :image-size-adjust (1.0 . 1.0)
+         :latex-compiler ("lualatex -interaction nonstopmode -output-directory %o %f")
+         :image-converter ("convert -density %D -trim -antialias %f -quality 100 %O")))
+  (setq org-preview-latex-process-alist nil)
+  (add-to-list 'org-preview-latex-process-alist luamagick)
+  (setq org-latex-create-formula-image-program 'luamagick)
+  (setq org-preview-latex-default-process 'luamagick)
+      (setq org-preview-latex-image-directory (expand-file-name "~/tmp/ltximg/"))
+      (setq org-latex-compiler "lualatex")
 
-    (setq org-preview-latex-image-directory (expand-file-name "~/tmp/ltximg/"))
-    (setq org-latex-compiler "xelatex")
+      (when (ks-latex-sty-p "my.sty")
+        (add-to-list 'org-latex-packages-alist '("" "my" t)))
+      (setq org-latex-listings 'minted)
+      (setq org-latex-minted-options
+            '(("style" "friendly")("frame" "lines") ("linenos=true")))
+      (setq org-latex-pdf-process '("lualatex -shell-escape -interaction nonstopmode %f" "lualatex -shell-escape -interaction nonstopmode %f"))
+      ;; (setq org-latex-pdf-process (list
+      ;;                              "latexmk -lualatex %f"
+      ;;                              "latexmk -c %f"))
+      
+      ;; (setq org-latex-pdf-process (list
+      ;;                              "latexmk -pdflatex='%latex -shell-escape -interaction nonstopmode' -pdf -output-directory=%o %f"
+      ;;                              "latexmk -c %f"))
+      (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
+      (setq org-latex-default-class "koma-jarticle")
 
-    (when (ks-latex-sty-p "my.sty")
-      (add-to-list 'org-latex-packages-alist '("" "my" t)))
-    (setq org-latex-listings 'minted)
-    (setq org-latex-minted-options
-          '(("style" "friendly")("frame" "lines") ("linenos=true")))
-    ;; (setq org-latex-pdf-process
-    ;;       '("xelatex -shell-escape -interaction nonstopmode -output-directory %o %f"
-    ;;         "biber %b"
-    ;;         "xelatex -shell-escape -interaction nonstopmode -output-directory %o %f"
-    ;;         "xelatex -shell-escape -interaction nonstopmode -output-directory %o %f"
-    ;;         "rm -fr _minted-%b"
-    ;;         ))
-    (setq org-latex-pdf-process (list
-                                 "latexmk -pdflatex='%latex -shell-escape -interaction nonstopmode' -pdf -output-directory=%o %f"
-                                 "latexmk -c %f"))
-    (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
-    (setq org-latex-default-class "koma-jarticle")
+      (add-to-list 'org-latex-classes
+                   `("beamer"
+                     ,(s-join "\n" '("\\documentclass[unicode,presentation]{beamer}"
+                                     "\\usepackage{org-ex-beamer}"
+                                     "[NO-DEFAULT-PACKAGES]"))
+                     ("\\section{%s}" . "\\section*{%s}")
+                     ("\\subsection{%s}" . "\\subsection*{%s}")
+                     ("\\subsubsection{%s}" . "\\subsubsection*{%s}")))
 
-    (add-to-list 'org-latex-classes
-                 `("beamer"
-                   ,(s-join "\n" '("\\documentclass[unicode,presentation]{beamer}"
-                                   "\\usepackage{org-ex-beamer}"
-                                   "[NO-DEFAULT-PACKAGES]"))
-                   ("\\section{%s}" . "\\section*{%s}")
-                   ("\\subsection{%s}" . "\\subsection*{%s}")
-                   ("\\subsubsection{%s}" . "\\subsubsection*{%s}")))
+      (add-to-list 'org-latex-classes
+                   '("koma-article"
+                     "\\documentclass{scrartcl}"
+                     ("\\section{%s}" . "\\section*{%s}")
+                     ("\\subsection{%s}" . "\\subsection*{%s}")
+                     ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+                     ("\\paragraph{%s}" . "\\paragraph*{%s}")
+                     ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
 
-    (add-to-list 'org-latex-classes
-                 '("koma-article"
-                   "\\documentclass{scrartcl}"
-                   ("\\section{%s}" . "\\section*{%s}")
-                   ("\\subsection{%s}" . "\\subsection*{%s}")
-                   ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-                   ("\\paragraph{%s}" . "\\paragraph*{%s}")
-                   ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+      (add-to-list 'org-latex-classes
+                   `("koma-jarticle"
+                     ,(s-join "\n" '("\\documentclass[12pt]{scrartcl}"
+                                     "\\usepackage{org-ex-koma-jarticle}"
+                                     "[NO-DEFAULT-PACKAGES]"))
+                     ("\\section{%s}" . "\\section*{%s}")
+                     ("\\subsection{%s}" . "\\subsection*{%s}")
+                     ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+                     ("\\paragraph{%s}" . "\\paragraph*{%s}")
+                     ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
 
-    (add-to-list 'org-latex-classes
-                 `("koma-jarticle"
-                   ,(s-join "\n" '("\\documentclass[12pt]{scrartcl}"
-                                   "\\usepackage{org-ex-koma-jarticle}"
-                                   "[NO-DEFAULT-PACKAGES]"))
-                   ("\\section{%s}" . "\\section*{%s}")
-                   ("\\subsection{%s}" . "\\subsection*{%s}")
-                   ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-                   ("\\paragraph{%s}" . "\\paragraph*{%s}")
-                   ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
-
-    ;; tufte-handout class for writing classy handouts and papers
-    (add-to-list 'org-latex-classes
-                 '("tufte-handout"
-                   "\\documentclass[twoside,nobib]{tufte-handout}
-                                [NO-DEFAULT-PACKAGES]
-                                \\usepackage{zxjatype}
-                                \\usepackage[hiragino-dx]{zxjafont}"
-                   ("\\section{%s}" . "\\section*{%s}")
-                   ("\\subsection{%s}" . "\\subsection*{%s}")))
-    ;; tufte-book class
-    (add-to-list 'org-latex-classes
-                 '("tufte-book"
-                   "\\documentclass[twoside,nobib]{tufte-book}
-                               [NO-DEFAULT-PACKAGES]
-                                 \\usepackage{zxjatype}
-                                 \\usepackage[hiragino-dx]{zxjafont}"
-                   ("\\part{%s}" . "\\part*{%s}")
-                   ("\\chapter{%s}" . "\\chapter*{%s}")
-                   ("\\section{%s}" . "\\section*{%s}")
-                   ("\\subsection{%s}" . "\\subsection*{%s}")
-                   ("\\paragraph{%s}" . "\\paragraph*{%s}"))))
+      ;; tufte-handout class for writing classy handouts and papers
+      (add-to-list 'org-latex-classes
+                   '("tufte-handout"
+                     "\\documentclass[twoside,nobib]{tufte-handout}
+                                  [NO-DEFAULT-PACKAGES]
+                                  \\usepackage{zxjatype}
+                                  \\usepackage[hiragino-dx]{zxjafont}"
+                     ("\\section{%s}" . "\\section*{%s}")
+                     ("\\subsection{%s}" . "\\subsection*{%s}")))
+      ;; tufte-book class
+      (add-to-list 'org-latex-classes
+                   '("tufte-book"
+                     "\\documentclass[twoside,nobib]{tufte-book}
+                                 [NO-DEFAULT-PACKAGES]
+                                   \\usepackage{zxjatype}
+                                   \\usepackage[hiragino-dx]{zxjafont}"
+                     ("\\part{%s}" . "\\part*{%s}")
+                     ("\\chapter{%s}" . "\\chapter*{%s}")
+                     ("\\section{%s}" . "\\section*{%s}")
+                     ("\\subsection{%s}" . "\\subsection*{%s}")
+                     ("\\paragraph{%s}" . "\\paragraph*{%s}"))))
 
 #+end_src
 ** org-transclusion
@@ -1414,7 +1477,7 @@ org-mode の latex エクスポートの設定.
     (org-roam-directory (file-truename "~/myspace/org-roam"))
     (org-roam-db-location "~/tmp/org-roam")
     (org-roam-dailies-capture-templates '(("d" "default" entry
-                                           "\n* %<%H:%M>\n%a\n%?\n\n"
+                                           "\n* %<%H:%M>\n%?\n\n"
                                            :if-new (file+head "%<%Y-%m-%d>.org"
                                                               "#+title: %<%Y-%m-%d>\n"))))
     :bind (("C-c n l" . org-roam-buffer-toggle)
@@ -1456,6 +1519,7 @@ org-mode の latex エクスポートの設定.
 #+end_src
 
 #+RESULTS:
+: t
 
 
 ** citar
@@ -1551,8 +1615,37 @@ org-mode の latex エクスポートの設定.
            :files ("*.el" "README.md" "snippets"))
     :config
     (load "~/myspace/dotfiles-secret/openai.el")
+    (setq org-ai-image-directory "./images/")
     (setq org-ai-openai-api-token (getenv "OPENAI_API_KEY")))
 #+end_src
+
+
+#+begin_src emacs-lisp
+  ;; Install Khoj client using Straight.el
+  (use-package khoj
+    :if (file-exists-p "~/myspace/dotfiles-secret/khoj.el")
+    :after org
+    :straight (khoj :type git :host github :repo "khoj-ai/khoj" :files (:defaults "src/interface/emacs/khoj.el"))
+    :bind ("C-c s" . 'khoj)
+    :config
+    (add-hook 'khoj-chat-mode-hook 'org-mode)
+    (load "~/myspace/dotfiles-secret/khoj.el")
+    (setq khoj-index-directories '("~/myspace/org-roam" "~/projects" "~/myspace/Bibliography") )
+    ;; (setq khoj-org-directories '("~/myspace/org-roam"))
+    )
+#+end_src
+
+#+begin_src emacs-lisp
+(defun my/khoj-set-default-agent ()
+  "Khojチャット開始時に特定のエージェントを自動でセットする"
+  ;; ここにデフォルトにしたいエージェント名を指定します
+  ;; 例: "Emacs Interface" や "General" など
+  (setq khoj--agent "emacs-interface-676472"))
+;; khoj-chat コマンドが呼ばれる前に、エージェント変数を書き換える
+(advice-add 'khoj-chat :before #'my/khoj-set-default-agent)
+#+end_src
+
+#+RESULTS:
 
 * Latex
 #+begin_src emacs-lisp
@@ -2000,13 +2093,20 @@ org-mode の latex エクスポートの設定.
 ~rustup component add rust-analyzer~ を実行して解決できる。
 
 #+begin_src emacs-lisp
-  (use-package rust-mode
-    :straight t
-    :init
-    (setq rust-mode-treesitter-derive t))
-  (use-package rustic
-    :straight (:host github :repo "emacs-rustic/rustic" :branch "main" :files ("*.el" "out"))
-    :after (rust-mode))
+  ;; (use-package rust-mode
+  ;;   :straight t
+  ;;   :init
+  ;;   (setq rust-mode-treesitter-derive t))
+  ;; (use-package rustic
+  ;;   :straight (:host github :repo "emacs-rustic/rustic" :branch "main" :files ("*.el" "out"))
+  ;;   :after rust-mode)
+
+  (straight-use-package 'rust-mode)
+  (setq rust-mode-treesitter-derive t)
+
+  (straight-use-package 'rustic)
+  (with-eval-after-load 'rust-mode
+    (require 'rustic nil t))
 #+end_src
 
 #+RESULTS:
@@ -2018,7 +2118,7 @@ org-mode の latex エクスポートの設定.
     :straight (lean4-mode
   	     :type git
   	     :host github
-  	     :repo "leanprover/lean4-mode"
+  	     :repo "leanprover-community/lean4-mode"
   	     :files ("*.el" "data"))
     ;; to defer loading the package until required
     :commands (lean4-mode))
@@ -2125,6 +2225,9 @@ org-mode の latex エクスポートの設定.
             '(lambda ()
                (set-buffer-file-coding-system 'utf-8)))
 #+end_src
+
+#+RESULTS:
+| lambda | nil | (set-buffer-file-coding-system 'utf-8) |
 
 * Etc
 #+BEGIN_SRC emacs-lisp
@@ -2340,6 +2443,12 @@ org-mode の latex エクスポートの設定.
     (interactive)
     (consult-ripgrep "~/myspace/org-roam"))
 
+  (defun ks/find-sf ()
+    (interactive)
+    (consult-ripgrep "~/myspace/org-roam" "\\(sf\\|SF\\):[0-9]\\{4\\}[a-zA-Z]\\{2,3\\}"))
+  (defun ks/find-td ()
+    (interactive)
+    (consult-ripgrep "~/myspace/org-roam" "\\(td\\|TD\\):[0-9]\\{4\\}[a-zA-Z]\\{2,3\\}"))
 #+END_SRC
 
 * Org2Blog
@@ -2424,3 +2533,5 @@ org-mode の latex エクスポートの設定.
 
 #+RESULTS:
 : nanoid
+
+# images/2024-04-26_20-03-11_screenshot_.png https://snowfox.site/wp-content/uploads/2025/09/2024-04-26_20-03-11_screenshot_.png 2024-04-26_20-03-11_screenshot_-768x303.png
