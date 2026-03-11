@@ -1,3 +1,5 @@
+;; -*- lexical-binding: t; -*-
+
 ;; (setq gc-cons-threshold most-positive-fixnum)
 ;; (run-with-idle-timer
 ;;  10 nil
