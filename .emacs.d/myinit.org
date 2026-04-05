@@ -345,22 +345,27 @@ Google翻訳をemacsで使えるように.
 
     (define-key global-map (kbd "<f5>") #'modus-themes-toggle))
 
-  (let* ((candidates '(
-                       "Cica" "NasuM" "Ricty"
-                       "source han code jp n" "源ノ角ゴシック Code JP"
-                       "Ricty Diminished"))
-         (ffl (font-family-list))
-         (ffl-utf8 (mapcar (lambda (x) (decode-coding-string x 'utf-8)) ffl))
-         (myfont (car (--filter (member it ffl-utf8) candidates)))
-         (myfont2 (concat myfont "-13")))
-    ;; (message myfont)
-    ;; (set-frame-font (concat myfont " 12"))
-    ;; Initial frame settings
-    (setq default-frame-alist
-          (append (list
-                   `(font . ,myfont2))
-                  default-frame-alist))
-    )
+  ;; (let* ((candidates '(
+  ;;                      "Cica" "NasuM" "Ricty"
+  ;;                      "source han code jp n" "源ノ角ゴシック Code JP"
+  ;;                      "Ricty Diminished"))
+  ;;        (ffl (font-family-list))
+  ;;        (ffl-utf8 (mapcar (lambda (x) (decode-coding-string x 'utf-8)) ffl))
+  ;;        (myfont (car (--filter (member it ffl-utf8) candidates)))
+  ;;        (myfont2 (concat myfont "-15"))
+
+  ;;        )
+  ;;   ;; (message myfont)
+  ;;   ;; (set-frame-font (concat myfont " 12"))
+  ;;   ;; Initial frame settings
+  ;;   (setq default-frame-alist
+  ;;         (append (list
+  ;;                  `(font . ,myfont2))
+  ;;                 default-frame-alist))
+  ;;   )
+
+  (set-frame-font "UDEV Gothic NF 13")
+  ;; (setq default-frame-alist (append (font . "UDEV Gothic NF-13") default-frame-alist) )
 #+END_SRC
 
 * Buffer/Window制御
@@ -1283,8 +1288,8 @@ org-mode の latex エクスポートの設定.
     (setq org-preview-latex-image-directory (expand-file-name "~/tmp/ltximg/"))
     (setq org-latex-compiler "lualatex")
 
-    (when (ks-latex-sty-p "my.sty")
-      (add-to-list 'org-latex-packages-alist '("" "my" t)))
+    ;; (when (ks-latex-sty-p "my.sty")
+    ;;   (add-to-list 'org-latex-packages-alist '("" "my" t)))
     (setq org-latex-listings 'minted)
     (setq org-latex-minted-options
           '(("style" "friendly") ("frame" "lines") ("linenos" "true") ("cache" "true")))
@@ -1665,25 +1670,38 @@ org-mode の latex エクスポートの設定.
 
 #+begin_src emacs-lisp
   ;; Install Khoj client using Straight.el
+
+  ;; 1. 同期したいディレクトリのリストを指定します
+  (defvar my-khoj-target-dirs
+    '("~/myspace/org-roam"
+      "~/myspace/aider-logs"
+      "~/myspace/Bibliography"
+      "~/myspace/Lecture/Math/高瀬数学塾"
+      "~/myspace/Lecture/Math/機械学習セミナー"))
+  ;; 2. 各ディレクトリから .org, .txt, .pdf ファイルを抽出し、一つのリストに結合します
+  (setq khoj-files-to-index
+        (apply #'append
+               (mapcar (lambda (dir)
+                         ;; ディレクトリが実際に存在する場合のみ検索を実行
+                         (when (file-directory-p dir)
+                           (directory-files-recursively dir "\\.\\(org\\|txt\\|pdf\\)$")))
+                       my-khoj-target-dirs)))
+
+
   (use-package khoj
     :if (file-exists-p "~/myspace/dotfiles-secret/khoj.el")
     :after org
-    :straight (khoj :type git :host github :repo "khoj-ai/khoj" :files (:defaults "src/interface/emacs/khoj.el"))
+    :ensure t ;;:straight (khoj :type git :host github :repo "khoj-ai/khoj" :files (:defaults "src/interface/emacs/khoj.el"))
     :bind ("C-c s" . 'khoj)
     :init
     (setq khoj-auto-index nil)
-    (setq khoj-index-directories '("~/myspace/org-roam"
-                                   "~/myspace/aider-logs/"
-                                   "~/myspace/Bibliography"
-                                   "~/myspace/Lecture/Math/高瀬数学塾/texts/"
-                                   "~/myspace/Lecture/Math/機械学習セミナー/texts/") )
     :config
     
     (setq request-timeout 5)
     (add-hook 'khoj-chat-mode-hook 'org-mode)
     (load "~/myspace/dotfiles-secret/khoj.el")
     
-    ;; (setq khoj-org-directories '("~/myspace/org-roam"))
+    (setq khoj-org-directories '("~/myspace/org-roam"))
     )
 
   (defun my/cleanup-khoj-http-buffers ()
@@ -1905,6 +1923,19 @@ org-mode の latex エクスポートの設定.
 [[file:images/2024-04-26_20-03-11_screenshot_.png]]
 
 #+begin_src emacs-lisp
+  (use-package nerd-icons-corfu
+    :straight (:host github :repo "LuigiPiucco/nerd-icons-corfu"))
+
+
+  (use-package kind-icon
+    :ensure t
+    :after corfu
+    ;:custom
+    ; (kind-icon-blend-background t)
+    ; (kind-icon-default-face 'corfu-default) ; only needed with blend-background
+    :config
+    (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
+
   (use-package corfu
     :straight (:files (:defaults "extensions/*"))
     :custom
@@ -1915,7 +1946,7 @@ org-mode の latex エクスポートの設定.
     (setq corfu-auto-prefix 2)
     (setq corfu-popupinfo-max-height 150)
     (setq corfu-popupinfo-delay '(0.5 . 0.2))
-    (corfu-popupinfo-mode 1)
+                                          ;(corfu-popupinfo-mode 0)
     (global-corfu-mode))
 
   (setq text-mode-ispell-word-completion nil)
@@ -1980,18 +2011,10 @@ org-mode の latex エクスポートの設定.
     ;; Corfu commands are hidden, since they are not supposed to be used via M-x.
     ;; (setq read-extended-command-predicate
     ;;       #'command-completion-default-include-p)
-
+    
     ;; Enable indentation+completion using the TAB key.
     ;; `completion-at-point' is often bound to M-TAB.
     (setq tab-always-indent 'complete))
-
-  (use-package kind-icon
-    :straight t
-    :after corfu
-    ;;:custom
-    ;;(kind-icon-default-face 'corfu-default) ; to compute blended backgrounds correctly
-    :config
-    (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
 
   ;; Use Dabbrev with Corfu!
   (use-package dabbrev
@@ -2153,7 +2176,7 @@ org-mode の latex エクスポートの設定.
 #+end_src
 
 #+begin_src emacs-lisp
-  (load (expand-file-name "~/.roswell/helper.el"))
+  ;(load (expand-file-name "~/.roswell/helper.el"))
 
   (use-package sly-overlay
     :straight (:host sourcehut :repo "fosskers/sly-overlay"))
@@ -2161,11 +2184,11 @@ org-mode の latex エクスポートの設定.
 
 ** node
 #+begin_src emacs-lisp
-  (use-package nvm
-    :straight (:host github :repo "rejeep/nvm.el")
-    :config
-    ;; Optionally set a default node version
-    (nvm-use "22.2.0"))
+  ;; (use-package nvm
+  ;;   :straight (:host github :repo "rejeep/nvm.el")
+  ;;   :config
+  ;;   ;; Optionally set a default node version
+  ;;   (nvm-use "22.2.0"))
 
   (add-to-list 'auto-mode-alist '("\\.ts" . typescript-ts-mode))
 
@@ -2371,6 +2394,11 @@ org-mode の latex エクスポートの設定.
     (setq ediff-window-setup-function 'ediff-setup-windows-plain)
     ;; diffのバッファを上下ではなく左右に並べる
     (setq ediff-split-window-function 'split-window-horizontally))
+
+  (use-package difftastic
+    :straight (:host github :repo "pkryger/difftastic.el")
+    :config
+    (difftastic-bindings-mode))
 
   ;; org-modeのExportでコードを色付きで出力するため
   (use-package htmlize :straight t)
