@@ -2258,6 +2258,11 @@ org-mode の latex エクスポートの設定.
     :commands (lean4-mode))
 #+end_src
 
+** zig
+
+#+begin_src emacs-lisp
+  (use-package zig-mode :straight (:type git :host codeberg :repo "ziglang/zig-mode"))
+#+end_src
 
 ** Python
 
