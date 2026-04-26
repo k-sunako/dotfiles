@@ -1,0 +1,29 @@
+* dotfiles
+manage my dotfiles.
+
+** .emacs.d
+Emacsの設定
+
+** .tmux.conf
+ひとまずコミット. 以下を忘れずに。
+#+begin_src bash
+  git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+#+end_src
+
+参考：[[https://qiita.com/askbox-net/items/9686b89a9928e66b16b0][tmuxにプラグイン(TPM)のインストールと設定 #Ubuntu - Qiita]]
+
+** aider
+
+aiderの設定を2026/04/26に追加。
+
+#+begin_src bash
+  cd ${HOME}
+  ln -s ${HOME}/repos/dotfiles/.aider.conf.yaml
+  ln -s ${HOME}/repos/dotfiles/.gitignore_root .gitignore
+#+end_src
+
+** gpg
+
+APIキーはなどを管理
+
+参考：[[https://note.com/masakielastic/n/n3f8f5af57b9b#e8f52e06-b9ee-40eb-b482-723a7a505cd6][pass と GPG で作る CLI 時代の秘密情報管理入門｜Masaki]]
