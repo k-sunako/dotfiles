@@ -1,0 +1,216 @@
+##########################################################
+# Sample .aider.conf.yml
+# This file lists *all* the valid configuration entries.
+# Place in your home dir, or at the root of your git repo.
+##########################################################
+
+# Note: You can only put OpenAI and Anthropic API keys in the YAML
+# config file. Keys for all APIs can be stored in a .env file
+# https://aider.chat/docs/config/dotenv.html
+
+##########
+# options:
+
+## show this help message and exit
+#help: xxx
+
+#############
+# Main model:
+
+## Specify the model to use for the main chat
+model: gpt-5.4-mini
+
+########################
+# API Keys and settings:
+# = 別途管理
+
+## Verify the SSL cert when connecting to models (default: True)
+verify-ssl: true
+
+## Timeout in seconds for API calls (default: None)
+timeout: 30
+
+## Specify the model to use for commit messages and chat history summarization (default depends on --model)
+weak-model: gpt-4o-mini
+
+#################
+# Cache settings:
+
+## Enable caching of prompts (default: False)
+cache-prompts: true
+
+## Number of times to ping at 5min intervals to keep prompt cache warm (default: 0)
+cache-keepalive-pings: 5
+
+###################
+# Repomap settings:
+
+## Suggested number of tokens to use for repo map, use 0 to disable
+#map-tokens: xxx
+
+## Control how often the repo map is refreshed. Options: auto, always, files, manual (default: auto)
+#map-refresh: auto
+
+## Multiplier for map tokens when no files are specified (default: 2)
+#map-multiplier-no-files: true
+
+################
+# History Files:
+
+## Specify the chat input history file (default: .aider.input.history)
+input-history-file: .aider.input.history
+
+## Specify the chat history file (default: .aider.chat.history.md)
+chat-history-file: .aider.chat.history.md
+
+## Restore the previous chat history messages (default: False)
+restore-chat-history: true
+
+## Log the conversation with the LLM to this file (for example, .aider.llm.history)
+#llm-history-file: xxx
+
+##################
+# Output settings:
+
+## Use colors suitable for a dark terminal background (default: False)
+dark-mode: true
+
+## Enable/disable pretty, colorized output (default: True)
+pretty: true
+
+## Enable/disable streaming responses (default: True)
+stream: true
+
+## Set the color for user input (default: #00cc00)
+user-input-color: "#00cc00"
+
+## Set the color for tool output (default: None)
+tool-output-color: "#cccc00"
+
+## Set the color for tool error messages (default: #FF2222)
+tool-error-color: "#FF2222"
+
+## Set the color for tool warning messages (default: #FFA500)
+tool-warning-color: "#FFA500"
+
+## Set the color for assistant output (default: #0088ff)
+assistant-output-color: "#0088ff"
+
+## Set the color for the completion menu (default: terminal's default text color)
+#completion-menu-color: "xxx"
+
+## Set the background color for the completion menu (default: terminal's default background color)
+#completion-menu-bg-color: "xxx"
+
+## Set the color for the current item in the completion menu (default: terminal's default background color)
+#completion-menu-current-color: "xxx"
+
+## Set the background color for the current item in the completion menu (default: terminal's default text color)
+#completion-menu-current-bg-color: "xxx"
+
+## Set the markdown code theme (default: default, other options include monokai, solarized-dark, solarized-light, or a Pygments builtin style, see https://pygments.org/styles for available themes)
+code-theme: default
+
+## Show diffs when committing changes (default: False)
+show-diffs: false
+
+###############
+# Git settings:
+
+## Enable/disable looking for a git repo (default: True)
+git: true
+
+## Enable/disable adding .aider* to .gitignore (default: True)
+## ~/.gitignoreで対応
+gitignore: false
+
+## Enable/disable the addition of files listed in .gitignore to Aider's editing scope.
+add-gitignore-files: false
+
+## Specify the aider ignore file (default: .aiderignore in git root)
+#aiderignore: .aiderignore
+
+## Only consider files in the current subtree of the git repository
+subtree-only: true
+
+## Enable/disable auto commit of LLM changes (default: True)
+auto-commits: true
+
+## Enable/disable commits when repo is found dirty (default: True)
+#dirty-commits: true
+
+## Attribute aider code changes in the git author name (default: True). If explicitly set to True, overrides --attribute-co-authored-by precedence.
+# attribute-author: xxx
+
+## Attribute aider commits in the git committer name (default: True). If explicitly set to True, overrides --attribute-co-authored-by precedence for aider edits.
+# attribute-committer: xxx
+
+## Prefix commit messages with 'aider: ' if aider authored the changes (default: False)
+#attribute-commit-message-author: false
+
+## Prefix all commit messages with 'aider: ' (default: False)
+#attribute-commit-message-committer: false
+
+## Attribute aider edits using the Co-authored-by trailer in the commit message (default: True). If True, this takes precedence over default --attribute-author and --attribute-committer behavior unless they are explicitly set to True.
+#attribute-co-authored-by: true
+
+## Enable/disable git pre-commit hooks with --no-verify (default: False)
+git-commit-verify: true
+
+## Commit all pending changes with a suitable commit message, then exit
+#commit: false
+
+## Specify a custom prompt for generating commit messages
+#commit-prompt: xxx
+
+## Perform a dry run without modifying files (default: False)
+#dry-run: false
+
+## Skip the sanity check for the git repository (default: False)
+#skip-sanity-check-repo: false
+
+## Enable/disable watching files for ai coding comments (default: False)
+#watch-files: false
+
+
+############
+# Analytics:
+
+## Permanently disable analytics
+analytics-disable: true
+
+#################
+# Other settings:
+
+## Specify the language to use in the chat (default: None, uses system settings)
+chat-language: ja
+
+## Specify the language to use in the commit message (default: None, user language)
+commit-language: ja
+
+## Always say yes to every confirmation
+yes-always: true
+
+## Enable verbose output
+verbose: false
+
+## Specify the encoding for input and output (default: utf-8)
+encoding: utf-8
+
+## Enable/disable suggesting shell commands (default: True)
+suggest-shell-commands: true
+
+## Enable/disable fancy input with history and completion (default: True)
+fancy-input: true
+
+## Enable/disable multi-line input mode with Meta-Enter to submit (default: False)
+multiline: false
+
+## Enable/disable terminal bell notifications when LLM responses are ready (default: False)
+notifications: false
+
+## Enable/disable detection and offering to add URLs to chat (default: True)
+detect-urls: true
+
+## Specify which editor to use for the /editor command
+#editor: xxx

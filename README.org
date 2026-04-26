@@ -18,7 +18,7 @@ aiderの設定を2026/04/26に追加。
 
 #+begin_src bash
   cd ${HOME}
-  ln -s ${HOME}/repos/dotfiles/.aider.conf.yaml
+  ln -s ${HOME}/repos/dotfiles/.aider.conf.yml
   ln -s ${HOME}/repos/dotfiles/.gitignore_root .gitignore
 #+end_src
 
