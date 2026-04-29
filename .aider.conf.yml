@@ -189,7 +189,7 @@ chat-language: ja
 commit-language: ja
 
 ## Always say yes to every confirmation
-yes-always: true
+yes-always: false
 
 ## Enable verbose output
 verbose: false
