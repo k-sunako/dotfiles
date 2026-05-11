@@ -1671,23 +1671,6 @@ org-mode の latex エクスポートの設定.
 #+begin_src emacs-lisp
   ;; Install Khoj client using Straight.el
 
-  ;; 1. 同期したいディレクトリのリストを指定します
-  (defvar my-khoj-target-dirs
-    '("~/myspace/org-roam"
-      "~/myspace/aider-logs"
-      "~/myspace/Bibliography"
-      "~/myspace/Lecture/Math/高瀬数学塾"
-      "~/myspace/Lecture/Math/機械学習セミナー"))
-  ;; 2. 各ディレクトリから .org, .txt, .pdf ファイルを抽出し、一つのリストに結合します
-  (setq khoj-files-to-index
-        (apply #'append
-               (mapcar (lambda (dir)
-                         ;; ディレクトリが実際に存在する場合のみ検索を実行
-                         (when (file-directory-p dir)
-                           (directory-files-recursively dir "\\.\\(org\\|txt\\|pdf\\)$")))
-                       my-khoj-target-dirs)))
-
-
   (use-package khoj
     :if (file-exists-p "~/myspace/dotfiles-secret/khoj.el")
     :after org
@@ -1697,11 +1680,16 @@ org-mode の latex エクスポートの設定.
     (setq khoj-auto-index nil)
     :config
     
-    (setq request-timeout 5)
+    (setq request-timeout 1000)
     (add-hook 'khoj-chat-mode-hook 'org-mode)
     (load "~/myspace/dotfiles-secret/khoj.el")
     
-    (setq khoj-org-directories '("~/myspace/org-roam"))
+    (setq khoj-index-directories '("~/myspace/org-roam"
+                                   "~/myspace/Book/only_texts"
+                                   "~/myspace/Lecture/Math/高瀬数学塾"
+                                   "~/myspace/Lecture/Math/機械学習セミナー"
+                                   )
+          )
     )
 
   (defun my/cleanup-khoj-http-buffers ()
