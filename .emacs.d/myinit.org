@@ -251,20 +251,6 @@ Google翻訳をemacsで使えるように.
       :config
       (setq exec-path-from-shell-check-startup-files nil)
       (exec-path-from-shell-initialize))
-
-
-    (use-package vterm
-      :straight t
-      :config
-      (push "C-t" vterm-keymap-exceptions)
-      (define-key vterm-mode-map (kbd "C-h") #'vterm-send-backspace)
-      (add-to-list 'vterm-keymap-exceptions "C-h")
-
-
-      :hook (vterm-mode . (lambda ()
-    			            (progn
-    			              (vterm--exclude-keys vterm-mode-map vterm-keymap-exceptions)
-    			              ))))
   #+END_SRC
 
 * 終了を制御
@@ -2288,11 +2274,11 @@ org-mode の latex エクスポートの設定.
     :straight t
     :config
     (require 'dap-python)
-    (require 'dap-cpptools)
+    ;; (require 'dap-cpptools)
     ;; dap-gdb-lldb-setup の実行が必要
-    (require 'dap-lldb)
+    ;; (require 'dap-lldb)
     (require 'dap-gdb)
-    (require 'dap-gdb-lldb)
+    ;; (require 'dap-gdb-lldb)
     (setq dap-auto-configure-features '(sessions locals))
     (dap-mode 1)
 
@@ -2376,6 +2362,11 @@ org-mode の latex エクスポートの設定.
   (add-hook 'git-commit-mode-hook
             '(lambda ()
                (set-buffer-file-coding-system 'utf-8)))
+
+  (use-package magit-delta
+    :straight t
+    :after magit
+    :hook (magit-mode . magit-delta-mode))
 #+end_src
 
 #+RESULTS:
