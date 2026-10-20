@@ -103,6 +103,32 @@ Common Lisp の関数/マクロを実装したライブラリ
 ** 自作
 ;;(load-file "~/projects/ks-elisp/ks-elisp.el")
 
+#+begin_src emacs-lisp
+  (use-package archivebox
+    :straight (:host github :repo "k-sunako/archivebox.el")
+    :custom
+    (archivebox-base-url "http://admin.archivebox.localhost:5797")
+    (archivebox-api-host "admin.archivebox.localhost")
+    (archivebox-api-port "5797")
+    (archivebox-api-user "archivebox")
+    :config
+    (require 'auth-source)
+    (add-to-list 'auth-sources (expand-file-name "~/.authinfo"))
+    (let ((entry (car (auth-source-search
+                       :host archivebox-api-host
+                       :port archivebox-api-port
+                       :user archivebox-api-user
+                       :require '(:secret)
+                       :max 1))))
+      (message "%s" (if entry "ArchiveBox token: found"
+                      "ArchiveBox token: not found"))))
+#+end_src
+
+#+begin_src emacs-lisp
+  (load (expand-file-name "shakyo-mode.el" user-emacs-directory)
+        nil 'nomessage)
+#+end_src
+
 ** Latex スタイルファイルの確認用
 
 #+begin_src emacs-lisp
@@ -643,6 +669,9 @@ dired バッファでディレクトリ移動で新規バッファを作成し�
     (use-package vertico
       :straight t
       :init
+      (require 'compat)
+(unless (fboundp 'set-local)
+  (require 'compat-31))
       (vertico-mode)
       ;; Different scroll margin
       (setq vertico-scroll-margin 0)
@@ -2194,6 +2223,12 @@ org-mode の latex エクスポートの設定.
     (setq lsp-haskell-process-path-hie "haskell-language-server-wrapper")
     )
 
+#+end_src
+
+** Odin
+
+#+begin_src emacs-lisp
+  (use-package odin-mode :straight (:type git :host github :repo "mattt-b/odin-mode"))
 #+end_src
 
 ** Rust
