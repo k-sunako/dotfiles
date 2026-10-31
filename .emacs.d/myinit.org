@@ -15,7 +15,15 @@
               (setq gc-cons-threshold (* 16 1024 1024))))
 #+end_src
 
+* IME抑制
 
+Emacs を PGTK で起動すると、Wayland 上では GTK の入力コンテキストを通じて GNOME の IME が有効になる。そのため、XIM 向けの ~XMODIFIERS=@im=none~ だけでは抑制できず、Ctrl+Space がシステム IME に使われることがあった。ddskk を使う Emacs ではシステム IME を無効にし、キー入力を Emacs に渡すため、GUI 起動時に PGTK の入力コンテキストを停止する。PGTK 以外の環境では何もしない。
+
+#+begin_src emacs-lisp
+  (when (and (display-graphic-p)
+             (fboundp 'pgtk-use-im-context))
+    (pgtk-use-im-context nil))
+#+end_src
 
 * 警告の抑制
 #+begin_src emacs-lisp
@@ -127,6 +135,19 @@ Common Lisp の関数/マクロを実装したライブラリ
 #+begin_src emacs-lisp
   (load (expand-file-name "shakyo-mode.el" user-emacs-directory)
         nil 'nomessage)
+#+end_src
+
+#+begin_src emacs-lisp
+  ;; Playlist entries are (NAME SOURCE-FILE ...).  Paths may use ~.
+  (setq shakyo-playlists
+        '(("Odin: example_absolute_beginners"
+           "~/projects/examples/absolute_beginners/1_main.odin"
+           "~/projects/examples/absolute_beginners/2_variables.odin"
+           "~/projects/examples/absolute_beginners/3_loops.odin"
+           "~/projects/examples/absolute_beginners/4_if_statements.odin"
+           "~/projects/examples/absolute_beginners/5_structs.odin")
+          ))
+  ;; Run with M-x shakyo-start-playlist; C-c C-n advances without saving.
 #+end_src
 
 ** Latex スタイルファイルの確認用
@@ -1672,12 +1693,12 @@ org-mode の latex エクスポートの設定.
 #+begin_src emacs-lisp
   (use-package aidermacs
     :straight (:host github :repo "MatthewZMD/aidermacs" :files ("*.el"))
-    :if (file-exists-p "~/myspace/dotfiles-secret/openai.el")
+    :if (file-exists-p "~/myspace/Secret/dotfiles-secret/openai.el")
     :custom
     (aidermacs-default-chat-mode 'architect)
     (aidermacs-default-model "gpt-4o")  
     :config
-    (load "~/myspace/dotfiles-secret/openai.el")
+    (load "~/myspace/Secret/dotfiles-secret/openai.el")
     
     (global-set-key (kbd "C-c a") 'aidermacs-transient-menu)
     (setq aidermacs-auto-commits t)
@@ -1692,7 +1713,7 @@ org-mode の latex エクスポートの設定.
   ;; Install Khoj client using Straight.el
 
   (use-package khoj
-    :if (file-exists-p "~/myspace/dotfiles-secret/khoj.el")
+    :if (file-exists-p "~/myspace/Secret/dotfiles-secret/khoj.el")
     :after org
     ;:ensure t ;;
     :straight (khoj :type git :host github :repo "khoj-ai/khoj" :files (:defaults "src/interface/emacs/khoj.el"))
@@ -1703,7 +1724,7 @@ org-mode の latex エクスポートの設定.
     
     (setq request-timeout 1000)
     (add-hook 'khoj-chat-mode-hook 'org-mode)
-    (load "~/myspace/dotfiles-secret/khoj.el")
+    (load "~/myspace/Secret/dotfiles-secret/khoj.el")
     
     (setq khoj-index-directories '("~/myspace/org-roam"
                                    "~/myspace/Book/only_texts"
@@ -2192,6 +2213,9 @@ org-mode の latex エクスポートの設定.
 #+end_src
 
 ** node
+
+Node.js プロジェクトでは、プロジェクトごとにインストールされた実行ツールを Emacs から見つけられるようにする。~add-node-modules-path~ は ~node_modules/.bin~ を ~PATH~ に加え、ローカルの TypeScript 関連ツールを利用できるようにする。
+
 #+begin_src emacs-lisp
   ;; (use-package nvm
   ;;   :straight (:host github :repo "rejeep/nvm.el")
@@ -2209,6 +2233,120 @@ org-mode の latex エクスポートの設定.
 
 #+end_src
 
+
+** TypeScript
+
+TypeScript の編集時に、構文色付けと LSP による診断・補完を使うための設定。色付けが動かなかった原因を調べた結果、当時の Emacs が Tree-sitter を組み込まずにビルドされていたと分かったため、Tree-sitter 対応の Emacs に再ビルドしたうえで、標準の ~treesit~ モードを使う。LSP はプロジェクトの mise／pnpm 環境から TypeScript 7 の ~tsc --lsp --stdio~ を起動し、旧 ~tree-sitter.el~ との競合は TypeScript バッファ内だけで避ける。
+
+#+begin_src emacs-lisp
+  (require 'treesit)
+
+  ;; TypeScript / TSX の Tree-sitter 文法の取得元
+  (setq treesit-language-source-alist
+        '((typescript "https://github.com/tree-sitter/tree-sitter-typescript"
+                      "master" "typescript/src")
+          (tsx "https://github.com/tree-sitter/tree-sitter-typescript"
+               "master" "tsx/src")))
+
+  ;; .ts / .tsx を Emacs 標準の Tree-sitter モードで開く
+  (add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-ts-mode))
+  (add-to-list 'auto-mode-alist '("\\.tsx\\'" . tsx-ts-mode))
+
+  (use-package lsp-mode
+    :straight t
+    :commands (lsp lsp-deferred)
+    :hook ((typescript-ts-mode . lsp-deferred)
+           (tsx-ts-mode . lsp-deferred))
+    :init
+    (setq lsp-keymap-prefix "C-c l"))
+
+  ;; TypeScript 7 の tsc を LSP サーバーとして登録
+  (with-eval-after-load 'lsp-mode
+    (require 'lsp-javascript)
+    (lsp-register-client
+     (make-lsp-client
+      :new-connection
+      (lsp-stdio-connection
+       (lambda ()
+         (list "/home/snowfox/.local/bin/mise"
+               "exec" "--" "pnpm" "exec" "tsc"
+               "--lsp" "--stdio")))
+      :activation-fn 'lsp-typescript-javascript-tsx-jsx-activate-p
+      :priority -10
+      :server-id 'typescript7)))
+
+  (defun my/typescript-native-treesit-setup ()
+    ;; 旧 tree-sitter.el が有効なら、TypeScript バッファでは止める
+    (when (bound-and-true-p tree-sitter-mode)
+      (tree-sitter-mode -1))
+
+    ;; Emacs 標準 treesit の font-lock を有効化
+    (setq-local treesit-font-lock-level 4)
+    (treesit-font-lock-recompute-features)
+    (font-lock-mode 1))
+
+  (add-hook 'typescript-ts-mode-hook #'my/typescript-native-treesit-setup)
+  (add-hook 'tsx-ts-mode-hook #'my/typescript-native-treesit-setup)
+#+end_src
+
+TypeScript 7 を LSP サーバーとして使うとき、lsp-mode との間で ~InvalidParams~ が発生する問題への限定的な回避策。送信データから ~nil~ の値を再帰的に取り除く advice を、接続先が ~typescript7~ の場合にだけ適用し、他の LSP サーバーには影響させない。
+
+#+begin_src emacs-lisp
+  (require 'cl-lib)
+
+  (defun qfv/lsp-strip-null-values (data)
+    "Remove nil-valued fields recursively from DATA."
+    (cond
+     ((hash-table-p data)
+      (let ((clean (make-hash-table :test 'equal)))
+        (maphash
+         (lambda (key value)
+           (unless (null value)
+             (puthash key (qfv/lsp-strip-null-values value) clean)))
+         data)
+        clean))
+     ((and (consp data) (keywordp (car data)))
+      ;; Plist
+      (let ((clean nil))
+        (while data
+          (let ((key (pop data))
+                (value (pop data)))
+            (unless (null value)
+              (setq clean
+                    (nconc clean
+                           (list key
+                                 (qfv/lsp-strip-null-values value)))))))
+        clean))
+     ((and (consp data)
+           (consp (car data))
+           (not (listp (caar data))))
+      ;; Alist
+      (delq nil
+            (mapcar
+             (lambda (entry)
+               (unless (null (cdr entry))
+                 (cons (car entry)
+                       (qfv/lsp-strip-null-values (cdr entry)))))
+             data)))
+     ((vectorp data)
+      (cl-map 'vector #'qfv/lsp-strip-null-values data))
+     (t data)))
+
+  (defun qfv/lsp-strip-null-values-for-typescript7 (args)
+    "Strip nil-valued fields only for the TypeScript 7 LSP server."
+    (if (and (boundp 'lsp--cur-workspace)
+             lsp--cur-workspace
+             (eq (lsp--client-server-id
+                  (lsp--workspace-client lsp--cur-workspace))
+                 'typescript7))
+        (list (qfv/lsp-strip-null-values (car args)))
+      args))
+
+  (with-eval-after-load 'lsp-mode
+    (advice-add 'lsp--make-message
+                :filter-args
+                #'qfv/lsp-strip-null-values-for-typescript7))
+#+end_src
 
 ** Haskell
 
@@ -2408,6 +2546,285 @@ org-mode の latex エクスポートの設定.
 | lambda | nil | (set-buffer-file-coding-system 'utf-8) |
 
 * Etc
+
+#+begin_src emacs-lisp
+  ;;; -*- lexical-binding: t; -*-
+
+  (require 'json)
+  (require 'url)
+  (require 'url-util)
+  (require 'subr-x)
+  (require 'seq)
+  (require 'parsebib)
+
+  (defvar ks/google-books-api-file
+    "/home/snowfox/Dropbox/dotfiles-secret/google-api.el"
+    "Emacs Lisp file that sets `google-books-api-key'.")
+
+  (defvar google-books-api-key nil
+    "Google Books API key, loaded from `ks/google-books-api-file'.")
+
+  (defvar ks/google-books-bibliography
+    "~/Dropbox/Bibliography/references.bib"
+    "BibTeX file to which selected Google Books records are appended.")
+
+  (defun ks/google-books--api-key ()
+    "Load the secret file and return `google-books-api-key'."
+    (unless (file-readable-p ks/google-books-api-file)
+      (user-error "Google Books API file not found: %s"
+                  ks/google-books-api-file))
+    ;; 信頼できる自分のローカル Emacs Lisp ファイルを読み込む。
+    (load ks/google-books-api-file nil t)
+    (unless (and (stringp google-books-api-key)
+                 (not (string-empty-p google-books-api-key)))
+      (user-error "No valid `google-books-api-key' in %s"
+                  ks/google-books-api-file))
+    google-books-api-key)
+
+  (defun ks/google-books--search (query)
+    "Search Google Books with QUERY and return the volume list."
+    (let* ((url (format "https://www.googleapis.com/books/v1/volumes?q=%s&maxResults=20&key=%s"
+                        (url-hexify-string query)
+                        (url-hexify-string (ks/google-books--api-key))))
+           (response (url-retrieve-synchronously url t t 20)))
+      (unless response
+        (user-error "Google Books API did not respond"))
+      (unwind-protect
+          (with-current-buffer response
+            (goto-char (point-min))
+            (unless (re-search-forward "\r?\n\r?\n" nil t)
+              (user-error "Could not find the Google Books API response body"))
+            (let* ((json (json-parse-buffer :object-type 'alist
+                                            :array-type 'list
+                                            :null-object nil
+                                            :false-object nil))
+                   (error-data (alist-get 'error json)))
+              (when error-data
+                (user-error "Google Books API error: %s"
+                            (or (alist-get 'message error-data)
+                                "unknown error")))
+              (alist-get 'items json)))
+        (kill-buffer response))))
+
+  (defun ks/google-books--display (item)
+    "Return a minibuffer label for Google Books ITEM."
+    (let* ((info (alist-get 'volumeInfo item))
+           (title (or (alist-get 'title info) "(タイトルなし)"))
+           (authors (alist-get 'authors info))
+           (author-text (if authors
+                            (string-join authors ", ")
+                          "著者不明"))
+           (publisher (or (alist-get 'publisher info) "出版社不明"))
+           (date (or (alist-get 'publishedDate info) "年不明"))
+           (isbn (or (ks/google-books--isbn info "ISBN_13")
+                     (ks/google-books--isbn info "ISBN_10")
+                     "ISBN不明"))
+           (id (or (alist-get 'id item) "")))
+      (format "%s — %s — %s, %s — %s [%s]"
+              title author-text publisher date isbn id)))
+
+  (defun ks/google-books--isbn (info type)
+    "Return TYPE ISBN from Google Books volume INFO, or nil."
+    (seq-some
+     (lambda (identifier)
+       (when (equal (alist-get 'type identifier) type)
+         (alist-get 'identifier identifier)))
+     (alist-get 'industryIdentifiers info)))
+
+  (defun ks/google-books--normalize-isbn (isbn)
+    "Return ISBN with punctuation and spaces removed."
+    (upcase (replace-regexp-in-string "[^0-9Xx]" "" (or isbn ""))))
+
+  (defun ks/google-books--isbn13-check-digit (first-twelve)
+    "Return the ISBN-13 check digit for FIRST-TWELVE digits."
+    (let ((sum 0))
+      (dotimes (i 12)
+        (setq sum (+ sum (* (- (aref first-twelve i) ?0)
+                            (if (= (% i 2) 0) 1 3)))))
+      (number-to-string (% (- 10 (% sum 10)) 10))))
+
+  (defun ks/google-books--isbn10-check-digit (first-nine)
+    "Return the ISBN-10 check digit for FIRST-NINE digits."
+    (let ((sum 0))
+      (dotimes (i 9)
+        (setq sum (+ sum (* (- (aref first-nine i) ?0) (- 10 i)))))
+      (let ((check (% (- 11 (% sum 11)) 11)))
+        (if (= check 10) "X" (number-to-string check)))))
+
+  (defun ks/google-books--isbn-equivalents (isbn)
+    "Return normalized ISBN plus its equivalent 10- or 13-digit form."
+    (let ((normalized (ks/google-books--normalize-isbn isbn)))
+      (cond
+       ((= (length normalized) 10)
+        (let ((first-twelve (concat "978" (substring normalized 0 9))))
+          (list normalized
+                (concat first-twelve
+                        (ks/google-books--isbn13-check-digit first-twelve)))))
+       ((and (= (length normalized) 13)
+             (string-prefix-p "978" normalized))
+        (let ((first-nine (substring normalized 3 12)))
+          (list normalized
+                (concat first-nine
+                        (ks/google-books--isbn10-check-digit first-nine)))))
+       ((= (length normalized) 13) (list normalized))
+       (t nil))))
+
+  (defconst ks/google-books-publisher-overrides
+    '(("9784627038394" . "森北出版")
+      ("4627038399" . "森北出版"))
+    "Publisher corrections keyed by normalized ISBN.")
+
+  (defun ks/google-books--duplicate-key (file isbns google-id)
+    "Return an existing citekey if FILE already contains one of ISBNS or GOOGLE-ID."
+    (let* ((entries (with-temp-buffer
+                      (insert-file-contents file)
+                      (car (parsebib-parse-bib-buffer :expand-strings t))))
+           (normalized-isbns (delete-dups
+                              (apply #'append
+                                     (mapcar #'ks/google-books--isbn-equivalents isbns))))
+           duplicate)
+      (maphash
+       (lambda (key entry)
+         (let* ((isbn-field (cdr (assoc-string "isbn" entry t)))
+                (existing-isbns (and isbn-field
+                                     (split-string isbn-field "[,;[:space:]]+" t)))
+                (url (cdr (assoc-string "url" entry t))))
+           (when (or (seq-some
+                      (lambda (existing-isbn)
+                        (seq-some (lambda (equivalent)
+                                    (member equivalent normalized-isbns))
+                                  (ks/google-books--isbn-equivalents existing-isbn)))
+                      existing-isbns)
+                     (and google-id url
+                          (string-match-p
+                           (format "[?&]id=%s\\(?:&\\|\\'\\)"
+                                   (regexp-quote google-id))
+                           url)))
+             (setq duplicate key))))
+       entries)
+      duplicate))
+
+  (defun ks/google-books--key-exists-p (file key)
+    "Return non-nil if BibTeX KEY already occurs in FILE."
+    (with-temp-buffer
+      (insert-file-contents file)
+      (goto-char (point-min))
+      (re-search-forward
+       (format "^[ \t]*@[[:alnum:]_-]+[ \t]*{[ \t]*%s[ \t]*,"
+               (regexp-quote key))
+       nil t)))
+
+  (defun ks/google-books-add-to-bibliography (query)
+    "Find a book by QUERY and append the selected Google Books result.
+  QUERY may be a title or a 10- or 13-digit ISBN."
+    (interactive "sBook title or ISBN: ")
+    (let* ((digits (replace-regexp-in-string "[^0-9Xx]" "" query))
+           (isbn-query-p (memq (length digits) '(10 13)))
+           (api-query (if isbn-query-p
+                          (concat "isbn:" digits)
+                        (concat "intitle:" query)))
+           (first-items (ks/google-books--search api-query))
+           ;; `intitle:' can be too strict for some catalog records;
+           ;; retry a title search without a field restriction.
+           (items (or first-items
+                      (and (not isbn-query-p)
+                           (progn
+                             (message "No intitle matches; retrying broader search...")
+                             (ks/google-books--search query)))))
+           (_ (unless items
+                (user-error "No Google Books results for: %s" query)))
+           (choices (mapcar (lambda (item)
+                              (cons (ks/google-books--display item) item))
+                            items))
+           (choice (completing-read "Google Books result: "
+                                    (mapcar #'car choices) nil t))
+           (item (cdr (assoc choice choices)))
+           (info (alist-get 'volumeInfo item))
+           (title (string-join
+                   (delq nil (list (alist-get 'title info)
+                                   (alist-get 'subtitle info)))
+                   ": "))
+           (authors (alist-get 'authors info))
+           (published (alist-get 'publishedDate info))
+           (year (and (stringp published)
+                      (string-match "\\`[0-9][0-9][0-9][0-9]" published)
+                      (match-string 0 published)))
+           (isbns (delq nil
+                        (list (ks/google-books--isbn info "ISBN_13")
+                              (ks/google-books--isbn info "ISBN_10"))))
+           (isbn (car isbns))
+           (url (alist-get 'infoLink info))
+           (google-id (alist-get 'id item))
+           (bibfile (expand-file-name ks/google-books-bibliography))
+           (duplicate-key (ks/google-books--duplicate-key
+                           bibfile isbns google-id))
+           (_ (when duplicate-key
+                (user-error "Duplicate book already exists as BibTeX key: %s"
+                            duplicate-key)))
+           (publisher
+            (or (let ((api-publisher (alist-get 'publisher info)))
+                  (and (stringp api-publisher)
+                       (not (string-empty-p (string-trim api-publisher)))
+                       (string-trim api-publisher)))
+                (let* ((fallback
+                        (seq-some
+                         (lambda (candidate)
+                           (cdr (assoc (ks/google-books--normalize-isbn candidate)
+                                       ks/google-books-publisher-overrides)))
+                         isbns))
+                       (manual
+                        (read-string
+                         (if fallback
+                             (format "Publisher (RET uses %s): " fallback)
+                           "Publisher required (empty cancels): ")
+                         nil nil fallback)))
+                  (or (and (not (string-empty-p manual)) manual)
+                      fallback
+                      (user-error "Publisher is required; import cancelled")))))
+           (default-key (if isbn
+                            (concat "isbn"
+                                    (ks/google-books--normalize-isbn isbn))
+                          (concat "gbooks-" google-id)))
+           (key (read-string "BibTeX key: " default-key))
+           (fields (delq nil
+                         (list (when authors
+                                 (cons "author" (string-join authors " and ")))
+                               (cons "title" title)
+                               (when publisher (cons "publisher" publisher))
+                               (when year (cons "year" year))
+                               (when isbn (cons "isbn" isbn))
+                               (when url (cons "url" url)))))
+           (entry (format "@book{%s,\n%s\n}"
+                          key
+                          (mapconcat (lambda (field)
+                                       (format "  %s = {%s}"
+                                               (car field) (cdr field)))
+                                     fields ",\n"))))
+      (unless (and (stringp title) (not (string-empty-p title)))
+        (user-error "Selected record has no title"))
+      (when (ks/google-books--key-exists-p bibfile key)
+        (user-error "BibTeX key already exists: %s" key))
+      (unless (yes-or-no-p
+               (format "Append %s (%s) to %s? "
+                       title (or year "year unknown") bibfile))
+        (user-error "Cancelled"))
+      (with-current-buffer (find-file-noselect bibfile)
+        (goto-char (point-max))
+        (insert "\n\n" entry "\n")
+        (save-buffer))
+      (message "Added %s to %s" key bibfile)
+      (when (yes-or-no-p (format "Create or open its Citar Org-roam note now? "))
+        (unless (fboundp 'citar-open-notes)
+          (user-error "Citar is unavailable; the BibTeX entry was added but no note was created"))
+        (citar-open-notes (list key)))))
+
+  (global-set-key (kbd "C-c B") #'ks/google-books-add-to-bibliography)
+#+end_src
+
+#+RESULTS:
+: ks/google-books-add-to-bibliography
+
+
 #+BEGIN_SRC emacs-lisp
   (use-package define-word
     :straight t
@@ -2500,9 +2917,9 @@ org-mode の latex エクスポートの設定.
 
   (use-package elfeed
     :straight t
-    :if (file-exists-p "~/myspace/dotfiles-secret/elfeed.el")
+    :if (file-exists-p "~/myspace/Secret/dotfiles-secret/elfeed.el")
     :init
-    (load "~/myspace/dotfiles-secret/elfeed.el")
+    (load "~/myspace/Secret/dotfiles-secret/elfeed.el")
     :config
     (setq shr-inhibit-images t))
 
@@ -2622,10 +3039,10 @@ org-mode の latex エクスポートの設定.
 #+begin_src emacs-lisp
   (use-package org2blog
     :straight t
-    :if (file-exists-p "~/myspace/dotfiles-secret/org2blog.el")
+    :if (file-exists-p "~/myspace/Secret/dotfiles-secret/org2blog.el")
     :after org
     :config
-    (load "~/myspace/dotfiles-secret/org2blog.el"))
+    (load "~/myspace/Secret/dotfiles-secret/org2blog.el"))
 #+end_src
 
 ** 自作関数
