@@ -1,0 +1,103 @@
+% beamerthemeSnowFox — light presentation theme with restrained cover artwork.
+% Use with LuaLaTeX. No full-slide dark backgrounds are used.
+\ProvidesPackage{beamerthemeSnowFox}[2026/11/01 v1.0 light SnowFox Beamer theme]
+\RequirePackage{xcolor}
+\RequirePackage{graphicx}
+
+\definecolor{SnowPaper}{HTML}{FCFDFE}
+\definecolor{SnowInk}{HTML}{263541}
+\definecolor{SnowBlue}{HTML}{34586B}
+\definecolor{SnowTeal}{HTML}{4A8791}
+\definecolor{SnowMuted}{HTML}{667985}
+\definecolor{SnowLine}{HTML}{D9E4E9}
+\definecolor{SnowSurface}{HTML}{F1F6F8}
+\definecolor{SnowWarm}{HTML}{986A3B}
+\definecolor{SnowGreen}{HTML}{47735F}
+\definecolor{SnowRose}{HTML}{9A6470}
+
+\mode<presentation>
+\setbeamercolor{normal text}{fg=SnowInk,bg=SnowPaper}
+\setbeamercolor{structure}{fg=SnowTeal}
+\setbeamercolor{title}{fg=SnowInk}
+\setbeamercolor{subtitle}{fg=SnowMuted}
+\setbeamercolor{author}{fg=SnowBlue}
+\setbeamercolor{date}{fg=SnowMuted}
+\setbeamercolor{frametitle}{fg=SnowInk,bg=SnowPaper}
+\setbeamercolor{framesubtitle}{fg=SnowMuted}
+\setbeamercolor{block title}{fg=SnowBlue,bg=SnowSurface}
+\setbeamercolor{block body}{fg=SnowInk,bg=SnowSurface}
+\setbeamercolor{block title alerted}{fg=SnowWarm,bg=SnowSurface}
+\setbeamercolor{block body alerted}{fg=SnowInk,bg=SnowSurface}
+\setbeamercolor{block title example}{fg=SnowGreen,bg=SnowSurface}
+\setbeamercolor{block body example}{fg=SnowInk,bg=SnowSurface}
+\setbeamercolor{itemize item}{fg=SnowTeal}
+\setbeamercolor{itemize subitem}{fg=SnowBlue}
+\setbeamercolor{enumerate item}{fg=SnowTeal}
+\setbeamercolor{section in head/foot}{fg=SnowMuted,bg=SnowPaper}
+\setbeamercolor{footline}{fg=SnowMuted,bg=SnowPaper}
+\setbeamercolor{bibliography item}{fg=SnowTeal}
+
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{items}[circle]
+\setbeamertemplate{blocks}[rounded][shadow=false]
+\setbeamersize{text margin left=8mm,text margin right=8mm}
+\setbeamerfont{title}{series=\bfseries,size=\LARGE}
+\setbeamerfont{subtitle}{size=\large}
+\setbeamerfont{frametitle}{series=\bfseries,size=\Large}
+\setbeamerfont{block title}{series=\bfseries}
+\setbeamerfont{footline}{size=\scriptsize}
+
+% A quiet accent rule, rather than a dark banner, marks the top edge.
+\setbeamertemplate{headline}{%
+  \begin{beamercolorbox}[wd=\paperwidth,ht=1.5pt,dp=0pt]{normal text}%
+    \color{SnowTeal}\rule{\paperwidth}{1.5pt}%
+  \end{beamercolorbox}%
+}
+
+\defbeamertemplate*{frametitle}{snowfox}{%
+  \vspace{.25em}%
+  \begin{beamercolorbox}[wd=\paperwidth,leftskip=8mm,rightskip=8mm,ht=3.9ex,dp=1.1ex]{frametitle}%
+    \usebeamerfont{frametitle}\insertframetitle\strut
+    \ifx\insertframesubtitle\@empty\else\\[-.3ex]{\usebeamerfont{framesubtitle}\usebeamercolor[fg]{framesubtitle}\insertframesubtitle}\fi
+  \end{beamercolorbox}%
+  \noindent\color{SnowLine}\rule{\textwidth}{.45pt}%
+}
+
+\defbeamertemplate*{footline}{snowfox}{%
+  \begin{beamercolorbox}[wd=\paperwidth,ht=2.7ex,dp=1.15ex,leftskip=8mm,rightskip=8mm]{footline}%
+    \usebeamerfont{footline}\textcolor{SnowTeal}{SNOWFOX}\hfill
+    \insertframenumber\,/\,\inserttotalframenumber
+  \end{beamercolorbox}%
+}
+
+% Artwork appears only on the title slide, as a small editorial/WordPress-style image.
+\newcommand{\snowfoxtitleimage}{assets/snowfox-coding-scene.jpg}
+\setbeamertemplate{title page}{%
+  \vspace*{8mm}%
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{.60\textwidth}
+      {\usebeamerfont{subtitle}\color{SnowTeal}\insertinstitute\par}
+      \vspace{5mm}
+      {\usebeamerfont{title}\usebeamercolor[fg]{title}\inserttitle\par}
+      \vspace{3mm}
+      {\usebeamerfont{subtitle}\usebeamercolor[fg]{subtitle}\insertsubtitle\par}
+      \vspace{8mm}
+      {\color{SnowTeal}\rule{22mm}{1.2pt}}\hspace{2mm}{\color{SnowWarm}\rule{6mm}{1.2pt}}\par
+      \vspace{7mm}
+      {\usebeamerfont{author}\insertauthor\par}
+      \vspace{1mm}
+      {\usebeamerfont{date}\insertdate\par}
+    \end{column}
+    \begin{column}{.36\textwidth}
+      \IfFileExists{\snowfoxtitleimage}{%
+        \vspace{5mm}\includegraphics[width=\linewidth,height=.43\textheight,keepaspectratio]{\snowfoxtitleimage}%
+      }{}
+    \end{column}
+  \end{columns}%
+  \vfill
+  {\color{SnowLine}\rule{\textwidth}{.5pt}}\par
+  \vspace{2mm}{\scriptsize\color{SnowMuted}MATH · CODE · CURIOSITY}\par
+  \vspace{4mm}%
+}
+
+\mode<all>

@@ -1,0 +1,153 @@
+% SnowFox Report — a light KOMA-Script style for Org-mode learning reports.
+% Compile with LuaLaTeX. The illustration is used on the title page only.
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{snowfox-report}[2026/11/01 v1.2 light SnowFox article-style report]
+
+\RequirePackage{iftex}
+\ifLuaTeX\else
+  \PackageError{snowfox-report}{LuaLaTeX is required}{Compile with lualatex or latexmk -lualatex.}
+\fi
+
+\RequirePackage{luatexja-fontspec}
+\RequirePackage{xcolor}
+\RequirePackage{graphicx}
+\RequirePackage{tikz}
+\RequirePackage{amsmath,amssymb,mathtools}
+\RequirePackage{booktabs,tabularx,array,colortbl}
+\RequirePackage{enumitem}
+\RequirePackage{microtype}
+\RequirePackage{etoolbox}
+\RequirePackage[automark,headsepline=.35pt,footsepline=.2pt]{scrlayer-scrpage}
+\RequirePackage[most]{tcolorbox}
+\RequirePackage{minted}
+\RequirePackage{hyperref}
+
+% Typography — change these names if the fonts are not installed locally.
+\defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\setmainfont{Noto Serif CJK JP}
+\setsansfont{Noto Sans CJK JP}
+\setmonofont{Hack Nerd Font Mono}[Scale=0.91,Ligatures=TeXOff]
+\setmainjfont{Noto Serif CJK JP}
+\setsansjfont{Noto Sans CJK JP}
+\setmonojfont{Noto Sans Mono CJK JP}[Scale=0.91,Ligatures=TeXOff]
+\linespread{1.06}
+\setlength{\parindent}{1em}
+\setlength{\parskip}{0.18em plus 0.08em minus 0.03em}
+\emergencystretch=2em
+
+% Light paper palette: no dark page background is painted.
+\definecolor{SnowPaper}{HTML}{FCFDFE}
+\definecolor{SnowInk}{HTML}{263541}
+\definecolor{SnowBlue}{HTML}{34586B}
+\definecolor{SnowTeal}{HTML}{4A8791}
+\definecolor{SnowMuted}{HTML}{667985}
+\definecolor{SnowLine}{HTML}{D9E4E9}
+\definecolor{SnowSurface}{HTML}{F4F8FA}
+\definecolor{SnowCode}{HTML}{F3F6F8}
+\definecolor{SnowWarm}{HTML}{986A3B}
+\definecolor{SnowGreen}{HTML}{47735F}
+\definecolor{SnowRose}{HTML}{9A6470}
+\color{SnowInk}
+\arrayrulecolor{SnowLine}
+
+% KOMA-Script article layout: sections are the top-level headings.
+\KOMAoptions{DIV=12,BCOR=4mm,headinclude=true,footinclude=true}
+\recalctypearea
+\setkomafont{disposition}{\sffamily\bfseries\color{SnowInk}}
+\setkomafont{section}{\sffamily\bfseries\color{SnowBlue}\Large}
+\setkomafont{subsection}{\sffamily\bfseries\color{SnowInk}\large}
+\setkomafont{subsubsection}{\sffamily\bfseries\color{SnowTeal}\normalsize}
+\setkomafont{paragraph}{\sffamily\bfseries\color{SnowBlue}}
+\setkomafont{caption}{\small\color{SnowMuted}}
+\setkomafont{captionlabel}{\sffamily\bfseries\color{SnowTeal}}
+\setkomafont{pageheadfoot}{\sffamily\footnotesize\color{SnowMuted}}
+\setkomafont{pagenumber}{\sffamily\bfseries\color{SnowTeal}}
+\RedeclareSectionCommand[beforeskip=1.45\baselineskip,afterskip=.5\baselineskip]{section}
+\RedeclareSectionCommand[beforeskip=1.1\baselineskip,afterskip=.35\baselineskip]{subsection}
+\renewcommand*{\sectionformat}{%
+  {\sffamily\bfseries\color{SnowTeal}\thesection}%
+  \enskip\textcolor{SnowWarm}{/}\enskip}
+\clearpairofpagestyles
+\ihead{\headmark}
+\ohead{\textcolor{SnowTeal}{\sffamily\scriptsize SNOWFOX / NOTES}}
+\ifoot{\textcolor{SnowMuted}{\sffamily\scriptsize LEARNING · IMPLEMENTATION · VERIFICATION}}
+\ofoot{\pagemark}
+\pagestyle{scrheadings}
+\addtokomafont{headsepline}{\color{SnowLine}}
+\addtokomafont{footsepline}{\color{SnowLine}}
+
+% Title-page API. Artwork is a modest title-page image, never a page background.
+\newcommand*{\snowfoxcoverimage}{assets/snowfox-coding-scene.jpg}
+\newcommand*{\snowfoxsubtitle}{数理を読み解き、実装と説明につなぐ}
+\newcommand*{\snowfoxseries}{LEARNING NOTES}
+\newcommand*{\snowfoxid}{NOTE-001}
+\newcommand*{\snowfoxstatus}{DRAFT}
+\makeatletter
+\renewcommand*{\maketitle}{%
+  \begin{titlepage}
+    \thispagestyle{empty}
+    \color{SnowInk}
+    \vspace*{8mm}
+    {\sffamily\bfseries\footnotesize\color{SnowTeal}\MakeUppercase{\snowfoxseries}\par}
+    \vspace{4mm}
+    {\color{SnowTeal}\rule{20mm}{1.5pt}}\hspace{2mm}%
+    {\color{SnowWarm}\rule{6mm}{1.5pt}}\par
+    \vspace{13mm}
+    % Give the title the wider column and a slightly more forgiving measure.
+    % It wraps at spaces instead of colliding with the cover illustration.
+    \noindent\begin{minipage}[c]{.60\textwidth}
+      {\sffamily\bfseries\fontsize{25}{30}\selectfont\color{SnowInk}\raggedright
+        \@title\par}
+      \vspace{5mm}
+      {\sffamily\large\color{SnowMuted}\raggedright\snowfoxsubtitle\par}
+      \vspace{8mm}
+      {\sffamily\small\color{SnowBlue}\texttt{\snowfoxid}\quad\textcolor{SnowWarm}{/}\quad\snowfoxstatus\par}
+    \end{minipage}\hfill
+    \begin{minipage}[c]{.34\textwidth}
+      \IfFileExists{\snowfoxcoverimage}{%
+        \centering\includegraphics[width=\linewidth,height=.39\textheight,keepaspectratio]{\snowfoxcoverimage}%
+      }{}
+    \end{minipage}
+    \vfill
+    \noindent\begin{minipage}{.57\textwidth}
+      {\color{SnowLine}\rule{\linewidth}{.6pt}}\par\vspace{2mm}
+      {\sffamily\footnotesize\color{SnowMuted}AUTHOR\par}
+      {\sffamily\bfseries\large\color{SnowInk}\@author\par}
+      \vspace{2mm}{\small\color{SnowMuted}\@date\par}
+    \end{minipage}
+    \vspace*{12mm}
+  \end{titlepage}%
+  \setcounter{footnote}{0}%
+}
+\makeatother
+
+% Links, lists, tables, and inline code.
+\AtBeginDocument{\hypersetup{colorlinks=true,linkcolor=SnowBlue,citecolor=SnowGreen,urlcolor=SnowTeal,pdfborder={0 0 0}}}
+\urlstyle{same}
+\setlist[itemize]{label=\textcolor{SnowTeal}{\raisebox{.15ex}{\tiny$\blacktriangleright$}},leftmargin=2em,itemsep=.22em}
+\setlist[enumerate]{label=\textcolor{SnowBlue}{\sffamily\bfseries\arabic*.},leftmargin=2.2em,itemsep=.22em}
+\setlist[description]{font=\sffamily\bfseries\color{SnowBlue},style=nextline}
+\newcommand{\snowinline}[1]{\begingroup\setlength{\fboxsep}{2pt}\colorbox{SnowSurface}{\textcolor{SnowBlue}{\ttfamily\small #1}}\endgroup}
+\AtBeginEnvironment{tabular}{\small\renewcommand{\arraystretch}{1.2}}
+\AtBeginEnvironment{tabularx}{\small\renewcommand{\arraystretch}{1.2}}
+\AtBeginEnvironment{longtable}{\small\renewcommand{\arraystretch}{1.2}}
+
+% Light code blocks via minted/Pygments.
+\usemintedstyle{friendly}
+\setminted{bgcolor=SnowCode,breaklines=true,breakanywhere=true,fontsize=\footnotesize,frame=single,framesep=2.2mm,framerule=.35pt,rulecolor=SnowLine,linenos=true,numbersep=8pt,tabsize=2,autogobble=true}
+\renewcommand{\theFancyVerbLine}{\sffamily\tiny\textcolor{SnowMuted}{\arabic{FancyVerbLine}}}
+
+% Semantic blocks: pale surfaces with muted colored edges, not dark panels.
+\tcbset{snowbase/.style={enhanced,breakable,colback=SnowSurface,coltext=SnowInk,colframe=SnowLine,boxrule=.6pt,arc=1mm,left=4mm,right=4mm,top=3mm,bottom=3mm,before skip=1em,after skip=1em,fonttitle=\sffamily\bfseries\small,coltitle=SnowBlue,attach boxed title to top left={xshift=3mm,yshift*=-2mm},boxed title style={colback=SnowPaper,colframe=SnowLine,boxrule=.5pt,arc=.7mm}}}
+\newtcolorbox{snowfoxnote}[1][]{snowbase,title={NOTE / 観察},#1}
+\newtcolorbox{snowfoxinsight}[1][]{snowbase,colframe=SnowTeal,coltitle=SnowTeal,title={INSIGHT / 考察},#1}
+\newtcolorbox{snowfoxwarning}[1][]{snowbase,colframe=SnowWarm,coltitle=SnowWarm,title={CHECK / 注意},#1}
+\newtcolorbox{snowfoxresult}[1][]{snowbase,colframe=SnowGreen,coltitle=SnowGreen,title={RESULT / 結果},#1}
+\newtcbtheorem[number within=section]{snowfoxtheorem}{定理}{snowbase,colframe=SnowBlue,coltitle=SnowBlue}{thm}
+\newtcbtheorem[use counter from=snowfoxtheorem]{snowfoxdefinition}{定義}{snowbase,colframe=SnowTeal,coltitle=SnowTeal}{def}
+\renewenvironment{abstract}{\begin{tcolorbox}[snowbase,title={SUMMARY / 概要},colframe=SnowTeal,coltitle=SnowTeal]\small}{\end{tcolorbox}}
+\AtBeginEnvironment{quote}{\color{SnowMuted}\itshape}
+\newcommand{\snowdivider}{\par\vspace{.55\baselineskip}\noindent\textcolor{SnowTeal}{\rule{.15\linewidth}{.6pt}}\hspace{1mm}\textcolor{SnowWarm}{\rule{4mm}{.6pt}}\par\vspace{.55\baselineskip}}
+\newcommand{\snowstatus}[1]{\begingroup\setlength{\fboxsep}{3pt}\colorbox{SnowSurface}{\textcolor{SnowBlue}{\sffamily\bfseries\scriptsize #1}}\endgroup}
+
+\endinput

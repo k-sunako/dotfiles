@@ -1322,7 +1322,7 @@ org-mode の latex エクスポートの設定.
                                 :image-size-adjust (1.0 . 1.0)
                                 :latex-compiler ("lualatex -interaction nonstopmode -output-directory %o %f")
                                 :image-converter ("convert -density %D -trim -antialias %f -quality 100 %O")))
-    ;(setq org-preview-latex-process-alist nil)
+                                          ;(setq org-preview-latex-process-alist nil)
     (add-to-list 'org-preview-latex-process-alist luamagick)
     (setq org-latex-create-formula-image-program 'luamagick)
     (setq org-preview-latex-default-process 'luamagick)
@@ -1337,13 +1337,13 @@ org-mode の latex エクスポートの設定.
     ;;(setq org-latex-pdf-process '("lualatex -shell-escape -interaction nonstopmode %f" "lualatex -shell-escape -interaction nonstopmode %f"))
     (setq org-latex-compiler "lualatex")
     ;; (setq org-latex-pdf-process '("latexmk -f -shell-escape -interaction=nonstopmode -output-directory=%o %f || true" ))
-  (setq org-latex-pdf-process
-        '("mkdir -p build || true"
-          "lualatex -shell-escape -interaction=nonstopmode --output-directory=build %f || true"
-          "mendex -U -d build build/%b || true"
-          "lualatex -shell-escape -interaction=nonstopmode --output-directory=build %f || true"
-          "lualatex -shell-escape -interaction=nonstopmode --output-directory=build %f || true"
-          "mv build/%b.pdf %b.pdf || true"))
+    (setq org-latex-pdf-process
+          '("mkdir -p build || true"
+            "lualatex -shell-escape -interaction=nonstopmode --output-directory=build %f || true"
+            "mendex -U -d build build/%b || true"
+            "lualatex -shell-escape -interaction=nonstopmode --output-directory=build %f || true"
+            "lualatex -shell-escape -interaction=nonstopmode --output-directory=build %f || true"
+            "mv build/%b.pdf %b.pdf || true"))
     
     (setq org-latex-logfiles-extensions nil)
     (setq org-export-in-background nil)
@@ -1426,7 +1426,18 @@ org-mode の latex エクスポートの設定.
                    ("\\chapter{%s}" . "\\chapter*{%s}")
                    ("\\section{%s}" . "\\section*{%s}")
                    ("\\subsection{%s}" . "\\subsection*{%s}")
-                   ("\\paragraph{%s}" . "\\paragraph*{%s}"))))
+                   ("\\paragraph{%s}" . "\\paragraph*{%s}")))
+    (add-to-list
+     'org-latex-classes
+     '("snowfox-report"
+       "\\documentclass[11pt,a4paper]{scrartcl}"
+       ("\\section{%s}" . "\\section*{%s}")
+       ("\\subsection{%s}" . "\\subsection*{%s}")
+       ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+       ("\\paragraph{%s}" . "\\paragraph*{%s}")
+       ("\\subparagraph{%s}" . "\\subparagraph*{%s}")))
+
+    )
 
 #+end_src
 ** org-transclusion
@@ -2203,6 +2214,14 @@ org-mode の latex エクスポートの設定.
     :straight t
     :hook (emacs-lisp-mode . (lambda () (lispy-mode 1)))
     :hook (lisp-mode . (lambda () (lispy-mode 1))))
+
+  ;; Use ordinary newline-and-indent for C-j in programming modes.
+  (define-key prog-mode-map (kbd "C-j") #'newline-and-indent)
+
+  ;; Lispy's minor-mode map takes precedence over the major-mode map.
+  ;; Override only C-j; leave its other bindings (including RET) intact.
+  (with-eval-after-load 'lispy
+    (define-key lispy-mode-map (kbd "C-j") #'newline-and-indent))
 #+end_src
 
 #+begin_src emacs-lisp
@@ -2506,6 +2525,12 @@ TypeScript 7 を LSP サーバーとして使うとき、lsp-mode との間で ~
     :config
     (require 'smartparens-config)
     (smartparens-global-mode 1))
+
+  ;; Electric Pair opens a second newline between an empty pair, so C-j
+  ;; leaves the cursor on an indented blank line and moves the closer down.
+  (require 'elec-pair)
+  (setq electric-pair-open-newline-between-pairs t)
+  (add-hook 'prog-mode-hook #'electric-pair-local-mode)
 
   (use-package editorconfig
     :straight t
