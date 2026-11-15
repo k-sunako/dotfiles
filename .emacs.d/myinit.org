@@ -17,12 +17,15 @@
 
 * IME抑制
 
-Emacs を PGTK で起動すると、Wayland 上では GTK の入力コンテキストを通じて GNOME の IME が有効になる。そのため、XIM 向けの ~XMODIFIERS=@im=none~ だけでは抑制できず、Ctrl+Space がシステム IME に使われることがあった。ddskk を使う Emacs ではシステム IME を無効にし、キー入力を Emacs に渡すため、GUI 起動時に PGTK の入力コンテキストを停止する。PGTK 以外の環境では何もしない。
+Emacs を PGTK で起動すると、Wayland 上では GTK の入力コンテキストを通じて GNOME の IME が有効になる。~XMODIFIERS=@im=none~ だけでは Ctrl+Space を抑制できないことがある。手動で ~pgtk-use-im-context~ を nil にすれば止まるが、Emacs 内部の ~pgtk-use-im-context-handler~ が ~after-init-hook~ で後から入力コンテキストを再設定するため、起動時に関数を直接呼ぶだけでは上書きされる。そこで、内部ハンドラーが参照する起動設定を先に nil にする。PGTK 以外では何もしない。
 
 #+begin_src emacs-lisp
-  (when (and (display-graphic-p)
-             (fboundp 'pgtk-use-im-context))
-    (pgtk-use-im-context nil))
+  (when (boundp 'pgtk-use-im-context-on-new-connection)
+    (setq pgtk-use-im-context-on-new-connection nil)
+    ;; 設定を起動後に再評価した場合は、現在のコンテキストも止める。
+    (when (and after-init-time
+               (fboundp 'pgtk-use-im-context))
+      (pgtk-use-im-context nil)))
 #+end_src
 
 * 警告の抑制
@@ -1929,10 +1932,10 @@ org-mode の latex エクスポートの設定.
     :straight (:host github :repo "jdtsmith/indent-bars")
 
     :config
-    (add-hook 'python-mode-hook
-              (lambda ()
-                (run-with-idle-timer 0.1 nil #'indent-bars-mode)))
-    )
+    (dolist (hook '(python-mode-hook python-ts-mode-hook))
+      (add-hook hook
+                (lambda ()
+                  (run-with-idle-timer 0.1 nil #'indent-bars-mode)))))
   ;; (use-package indent-bars
   ;;   :straight (:host github :repo "jdtsmith/indent-bars")
   ;;   :custom
@@ -2065,24 +2068,6 @@ org-mode の latex エクスポートの設定.
     ;; Other useful Dabbrev configurations.
     :custom
     (dabbrev-ignored-buffer-regexps '("\\.\\(?:pdf\\|jpe?g\\|png\\)\\'")))
-#+end_src
-
-** tree-sitter
-
-ソースコードをハイライトするためのパッケージ.
-
-#+begin_src emacs-lisp
-  (use-package tree-sitter
-    :straight t
-    :config
-    (require 'tree-sitter)
-    (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode)
-    (global-tree-sitter-mode))
-
-  (use-package tree-sitter-langs
-    :straight t
-    :config
-    (require 'tree-sitter-langs))
 #+end_src
 
 ** lsp-mode
@@ -2255,17 +2240,41 @@ Node.js プロジェクトでは、プロジェクトごとにインストール
 
 ** TypeScript
 
-TypeScript の編集時に、構文色付けと LSP による診断・補完を使うための設定。色付けが動かなかった原因を調べた結果、当時の Emacs が Tree-sitter を組み込まずにビルドされていたと分かったため、Tree-sitter 対応の Emacs に再ビルドしたうえで、標準の ~treesit~ モードを使う。LSP はプロジェクトの mise／pnpm 環境から TypeScript 7 の ~tsc --lsp --stdio~ を起動し、旧 ~tree-sitter.el~ との競合は TypeScript バッファ内だけで避ける。
+構文解析には Emacs 内蔵の ~treesit~ だけを使い、外部の ~tree-sitter.el~ と ~tree-sitter-langs~ は設定から除く。TypeScript / TSX は標準の ~typescript-ts-mode~ / ~tsx-ts-mode~ を使い、LSP はプロジェクトの mise／pnpm 環境から TypeScript 7 の ~tsc --lsp --stdio~ を起動する。Python、Go、Java、C/C++、JavaScript も、対応する文法がインストール済みなら標準 ~*-ts-mode~ へ切り替える。文法が未導入の場合は従来モードにフォールバックする。Rust は rustic との互換性を保つため ~rust-mode~ のままとし、~rust-mode-treesitter-derive~ で組み込み Tree-sitter を使う。
 
 #+begin_src emacs-lisp
   (require 'treesit)
 
-  ;; TypeScript / TSX の Tree-sitter 文法の取得元
+  ;; Emacs 標準 Tree-sitter モードで使う文法の取得元。
+  ;; M-x treesit-install-language-grammar で必要な言語の文法を導入する。
   (setq treesit-language-source-alist
-        '((typescript "https://github.com/tree-sitter/tree-sitter-typescript"
+        '((bash "https://github.com/tree-sitter/tree-sitter-bash" "master" "src")
+          (c "https://github.com/tree-sitter/tree-sitter-c" "master" "src")
+          (cpp "https://github.com/tree-sitter/tree-sitter-cpp" "master" "src")
+          (go "https://github.com/tree-sitter/tree-sitter-go" "master" "src")
+          (java "https://github.com/tree-sitter/tree-sitter-java" "master" "src")
+          (javascript "https://github.com/tree-sitter/tree-sitter-javascript" "master" "src")
+          (python "https://github.com/tree-sitter/tree-sitter-python" "master" "src")
+          (rust "https://github.com/tree-sitter/tree-sitter-rust" "master" "src")
+          (typescript "https://github.com/tree-sitter/tree-sitter-typescript"
                       "master" "typescript/src")
           (tsx "https://github.com/tree-sitter/tree-sitter-typescript"
                "master" "tsx/src")))
+
+  ;; 文法がインストール済みの言語だけ、従来モードから標準 ts-mode へ切り替える。
+  ;; 未導入の文法があっても、その言語の従来モードで開けるようにする。
+  (defun my/configure-native-treesit-mode-remaps ()
+    (dolist (mapping '((python-mode python-ts-mode python)
+                       (go-mode go-ts-mode go)
+                       (java-mode java-ts-mode java)
+                       (c-mode c-ts-mode c)
+                       (c++-mode c++-ts-mode cpp)
+                       (js-mode js-ts-mode javascript)))
+      (when (treesit-language-available-p (nth 2 mapping))
+        (add-to-list 'major-mode-remap-alist
+                     (cons (nth 0 mapping) (nth 1 mapping))))))
+
+  (my/configure-native-treesit-mode-remaps)
 
   ;; .ts / .tsx を Emacs 標準の Tree-sitter モードで開く
   (add-to-list 'auto-mode-alist '("\\.ts\\'" . typescript-ts-mode))
@@ -2295,10 +2304,6 @@ TypeScript の編集時に、構文色付けと LSP による診断・補完を�
       :server-id 'typescript7)))
 
   (defun my/typescript-native-treesit-setup ()
-    ;; 旧 tree-sitter.el が有効なら、TypeScript バッファでは止める
-    (when (bound-and-true-p tree-sitter-mode)
-      (tree-sitter-mode -1))
-
     ;; Emacs 標準 treesit の font-lock を有効化
     (setq-local treesit-font-lock-level 4)
     (treesit-font-lock-recompute-features)
@@ -2367,6 +2372,27 @@ TypeScript 7 を LSP サーバーとして使うとき、lsp-mode との間で ~
                 #'qfv/lsp-strip-null-values-for-typescript7))
 #+end_src
 
+** zig
+
+#+begin_src emacs-lisp
+  (let ((zig-dir (expand-file-name "~/.local/opt/zig"))
+        (zls-dir (expand-file-name "~/.local/opt/zls/0.17.0")))
+    (add-to-list 'exec-path zig-dir)
+    (add-to-list 'exec-path zls-dir)
+    (setenv "PATH"
+            (concat zig-dir ":" zls-dir ":" (getenv "PATH"))))
+
+  (with-eval-after-load 'lsp-mode
+    (setq lsp-zig-zls-executable
+          (expand-file-name "~/.local/opt/zls/0.17.0/zls")
+          lsp-zig-zig-exe-path
+          (expand-file-name "~/.local/opt/zig/zig")))
+
+  (use-package zig-mode
+    :straight (:type git :host codeberg :repo "ziglang/zig-mode")
+    :hook (zig-mode . lsp-deferred))
+#+end_src
+
 ** Haskell
 
 #+begin_src emacs-lisp
@@ -2430,12 +2456,6 @@ TypeScript 7 を LSP サーバーとして使うとき、lsp-mode との間で ~
     :commands (lean4-mode))
 #+end_src
 
-** zig
-
-#+begin_src emacs-lisp
-  (use-package zig-mode :straight (:type git :host codeberg :repo "ziglang/zig-mode"))
-#+end_src
-
 ** Python
 
 #+begin_src emacs-lisp
@@ -2448,7 +2468,8 @@ TypeScript 7 を LSP サーバーとして使うとき、lsp-mode との間で ~
   (use-package go-mode
     :straight (:host github :repo "dominikh/go-mode.el")
     :mode ("\\.go\\'" . go-mode)
-    :hook (go-mode-hook . lsp-deferred))
+    :hook ((go-mode . lsp-deferred)
+           (go-ts-mode . lsp-deferred)))
 #+end_src
 
 ** java
@@ -2456,7 +2477,9 @@ TypeScript 7 を LSP サーバーとして使うとき、lsp-mode との間で ~
 #+begin_src emacs-lisp
   (use-package lsp-java
     :straight (:host github :repo "emacs-lsp/lsp-java")
-    :config (add-hook 'java-mode-hook 'lsp))
+    :config
+    (add-hook 'java-mode-hook #'lsp)
+    (add-hook 'java-ts-mode-hook #'lsp))
 #+end_src
 
 ** dap-mode
