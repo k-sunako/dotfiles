@@ -2456,6 +2456,17 @@ TypeScript 7 を LSP サーバーとして使うとき、lsp-mode との間で ~
     :commands (lean4-mode))
 #+end_src
 
+** PowerShell
+
+#+begin_src emacs-lisp
+  (use-package powershell
+    :straight t
+    :mode (("\\.ps1\\'" . powershell-mode)
+           ("\\.psm1\\'" . powershell-mode)
+           ("\\.psd1\\'" . powershell-mode))
+    :hook (powershell-mode . lsp-deferred))
+#+end_src
+
 ** Python
 
 #+begin_src emacs-lisp
